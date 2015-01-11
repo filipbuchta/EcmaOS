@@ -7,15 +7,15 @@ template <class T>
 class Vector {
 
 public:
-    Vector();
+	Vector();
 	Vector(const Vector<T>& copy);
 	~Vector();
 
-    Vector<T>& operator=(const Vector<T>& copy);
+	Vector<T>& operator=(const Vector<T>& copy);
 
 	void Push(const T& value);
 	T Pop();
-    
+
 	T* GetBuffer() { return _buffer; }
 	int GetSize() { return _size; }
 
@@ -82,26 +82,26 @@ T Vector<T>::Pop() {
 
 template <class T>
 void Vector<T>::Push(const T& value) {
-    if (_size >= _capacity) {
-        Reserve(_size + 8);
-    }
+	if (_size >= _capacity) {
+		Reserve(_size + 8);
+	}
 
-    _buffer[_size] = value;
-    _size++;
+	_buffer[_size] = value;
+	_size++;
 }
 
 template <class T>
 void Vector<T>::Reserve(int capacity) {
-    if (capacity <= _capacity) {
-        return;
-    }
+	if (capacity <= _capacity) {
+		return;
+	}
 
-    _capacity = capacity;
-    T* buffer = new T[capacity];
+	_capacity = capacity;
+	T* buffer = new T[capacity];
 
-    for (int i = 0; i < _size; i++) {
-        buffer[i] = _buffer[i];
-    }
-    delete[] _buffer;
-    _buffer = buffer;
+	for (int i = 0; i < _size; i++) {
+		buffer[i] = _buffer[i];
+	}
+	delete[] _buffer;
+	_buffer = buffer;
 }

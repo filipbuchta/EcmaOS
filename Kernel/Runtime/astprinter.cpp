@@ -4,9 +4,9 @@
 
 namespace r {
 
-    void AstPrinter::PrintTree(FunctionDeclarationSyntax &node) {
-        node.Accept(*this);
-    }
+	void AstPrinter::PrintTree(FunctionDeclarationSyntax &node) {
+		node.Accept(*this);
+	}
 
 	void AstPrinter::Print(const char* string) {
 		Platform::Print(string);
@@ -21,7 +21,7 @@ namespace r {
 	void AstPrinter::VisitAmbientFunctionDeclaration(AmbientFunctionDeclarationSyntax &node) {
 	}
 
-    void AstPrinter::VisitBinaryExpression(BinaryExpressionSyntax &node) {
+	void AstPrinter::VisitBinaryExpression(BinaryExpressionSyntax &node) {
 		PrintIndented("OP ");
 		Print(node.GetOperator().Value);
 		Print("\n");
@@ -29,29 +29,29 @@ namespace r {
 		node.GetLeft()->Accept(*this);
 		node.GetRight()->Accept(*this);
 		_indent--;
-    }
+	}
 
-    void AstPrinter::VisitExpressionStatement(ExpressionStatementSyntax &node) {
-        node.GetExpression()->Accept(*this);
-    }
+	void AstPrinter::VisitExpressionStatement(ExpressionStatementSyntax &node) {
+		node.GetExpression()->Accept(*this);
+	}
 
 
-    void AstPrinter::VisitVariableDeclaration(VariableDeclarationSyntax &node) {
+	void AstPrinter::VisitVariableDeclaration(VariableDeclarationSyntax &node) {
 
-    }
+	}
 
-    void AstPrinter::VisitVariableStatement(VariableStatementSyntax &node) {
+	void AstPrinter::VisitVariableStatement(VariableStatementSyntax &node) {
 
-    }
+	}
 
-    void AstPrinter::VisitLiteral(LiteralSyntax &node) {
+	void AstPrinter::VisitLiteral(LiteralSyntax &node) {
 		PrintIndented("LITERAL ");
 		Print(node.GetText().Value);
 		Print("\n");
 
-    }
+	}
 
-    void AstPrinter::VisitFunctionDeclaration(FunctionDeclarationSyntax &node) {
+	void AstPrinter::VisitFunctionDeclaration(FunctionDeclarationSyntax &node) {
 		PrintIndented("FUNC");
 		Print("\n");
 		_indent++;
@@ -59,7 +59,7 @@ namespace r {
 			child->Accept(*this);
 		}
 		_indent--;
-    }
+	}
 
 	void AstPrinter::VisitParameterList(ParameterListSyntax &node) {
 
@@ -69,14 +69,14 @@ namespace r {
 
 	}
 
-    void AstPrinter::VisitBlock(BlockSyntax &node) {
-    }
+	void AstPrinter::VisitBlock(BlockSyntax &node) {
+	}
 
-    void AstPrinter::VisitAssignmentExpression(AssignmentExpressionSyntax &node) {
+	void AstPrinter::VisitAssignmentExpression(AssignmentExpressionSyntax &node) {
 
-    }
-    void AstPrinter::VisitIdentifier(IdentifierSyntax &node) {
-    }
+	}
+	void AstPrinter::VisitIdentifier(IdentifierSyntax &node) {
+	}
 
 
 	void AstPrinter::VisitParenthesizedExpression(ParenthesizedExpressionSyntax &node) {

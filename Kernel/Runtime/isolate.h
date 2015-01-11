@@ -4,11 +4,11 @@
 
 namespace r {
 
-    class Isolate {
+	class Isolate {
 
-    private:
+	private:
 		char* _assemblyBuffer;
-    };
+	};
 
 }
 

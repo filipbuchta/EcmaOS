@@ -36,7 +36,7 @@ namespace r {
 
 	}
 
-    JSFunction* CodeGenerator::MakeCode(FunctionDeclarationSyntax & node) {
+	JSFunction* CodeGenerator::MakeCode(FunctionDeclarationSyntax & node) {
 
 		EmitFunctionPrologue(node);
 
@@ -47,15 +47,15 @@ namespace r {
 		EmitFunctionEpilogue(node);
 
 		JSFunction *jsFunction = new JSFunction();
-        jsFunction->SetCode(_assembler->GetBuffer());
+		jsFunction->SetCode(_assembler->GetBuffer());
 
 		node.SetFunction(jsFunction);
 
-        return jsFunction;
-    }
+		return jsFunction;
+	}
 
 	void CodeGenerator::Load(ExpressionSyntax &node) {
-        node.Accept(*this);
+		node.Accept(*this);
 	}
 
 	void CodeGenerator::VisitIterationStatement(IterationStatementSyntax &node) {
@@ -65,7 +65,7 @@ namespace r {
 		_assembler->Bind(start);
 
 		Load(*node.GetExpression());
-		
+
 		_assembler->Pop(EAX);
 		_assembler->Mov(ECX, 1);
 		_assembler->Test(EAX, ECX);
@@ -79,18 +79,18 @@ namespace r {
 
 	}
 
-	void CodeGenerator::VisitParenthesizedExpression(ParenthesizedExpressionSyntax &node)  {
+	void CodeGenerator::VisitParenthesizedExpression(ParenthesizedExpressionSyntax &node) {
 		node.GetExpression()->Accept(*this);
 	}
 
-    void CodeGenerator::VisitBinaryExpression(BinaryExpressionSyntax &node) {
+	void CodeGenerator::VisitBinaryExpression(BinaryExpressionSyntax &node) {
 
 		Load(*node.GetLeft());
 		Load(*node.GetRight());
 
 		_assembler->Pop(ECX);
-        _assembler->Pop(EAX);
-		
+		_assembler->Pop(EAX);
+
 		if (node.GetOperator().Kind == PlusToken) {
 			_assembler->Add(EAX, ECX);
 		}
@@ -98,9 +98,9 @@ namespace r {
 			_assembler->Sub(EAX, ECX);
 		}
 		_assembler->Push(EAX);
-    }
+	}
 
-    void CodeGenerator::VisitVariableDeclaration(VariableDeclarationSyntax & node) 
+	void CodeGenerator::VisitVariableDeclaration(VariableDeclarationSyntax & node)
 	{
 		if (node.GetInitializer() != nullptr) {
 			Load(*node.GetInitializer());
@@ -108,16 +108,16 @@ namespace r {
 			_assembler->Pop(EAX);
 			_assembler->Mov(Operand(EBP, -8), EAX);
 		}
-    }
+	}
 
 
 	void CodeGenerator::VisitCallExpression(CallExpressionSyntax & node) {
-		
+
 		Symbol * symbol = nullptr;
 		if (node.GetExpression()->GetKind() == SyntaxKind::Identifier) {
 			symbol = ((IdentifierSyntax*)node.GetExpression())->GetSymbol();
 		}
-		
+
 
 		//Load(*node.GetExpresion());
 
@@ -149,19 +149,20 @@ namespace r {
 
 	}
 
-    void CodeGenerator::VisitLiteral(LiteralSyntax &node) {
+	void CodeGenerator::VisitLiteral(LiteralSyntax &node) {
 
 		if (node.GetText().Kind == NumericLiteral) {
 			const char *stringValue = node.GetText().Value;
-			
+
 			int value = 0;
 
 			for (int i = 0; stringValue[i] != '\0'; ++i) {
-                value = value * 10 + stringValue[i] - '0';
-            }
+				value = value * 10 + stringValue[i] - '0';
+			}
 
-            _assembler->Push(value);
-		} else if (node.GetText().Kind == BooleanLiteral) {
+			_assembler->Push(value);
+		}
+		else if (node.GetText().Kind == BooleanLiteral) {
 			if (strcmp(node.GetText().Value, "true") == 0) {
 				_assembler->Push(1);
 			}
@@ -171,24 +172,24 @@ namespace r {
 		}
 		else {
 			NOT_IMPLEMENTED();
-        }
+		}
 
 	}
 
-    void CodeGenerator::VisitFunctionDeclaration(FunctionDeclarationSyntax &node) {
+	void CodeGenerator::VisitFunctionDeclaration(FunctionDeclarationSyntax &node) {
 		CodeGenerator* codeGenerator = new CodeGenerator();
 		codeGenerator->MakeCode(node);
-    }
+	}
 
-    void CodeGenerator::VisitBlock(BlockSyntax &node) {
+	void CodeGenerator::VisitBlock(BlockSyntax &node) {
 		for (StatementSyntax * child : *node.GetStatements()) {
 			child->Accept(*this);
 		}
 	}
-    void CodeGenerator::VisitAssignmentExpression(AssignmentExpressionSyntax &node) {
-		
+	void CodeGenerator::VisitAssignmentExpression(AssignmentExpressionSyntax &node) {
 
-    }
+
+	}
 	void CodeGenerator::VisitIdentifier(IdentifierSyntax &node) {
 		Symbol * symbol = node.GetSymbol();
 
@@ -196,9 +197,9 @@ namespace r {
 		_assembler->Push(EAX);
 	}
 
-    void CodeGenerator::VisitExpressionStatement(ExpressionStatementSyntax &node) {
-        node.GetExpression()->Accept(*this);
-    }
+	void CodeGenerator::VisitExpressionStatement(ExpressionStatementSyntax &node) {
+		node.GetExpression()->Accept(*this);
+	}
 
 
 
@@ -215,10 +216,10 @@ namespace r {
 	void CodeGenerator::VisitParameterDeclaration(ParameterDeclarationSyntax &node) {
 
 	}
-    void CodeGenerator::VisitVariableStatement(VariableStatementSyntax &node) {
+	void CodeGenerator::VisitVariableStatement(VariableStatementSyntax &node) {
 
 		node.GetDeclaration()->Accept(*this);
-    }
+	}
 
 
 }

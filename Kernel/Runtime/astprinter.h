@@ -5,15 +5,15 @@
 #include "syntax/syntaxnodevisitor.h"
 
 namespace r {
-    class AstPrinter : public SyntaxNodeVisitor {
+	class AstPrinter : public SyntaxNodeVisitor {
 
-    public:
-        void PrintTree(FunctionDeclarationSyntax &node);
+	public:
+		void PrintTree(FunctionDeclarationSyntax &node);
 
-	
+
 #define DEF_VISIT(type)                         \
           void Visit##type(type##Syntax & node);
-        AST_NODE_LIST(DEF_VISIT)
+		AST_NODE_LIST(DEF_VISIT)
 #undef DEF_VISIT
 
 	private:
@@ -22,7 +22,7 @@ namespace r {
 
 		int _indent;
 
-    };
+	};
 }
 
 #endif

@@ -8,26 +8,26 @@
 namespace r {
 
 
-    class Parser {
-    public:
+	class Parser {
+	public:
 		Parser(Scanner *scanner, Binder *binder);
 
-        FunctionDeclarationSyntax *ParseProgram();
+		FunctionDeclarationSyntax *ParseProgram();
 
-    private:
-        Scanner* _scanner;
+	private:
+		Scanner* _scanner;
 		Binder* _binder;
-        void NextToken();
+		void NextToken();
 
-        SyntaxToken _currentToken = SyntaxToken(IllegalToken, "\0");
+		SyntaxToken _currentToken = SyntaxToken(IllegalToken, "\0");
 
-        bool ParseOptional(SyntaxKind kind);
+		bool ParseOptional(SyntaxKind kind);
 
-        SyntaxToken ParseExpected(SyntaxKind kind);
+		SyntaxToken ParseExpected(SyntaxKind kind);
 
-        IterationStatementSyntax * ParseIterationStatement();
+		IterationStatementSyntax * ParseIterationStatement();
 
-				StatementSyntax *ParseStatement();
+		StatementSyntax *ParseStatement();
 
 		ParameterDeclarationSyntax * ParseParameterDeclaration();
 
@@ -39,19 +39,19 @@ namespace r {
 
 		AmbientFunctionDeclarationSyntax * ParseAmbientDeclaration();
 
-        VariableStatementSyntax *ParseVariableStatement();
+		VariableStatementSyntax *ParseVariableStatement();
 
-        BlockSyntax *ParseBlock();
+		BlockSyntax *ParseBlock();
 
-        ExpressionStatementSyntax *ParseExpressionStatement();
+		ExpressionStatementSyntax *ParseExpressionStatement();
 
-        VariableDeclarationSyntax *ParseVariableDeclaration();
+		VariableDeclarationSyntax *ParseVariableDeclaration();
 
-        ExpressionSyntax *ParseInitializerExpression();
+		ExpressionSyntax *ParseInitializerExpression();
 
-        ExpressionSyntax *ParseAssignmentExpression();
+		ExpressionSyntax *ParseAssignmentExpression();
 
-        IdentifierSyntax *ParseIdentifier();
+		IdentifierSyntax *ParseIdentifier();
 
 		PrimaryExpressionSyntax *ParsePrimaryExpression();
 
@@ -67,16 +67,16 @@ namespace r {
 
 		ParenthesizedExpressionSyntax * ParseParenthesizedExpression();
 
-        ExpressionSyntax *ParseExpression();
+		ExpressionSyntax *ParseExpression();
 
 		LeftHandSideExpressionSyntax *ParseCallExpression(LeftHandSideExpressionSyntax &expression);
 
-        LiteralSyntax *ParseLiteral();
+		LiteralSyntax *ParseLiteral();
 
-        ExpressionSyntax *ParseBinaryExpression(ExpressionSyntax &left, int minPrecendence);
+		ExpressionSyntax *ParseBinaryExpression(ExpressionSyntax &left, int minPrecendence);
 
 		MemberExpressionSyntax *ParseMemberExpressionRest(LeftHandSideExpressionSyntax &expression);
-    };
+	};
 
 }
 

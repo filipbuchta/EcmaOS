@@ -12,30 +12,30 @@ namespace r {
 
 
 
-    class Scanner {
-    public:
-        Scanner(char const *string);
+	class Scanner {
+	public:
+		Scanner(char const *string);
 
-        SyntaxToken Next();
+		SyntaxToken Next();
 		int GetPosition() { return _position; }
 	private:
 		bool IsEndOfStream();
 
-        int _position = 0;
-        int _startPosition = _position;
+		int _position = 0;
+		int _startPosition = _position;
 
-        char GetChar();
+		char GetChar();
 
-        const char* _source;
+		const char* _source;
 
-        bool IsDigit(char value);
+		bool IsDigit(char value);
 
-        bool IsIdentifierStart(char ch);
+		bool IsIdentifierStart(char ch);
 
-        bool IsWhiteSpace(char ch);
+		bool IsWhiteSpace(char ch);
 
-        bool IsIdentifierPart(char ch);
-    };
+		bool IsIdentifierPart(char ch);
+	};
 
 }
 

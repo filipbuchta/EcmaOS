@@ -3,11 +3,11 @@
 #include "syntaxkind.h"
 
 namespace r {
-    struct SyntaxToken {
+	struct SyntaxToken {
 
-        SyntaxToken(SyntaxKind kind, const char *string);
+		SyntaxToken(SyntaxKind kind, const char *string);
 
-        SyntaxKind Kind;
-        char const *Value;
-    };
+		SyntaxKind Kind;
+		char const *Value;
+	};
 }

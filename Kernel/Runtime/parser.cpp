@@ -5,82 +5,84 @@
 namespace r {
 
 
-    Parser::Parser(Scanner *scanner, Binder *binder)
+	Parser::Parser(Scanner *scanner, Binder *binder)
 		: _scanner(scanner),
-		  _binder(binder)
+		_binder(binder)
 	{
-    }
+	}
 
-    FunctionDeclarationSyntax *Parser::ParseProgram() {
+	FunctionDeclarationSyntax *Parser::ParseProgram() {
 
-        FunctionDeclarationSyntax *node = new FunctionDeclarationSyntax();
+		FunctionDeclarationSyntax *node = new FunctionDeclarationSyntax();
 		node->SetScope(_binder->GetGlobalScope());
 		_binder->EnterScope(node->GetScope());
-        NextToken();
+		NextToken();
 		// ParseSourceElements
-        while (!ParseOptional(EndOfStreamToken)) {
-            node->GetStatements()->Push(ParseStatement());
-        }
+		while (!ParseOptional(EndOfStreamToken)) {
+			node->GetStatements()->Push(ParseStatement());
+		}
 		_binder->ExitScope();
-        return node;
-    }
+		return node;
+	}
 
-    void Parser::NextToken() {
-        _currentToken = _scanner->Next();
-    }
+	void Parser::NextToken() {
+		_currentToken = _scanner->Next();
+	}
 
-    SyntaxToken Parser::ParseExpected(SyntaxKind kind) {
-        SyntaxToken token = _currentToken;
+	SyntaxToken Parser::ParseExpected(SyntaxKind kind) {
+		SyntaxToken token = _currentToken;
 
-        if (_currentToken.Kind != kind) {
+		if (_currentToken.Kind != kind) {
 			FATAL("Incorrect token %s, expected %s", _currentToken.Kind, kind);
-        } else {
-            NextToken();
-        }
+		}
+		else {
+			NextToken();
+		}
 
-        return token;
-    }
+		return token;
+	}
 
-    bool Parser::ParseOptional(SyntaxKind kind) {
-        if (_currentToken.Kind == kind) {
-            NextToken();
-            return true;
-        } else {
-            return false;
-        }
-    }
+	bool Parser::ParseOptional(SyntaxKind kind) {
+		if (_currentToken.Kind == kind) {
+			NextToken();
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
 
 
-    int GetOperatorPrecedence(SyntaxKind kind) {
-        switch (kind) {
-            case EqualsEqualsToken:
-                return 1;
-            case MinusToken:
-            case PlusToken:
-                return 2;
-			case AsteriskToken:
-			case SlashToken:
-                return 3;
-            default:
-                return -1;
-        }
-    }
+	int GetOperatorPrecedence(SyntaxKind kind) {
+		switch (kind) {
+		case EqualsEqualsToken:
+			return 1;
+		case MinusToken:
+		case PlusToken:
+			return 2;
+		case AsteriskToken:
+		case SlashToken:
+			return 3;
+		default:
+			return -1;
+		}
+	}
 
-    bool IsLeftHandSideExpression(SyntaxKind kind) {
-        switch (kind) {
-            case NewExpression:
-            case CallExpression:
-            case Identifier:
-            case NumericLiteral:
-            case StringLiteral:
-			case Literal:
-			case BooleanLiteral:
-            case ParenthesizedExpression:
-                return true;
-            default:
-                return false;
-        }
-    }
+	bool IsLeftHandSideExpression(SyntaxKind kind) {
+		switch (kind) {
+		case NewExpression:
+		case CallExpression:
+		case Identifier:
+		case NumericLiteral:
+		case StringLiteral:
+		case Literal:
+		case BooleanLiteral:
+		case ParenthesizedExpression:
+			return true;
+		default:
+			return false;
+		}
+	}
 
 
 	IterationStatementSyntax * Parser::ParseIterationStatement() {
@@ -99,28 +101,28 @@ namespace r {
 		}
 	}
 
-    StatementSyntax * Parser::ParseStatement() {
-        switch (_currentToken.Kind) {
-			case VarKeyword: {
-				return ParseVariableStatement();
-			}
-			case WhileKeyword: {
-				return ParseIterationStatement();
-			}
-			case FunctionKeyword: {
-				return ParseFunctionDeclaration();
-			}
-			case DeclareKeyword: {
-				return ParseAmbientDeclaration();
-			}
-			case OpenBraceToken: {
-				return ParseBlock();
-			}
-            default: {
-                return ParseExpressionStatement();
-            }
-        }
-    }
+	StatementSyntax * Parser::ParseStatement() {
+		switch (_currentToken.Kind) {
+		case VarKeyword: {
+			return ParseVariableStatement();
+		}
+		case WhileKeyword: {
+			return ParseIterationStatement();
+		}
+		case FunctionKeyword: {
+			return ParseFunctionDeclaration();
+		}
+		case DeclareKeyword: {
+			return ParseAmbientDeclaration();
+		}
+		case OpenBraceToken: {
+			return ParseBlock();
+		}
+		default: {
+			return ParseExpressionStatement();
+		}
+		}
+	}
 
 	BlockSyntax * Parser::ParseBlock() {
 		BlockSyntax * node = new BlockSyntax();
@@ -191,7 +193,7 @@ namespace r {
 		FunctionScope * scope = new FunctionScope();
 		node->SetScope(scope);
 		_binder->EnterScope(scope);
-		
+
 		node->SetParameters(ParseParameterList());
 		_binder->ExitScope();
 
@@ -205,89 +207,89 @@ namespace r {
 	//TODO: return correct type
 	AmbientFunctionDeclarationSyntax *Parser::ParseAmbientDeclaration() {
 		ParseExpected(DeclareKeyword);
-		
+
 		switch (_currentToken.Kind) {
-			case FunctionKeyword: {
-				return ParseAmbientFunctionDeclaration();
-			}
-			break;
+		case FunctionKeyword: {
+			return ParseAmbientFunctionDeclaration();
+		}
+							  break;
 		}
 
 	}
 
 
-    VariableStatementSyntax *Parser::ParseVariableStatement() {
-        VariableStatementSyntax *node = new VariableStatementSyntax();
-        node->SetDeclaration(ParseVariableDeclaration());
-        ParseOptional(SemicolonToken);
-        return node;
-    }
+	VariableStatementSyntax *Parser::ParseVariableStatement() {
+		VariableStatementSyntax *node = new VariableStatementSyntax();
+		node->SetDeclaration(ParseVariableDeclaration());
+		ParseOptional(SemicolonToken);
+		return node;
+	}
 
-    VariableDeclarationSyntax *Parser::ParseVariableDeclaration() {
-        ParseExpected(VarKeyword);
-        VariableDeclarationSyntax *node = new VariableDeclarationSyntax();
-        node->SetIdentifier(ParseIdentifier());
-        if (ParseOptional(EqualsToken)) {
-            node->SetInitializer(ParseInitializerExpression());
-        }
+	VariableDeclarationSyntax *Parser::ParseVariableDeclaration() {
+		ParseExpected(VarKeyword);
+		VariableDeclarationSyntax *node = new VariableDeclarationSyntax();
+		node->SetIdentifier(ParseIdentifier());
+		if (ParseOptional(EqualsToken)) {
+			node->SetInitializer(ParseInitializerExpression());
+		}
 
 		_binder->BindDeclaration(*node);
 
-        return node;
-    }
+		return node;
+	}
 
-    ExpressionSyntax *Parser::ParseInitializerExpression() {
-        return ParseAssignmentExpression();
-    }
+	ExpressionSyntax *Parser::ParseInitializerExpression() {
+		return ParseAssignmentExpression();
+	}
 
 
-    ExpressionSyntax *Parser::ParseAssignmentExpression() {
-        ExpressionSyntax *node = ParseBinaryExpression(*ParseUnaryExpression(), 0);
-        if (IsLeftHandSideExpression(node->GetKind()) && _currentToken.Kind == EqualsToken) {
-            AssignmentExpressionSyntax *assignmentExpression = new AssignmentExpressionSyntax();
-            assignmentExpression->SetLeft(node);
-            ParseExpected(EqualsToken);
-            assignmentExpression->SetRight(ParseAssignmentExpression());
+	ExpressionSyntax *Parser::ParseAssignmentExpression() {
+		ExpressionSyntax *node = ParseBinaryExpression(*ParseUnaryExpression(), 0);
+		if (IsLeftHandSideExpression(node->GetKind()) && _currentToken.Kind == EqualsToken) {
+			AssignmentExpressionSyntax *assignmentExpression = new AssignmentExpressionSyntax();
+			assignmentExpression->SetLeft(node);
+			ParseExpected(EqualsToken);
+			assignmentExpression->SetRight(ParseAssignmentExpression());
 
-            node = assignmentExpression;
-        }
+			node = assignmentExpression;
+		}
 
-        return node;
-    }
+		return node;
+	}
 
-    ExpressionSyntax *Parser::ParseBinaryExpression(ExpressionSyntax &left, int minPrecendence) {
+	ExpressionSyntax *Parser::ParseBinaryExpression(ExpressionSyntax &left, int minPrecendence) {
 
 		ExpressionSyntax * expression = &left;
 
-        while (true) {
+		while (true) {
 
-            int precendence = GetOperatorPrecedence(_currentToken.Kind);
+			int precendence = GetOperatorPrecedence(_currentToken.Kind);
 
-            if (precendence != -1 && precendence > minPrecendence) {
+			if (precendence != -1 && precendence > minPrecendence) {
 
-                BinaryExpressionSyntax *node = new BinaryExpressionSyntax();
-                node->SetLeft(expression);
+				BinaryExpressionSyntax *node = new BinaryExpressionSyntax();
+				node->SetLeft(expression);
 
-                node->SetOperator(_currentToken);
-                NextToken();
+				node->SetOperator(_currentToken);
+				NextToken();
 
-                node->SetRight( ParseBinaryExpression(*ParseUnaryExpression(), precendence));
+				node->SetRight(ParseBinaryExpression(*ParseUnaryExpression(), precendence));
 
 				expression = node;
 
-                continue;
-            }
+				continue;
+			}
 
-            return expression;
-        }
-    }
-
-    UnaryExpressionSyntax *Parser::ParseUnaryExpression() {
-		switch (_currentToken.Kind) {
-			default:
-				return ParsePostfixExpression();
+			return expression;
 		}
-    }
+	}
+
+	UnaryExpressionSyntax *Parser::ParseUnaryExpression() {
+		switch (_currentToken.Kind) {
+		default:
+			return ParsePostfixExpression();
+		}
+	}
 
 	PostfixExpressionSyntax *Parser::ParsePostfixExpression() {
 		return ParseLeftHandSideExpression();
@@ -323,38 +325,38 @@ namespace r {
 		}
 	}
 
-    PrimaryExpressionSyntax *Parser::ParsePrimaryExpression() {
-        switch (_currentToken.Kind) 
+	PrimaryExpressionSyntax *Parser::ParsePrimaryExpression() {
+		switch (_currentToken.Kind)
 		{
-			case StringLiteral:
-			case NumericLiteral:
-			case BooleanLiteral:
-			{
-				return ParseLiteral();
-			}
-			case OpenParenthesisToken: 
-			{
-				return ParseParenthesizedExpression();
-			}
-			case IdentifierName:
-			{
-				IdentifierSyntax * identifier = ParseIdentifier();
-				_binder->GetCurrentScope()->GetUnresolvedSymbols()->Push(identifier);
-				return identifier;
-			}
-			default: 
-			{
-				NOT_IMPLEMENTED();
-			}
-			break;
-        }
-    }
+		case StringLiteral:
+		case NumericLiteral:
+		case BooleanLiteral:
+		{
+			return ParseLiteral();
+		}
+		case OpenParenthesisToken:
+		{
+			return ParseParenthesizedExpression();
+		}
+		case IdentifierName:
+		{
+			IdentifierSyntax * identifier = ParseIdentifier();
+			_binder->GetCurrentScope()->GetUnresolvedSymbols()->Push(identifier);
+			return identifier;
+		}
+		default:
+		{
+			NOT_IMPLEMENTED();
+		}
+		break;
+		}
+	}
 
 	ArgumentListSyntax *Parser::ParseArgumentList() {
 		ParseExpected(OpenParenthesisToken);
 		ArgumentListSyntax *node = new ArgumentListSyntax();
-		
-		while (true) 
+
+		while (true)
 		{
 			if (ParseOptional(CloseParenthesisToken))
 			{
@@ -402,34 +404,34 @@ namespace r {
 		return node;
 	}
 
-    LiteralSyntax *Parser::ParseLiteral() {
-        LiteralSyntax *node = new LiteralSyntax();
-        node->SetText(_currentToken);
-        NextToken();
-        return node;
-    }
+	LiteralSyntax *Parser::ParseLiteral() {
+		LiteralSyntax *node = new LiteralSyntax();
+		node->SetText(_currentToken);
+		NextToken();
+		return node;
+	}
 
 
-    ExpressionSyntax *Parser::ParseExpression() {
-        return ParseAssignmentExpression();
-    }
+	ExpressionSyntax *Parser::ParseExpression() {
+		return ParseAssignmentExpression();
+	}
 
 
-    ExpressionStatementSyntax *Parser::ParseExpressionStatement() {
-        ExpressionStatementSyntax *node = new ExpressionStatementSyntax();
-        node->SetExpression(ParseExpression());
+	ExpressionStatementSyntax *Parser::ParseExpressionStatement() {
+		ExpressionStatementSyntax *node = new ExpressionStatementSyntax();
+		node->SetExpression(ParseExpression());
 
-        ParseOptional(SemicolonToken);
+		ParseOptional(SemicolonToken);
 
-        return node;
-    }
+		return node;
+	}
 
-    IdentifierSyntax *Parser::ParseIdentifier() {
-        IdentifierSyntax *node = new IdentifierSyntax();
-        node->SetName(ParseExpected(IdentifierName));
-	
-        return node;
-    }
+	IdentifierSyntax *Parser::ParseIdentifier() {
+		IdentifierSyntax *node = new IdentifierSyntax();
+		node->SetName(ParseExpected(IdentifierName));
+
+		return node;
+	}
 
 
 }

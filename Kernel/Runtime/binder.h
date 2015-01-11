@@ -11,7 +11,7 @@ namespace r {
 	public:
 		void BindProgram();
 
-				void ResolveVariables(Scope & scope);
+		void ResolveVariables(Scope & scope);
 
 
 		void BindDeclaration(DeclarationSyntax & node);

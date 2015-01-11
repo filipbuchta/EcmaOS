@@ -7,34 +7,34 @@
 namespace r {
 
 
-    class JSFunction {
+	class JSFunction {
 
-    public:
-        void SetCode(unsigned char *value) { _code = value; }
+	public:
+		void SetCode(unsigned char *value) { _code = value; }
 		unsigned char * GetCode() { return _code; }
-    private:
-        unsigned char *_code;
-    };
+	private:
+		unsigned char *_code;
+	};
 
-    class CodeGenerator : public SyntaxNodeVisitor {
-    public:
-        void EmitFunctionPrologue(FunctionDeclarationSyntax & node);
+	class CodeGenerator : public SyntaxNodeVisitor {
+	public:
+		void EmitFunctionPrologue(FunctionDeclarationSyntax & node);
 		void EmitFunctionEpilogue(FunctionDeclarationSyntax & node);
 		JSFunction *MakeCode(FunctionDeclarationSyntax &script);
-        
+
 		Assembler * GetAssembler() { return _assembler; }
 
-		#define DEF_VISIT(type)                         \
+#define DEF_VISIT(type)                         \
           void Visit##type(type##Syntax& node);
-                AST_NODE_LIST(DEF_VISIT)
-        #undef DEF_VISIT
+		AST_NODE_LIST(DEF_VISIT)
+#undef DEF_VISIT
 
-					
-    private:
-        void Load(ExpressionSyntax &node);
 
-        Assembler *_assembler = new Assembler();
-    };
+	private:
+		void Load(ExpressionSyntax &node);
+
+		Assembler *_assembler = new Assembler();
+	};
 
 
 }

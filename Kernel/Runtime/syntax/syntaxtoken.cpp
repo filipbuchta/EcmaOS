@@ -2,10 +2,10 @@
 
 namespace r {
 
-    SyntaxToken::SyntaxToken(SyntaxKind kind, const char *value) {
-        Kind = kind;
-        Value = value;
-    }
+	SyntaxToken::SyntaxToken(SyntaxKind kind, const char *value) {
+		Kind = kind;
+		Value = value;
+	}
 
 
 }

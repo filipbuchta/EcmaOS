@@ -11,15 +11,15 @@
 namespace r {
 
 
-    class Script {
+	class Script {
 
-    };
+	};
 
-    class Compiler {
-    public:
-        static JSFunction* Compile(Isolate *source, char const *string);
-        Compiler();
-    };
+	class Compiler {
+	public:
+		static JSFunction* Compile(Isolate *source, char const *string);
+		Compiler();
+	};
 
 }
 

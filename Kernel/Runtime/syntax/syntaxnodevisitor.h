@@ -24,17 +24,17 @@ namespace r {
 
 #define DEF_FORWARD_DECLARE(type)                         \
     class type##Syntax;
-    AST_NODE_LIST(DEF_FORWARD_DECLARE)
+	AST_NODE_LIST(DEF_FORWARD_DECLARE)
 #undef DEF_FORWARD_DECLARE
-		
-    class SyntaxNodeVisitor {
+
+	class SyntaxNodeVisitor {
 	public:
 
 #define DEF_VISIT(type)                         \
   virtual void Visit##type(type##Syntax& node) { };
-        AST_NODE_LIST(DEF_VISIT)
+		AST_NODE_LIST(DEF_VISIT)
 #undef DEF_VISIT
 
-    };
+	};
 
 }

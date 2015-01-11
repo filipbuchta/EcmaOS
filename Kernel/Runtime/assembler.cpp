@@ -4,7 +4,7 @@
 
 namespace r {
 
-	void Operand::SetModRM(unsigned char mod, Register rm) 
+	void Operand::SetModRM(unsigned char mod, Register rm)
 	{
 		//ASSERT(_length == 1);
 		_buffer[0] = mod << 6 | rm;
@@ -23,15 +23,15 @@ namespace r {
 		SetDisplacement(displacement);
 	}
 
-    Assembler::Assembler() {
-        _bufferSize = 1024;
-        _buffer = new unsigned char[_bufferSize];
-        _pc = _buffer;
+	Assembler::Assembler() {
+		_bufferSize = 1024;
+		_buffer = new unsigned char[_bufferSize];
+		_pc = _buffer;
 
-        for (int i = 0; i < _bufferSize; i++) {
-            _buffer[i] = 0xCC;
-        }
-    }
+		for (int i = 0; i < _bufferSize; i++) {
+			_buffer[i] = 0xCC;
+		}
+	}
 
 	void Assembler::Emit(unsigned char x)
 	{
@@ -65,18 +65,34 @@ namespace r {
 		NOT_IMPLEMENTED();
 	}
 
-	void Assembler::Bind(Label & label)
-	{
-		NOT_IMPLEMENTED();
-	}
+
 
 	void Assembler::Je(Label & label)
 	{
 		NOT_IMPLEMENTED();
 	}
+
+	void Assembler::Bind(Label & label)
+	{
+		label->SetPosition(_pc);
+
+		for (fixup : label->GetLinks()) {
+			(*fixup) = label->GetPosition();
+		}
+	}
+
 	void Assembler::Jmp(Label & label)
 	{
-		NOT_IMPLEMENTED();
+		if (label.IsBound()) {
+			int offset = label->GetPosition() - _pc;
+			//ASSERT(offset < 0);
+			Emit(0xEB);
+			Emit((char)(offset - 2));
+		}
+		else {
+			Emit(0xE9);
+			label.LinkTo(_pc);
+		}
 	}
 
 	void Assembler::Ret() {
@@ -89,23 +105,23 @@ namespace r {
 		Emit(0xDB); // bx, bx
 	}
 
-    void Assembler::Xchg(Register dst, Register src) {
+	void Assembler::Xchg(Register dst, Register src) {
 		NOT_IMPLEMENTED();
-    }
+	}
 
 	void Assembler::Sub(Register dst, Register src) {
 		Emit(0x29);
 		Emit(0xC0 | src << 3 | dst);
 	}
 
-    void Assembler::Add(Register dst, Register src) {
-        Emit(0x01);
+	void Assembler::Add(Register dst, Register src) {
+		Emit(0x01);
 		Emit(0xC0 | src << 3 | dst);
-    }
+	}
 
-    void Assembler::Pop(Register reg) {
-        Emit(0x58 + reg);
-    }
+	void Assembler::Pop(Register reg) {
+		Emit(0x58 + reg);
+	}
 
 	void Assembler::Push(int value) {
 		Emit(0x68);
@@ -116,8 +132,8 @@ namespace r {
 
 	void Assembler::Call(unsigned char* address) {
 		Emit(0xE8);
-		
-		*((int *)_pc) = (int)( address - (_pc + sizeof(int) ) );
+
+		*((int *)_pc) = (int)(address - (_pc + sizeof(int)));
 		_pc += sizeof(int);
 	}
 

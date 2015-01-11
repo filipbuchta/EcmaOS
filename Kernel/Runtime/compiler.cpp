@@ -6,27 +6,27 @@
 
 namespace r {
 
-    Compiler::Compiler() {
-    }
+	Compiler::Compiler() {
+	}
 
-    JSFunction* Compiler::Compile(Isolate *isolate, char const *source) {
+	JSFunction* Compiler::Compile(Isolate *isolate, char const *source) {
 
-        Scanner* scanner = new Scanner(source);
+		Scanner* scanner = new Scanner(source);
 		Binder *binder = new Binder();
-        Parser* parser = new Parser(scanner, binder);
+		Parser* parser = new Parser(scanner, binder);
 
-        FunctionDeclarationSyntax *sourceFile = parser->ParseProgram();
+		FunctionDeclarationSyntax *sourceFile = parser->ParseProgram();
 		binder->BindProgram();
 
-        AstPrinter *treePrinter = new AstPrinter();
+		AstPrinter *treePrinter = new AstPrinter();
 		treePrinter->PrintTree(*sourceFile);
 
-		
 
-        CodeGenerator* codeGenerator = new CodeGenerator();
-        JSFunction *function = codeGenerator->MakeCode(*sourceFile);
 
-        return function;
-    }
+		CodeGenerator* codeGenerator = new CodeGenerator();
+		JSFunction *function = codeGenerator->MakeCode(*sourceFile);
+
+		return function;
+	}
 
 }

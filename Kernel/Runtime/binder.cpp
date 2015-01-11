@@ -22,7 +22,7 @@ namespace r {
 			if (symbol != nullptr) {
 				child->SetSymbol(symbol);
 			}
-			
+
 		}
 
 		for (Scope* child : *scope.GetInnerScopes()) {
@@ -35,49 +35,49 @@ namespace r {
 
 		switch (node.GetKind())
 		{
-			case AmbientFunctionDeclaration:
-			case FunctionDeclaration:
-			{
-				symbol = new FunctionSymbol();
-			}
-			break;
+		case AmbientFunctionDeclaration:
+		case FunctionDeclaration:
+		{
+			symbol = new FunctionSymbol();
+		}
+		break;
 
-			case ParameterDeclaration:
-			case VariableDeclaration:
-			{
-				symbol = new VariableSymbol();
-			}
-			break;
+		case ParameterDeclaration:
+		case VariableDeclaration:
+		{
+			symbol = new VariableSymbol();
+		}
+		break;
 		}
 
 		symbol->SetName(node.GetIdentifier()->GetName().Value);
 		symbol->SetDeclaration(&node);
 
 		switch (_currentScope->GetKind()) {
-			case Global:
+		case Global:
+		{
+			((GlobalScope*)_currentScope)->GetGlobals()->Push(symbol);
+		}
+		break;
+
+		case Function:
+		{
+			switch (node.GetKind())
 			{
-				((GlobalScope*)_currentScope)->GetGlobals()->Push(symbol);
+			case ParameterDeclaration:
+			{
+				((FunctionScope*)_currentScope)->GetParameters()->Push(symbol);
 			}
 			break;
 
-			case Function: 
+			case VariableDeclaration:
 			{
-				switch (node.GetKind())
-				{
-					case ParameterDeclaration:
-					{
-						((FunctionScope*)_currentScope)->GetParameters()->Push(symbol);
-					}
-					break;
-
-					case VariableDeclaration:
-					{
-						((FunctionScope*)_currentScope)->GetLocals()->Push(symbol);
-					}
-					break;
-				}
-
+				((FunctionScope*)_currentScope)->GetLocals()->Push(symbol);
 			}
+			break;
+			}
+
+		}
 		}
 	}
 

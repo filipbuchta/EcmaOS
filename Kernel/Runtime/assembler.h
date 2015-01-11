@@ -3,19 +3,22 @@
 namespace r {
 
 	class Label {
-		
+	public:
+		bool IsBound() { return _position != 0; }
+	private:
+		int _position;
 	};
 
-    enum Register {
-        EAX = 0,
-        ECX = 1,
-        EDX = 2,
-        EBX = 3,
+	enum Register {
+		EAX = 0,
+		ECX = 1,
+		EDX = 2,
+		EBX = 3,
 		ESP = 4,
 		EBP = 5,
 		ESI = 6,
 		EDI = 7,
-    };
+	};
 
 	class Assembler;
 
@@ -32,11 +35,11 @@ namespace r {
 	};
 
 
-    class Assembler {
+	class Assembler {
 
 
-    public:
-        Assembler();
+	public:
+		Assembler();
 
 		void Emit(unsigned char x);
 
@@ -44,11 +47,11 @@ namespace r {
 
 		void Bind(Label & label);
 
-        void Xchg(Register dst, Register src);
+		void Xchg(Register dst, Register src);
 
 		void Sub(Register dst, Register src);
 
-        void Add(Register dst, Register src);
+		void Add(Register dst, Register src);
 
 		void Mov(Register dst, Register src);
 
@@ -60,11 +63,11 @@ namespace r {
 
 		void Je(Label & label);
 
-				void Jmp(Label & label);
+		void Jmp(Label & label);
 
 		void Ret();
 
-        void Pop(Register reg);
+		void Pop(Register reg);
 
 		void Push(int value);
 
@@ -79,12 +82,12 @@ namespace r {
 		unsigned char *GetBuffer() const { return _buffer; }
 		unsigned char *GetPC() const { return _pc; }
 
-    private:
-        unsigned char* _pc;
-        unsigned char* _buffer = nullptr;
-        int _bufferSize = 0;
+	private:
+		unsigned char* _pc;
+		unsigned char* _buffer = nullptr;
+		int _bufferSize = 0;
 
-    };
+	};
 
 }
 

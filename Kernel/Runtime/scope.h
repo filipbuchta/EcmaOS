@@ -24,7 +24,7 @@ namespace r {
 	public:
 		virtual ScopeKind GetKind() = 0;
 		virtual Symbol *LookupSymbol(const char * name) = 0;
-		
+
 		void SetOuterScope(Scope * value) { _outerScope = value; }
 		Scope * GetOuterScope() { return _outerScope; }
 		Vector<Scope*> * GetInnerScopes() { return _innerScopes; }
