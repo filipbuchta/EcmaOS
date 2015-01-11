@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.22310.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Loader", "Loader.vcxproj", "{62F8E734-DDDB-4CAB-8BCC-B11EC5F90629}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Runtime", "..\Kernel\Runtime\Runtime.vcxproj", "{1745240A-66BD-468D-9984-3245A7B7155A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Native", "..\Kernel\Native\Native.vcxproj", "{DE607CF8-C5A7-4D7C-85AD-953B4EC861A2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Ecma = Debug|Ecma
+		Debug|Win32 = Debug|Win32
+		Release|Ecma = Release|Ecma
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{62F8E734-DDDB-4CAB-8BCC-B11EC5F90629}.Debug|Ecma.ActiveCfg = Debug|Ecma
+		{62F8E734-DDDB-4CAB-8BCC-B11EC5F90629}.Debug|Ecma.Build.0 = Debug|Ecma
+		{62F8E734-DDDB-4CAB-8BCC-B11EC5F90629}.Debug|Win32.ActiveCfg = Debug|Ecma
+		{62F8E734-DDDB-4CAB-8BCC-B11EC5F90629}.Release|Ecma.ActiveCfg = Release|Ecma
+		{62F8E734-DDDB-4CAB-8BCC-B11EC5F90629}.Release|Ecma.Build.0 = Release|Ecma
+		{62F8E734-DDDB-4CAB-8BCC-B11EC5F90629}.Release|Win32.ActiveCfg = Release|Ecma
+		{1745240A-66BD-468D-9984-3245A7B7155A}.Debug|Ecma.ActiveCfg = Debug|Ecma
+		{1745240A-66BD-468D-9984-3245A7B7155A}.Debug|Ecma.Build.0 = Debug|Ecma
+		{1745240A-66BD-468D-9984-3245A7B7155A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1745240A-66BD-468D-9984-3245A7B7155A}.Debug|Win32.Build.0 = Debug|Win32
+		{1745240A-66BD-468D-9984-3245A7B7155A}.Release|Ecma.ActiveCfg = Release|Win32
+		{1745240A-66BD-468D-9984-3245A7B7155A}.Release|Win32.ActiveCfg = Release|Win32
+		{1745240A-66BD-468D-9984-3245A7B7155A}.Release|Win32.Build.0 = Release|Win32
+		{DE607CF8-C5A7-4D7C-85AD-953B4EC861A2}.Debug|Ecma.ActiveCfg = Debug|Ecma
+		{DE607CF8-C5A7-4D7C-85AD-953B4EC861A2}.Debug|Ecma.Build.0 = Debug|Ecma
+		{DE607CF8-C5A7-4D7C-85AD-953B4EC861A2}.Debug|Win32.ActiveCfg = Debug|Ecma
+		{DE607CF8-C5A7-4D7C-85AD-953B4EC861A2}.Release|Ecma.ActiveCfg = Release|Ecma
+		{DE607CF8-C5A7-4D7C-85AD-953B4EC861A2}.Release|Ecma.Build.0 = Release|Ecma
+		{DE607CF8-C5A7-4D7C-85AD-953B4EC861A2}.Release|Win32.ActiveCfg = Release|Ecma
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
