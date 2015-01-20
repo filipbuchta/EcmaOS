@@ -109,7 +109,19 @@ namespace r {
 			_assembler->Mov(Operand(EBP, -8), EAX);
 		}
 	}
+	void CodeGenerator::VisitIfStatement(IfStatementSyntax &node) {
+		NOT_IMPLEMENTED();
+	}
+	void CodeGenerator::VisitThisExpression(ThisExpressionSyntax &node) {
+		NOT_IMPLEMENTED()
+	}
+	void CodeGenerator::VisitFunctionExpression(FunctionExpressionSyntax &node) {
+		NOT_IMPLEMENTED()
+	}
 
+	void CodeGenerator::VisitNewExpression(NewExpressionSyntax & node) {
+		NOT_IMPLEMENTED()
+	}
 
 	void CodeGenerator::VisitCallExpression(CallExpressionSyntax & node) {
 

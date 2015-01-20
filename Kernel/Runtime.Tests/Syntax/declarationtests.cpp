@@ -12,7 +12,7 @@ using namespace r;
 
 namespace RuntimeTests
 {
-	TEST_CLASS(SyntaxDeclarationTests)
+	TEST_CLASS(SyntaxTests)
 	{
 		BEGIN_TEST_CLASS_ATTRIBUTE()
 			TEST_CLASS_ATTRIBUTE(L"Category", L"Syntax")

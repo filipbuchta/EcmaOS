@@ -46,6 +46,13 @@ void TreeFlattener::VisitCallExpression(CallExpressionSyntax &node) {
 	node.GetArguments()->Accept(*this);
 }
 
+void TreeFlattener::VisitNewExpression(NewExpressionSyntax &node) {
+	_list->Push(node.GetKind());
+	node.GetExpression()->Accept(*this);
+	node.GetArguments()->Accept(*this);
+}
+
+
 void TreeFlattener::VisitLiteral(LiteralSyntax &node) {
 	_list->Push(node.GetKind());
 	_list->Push(node.GetText().Kind);
@@ -55,6 +62,10 @@ void TreeFlattener::VisitLiteral(LiteralSyntax &node) {
 void TreeFlattener::VisitParenthesizedExpression(ParenthesizedExpressionSyntax &node) {
 	_list->Push(node.GetKind());
 	node.GetExpression()->Accept(*this);
+}
+
+void TreeFlattener::VisitThisExpression(ThisExpressionSyntax &node) {
+	_list->Push(node.GetKind());
 }
 
 void TreeFlattener::VisitFunctionDeclaration(FunctionDeclarationSyntax &node) {
@@ -70,6 +81,18 @@ void TreeFlattener::VisitFunctionDeclaration(FunctionDeclarationSyntax &node) {
 	}
 }
 
+void TreeFlattener::VisitFunctionExpression(FunctionExpressionSyntax &node) {
+	_list->Push(node.GetKind());
+	if (node.GetIdentifier() != nullptr) {
+		node.GetIdentifier()->Accept(*this);
+	}
+	if (node.GetParameters() != nullptr) {
+		node.GetParameters()->Accept(*this);
+	}
+	for (StatementSyntax* child : *node.GetStatements()) {
+		child->Accept(*this);
+	}
+}
 
 void TreeFlattener::VisitParameterDeclaration(ParameterDeclarationSyntax &node) {
 	_list->Push(node.GetKind());
@@ -84,8 +107,11 @@ void TreeFlattener::VisitBlock(BlockSyntax &node) {
 }
 
 void TreeFlattener::VisitAssignmentExpression(AssignmentExpressionSyntax &node) {
-
+	_list->Push(node.GetKind());
+	node.GetLeft()->Accept(*this);
+	node.GetRight()->Accept(*this);
 }
+
 void TreeFlattener::VisitIdentifier(IdentifierSyntax &node) {
 	_list->Push(node.GetKind());
 	_list->Push(node.GetName().Kind);
@@ -98,6 +124,16 @@ void TreeFlattener::VisitParameterList(ParameterListSyntax &node) {
 	}
 }
 
+void TreeFlattener::VisitIfStatement(IfStatementSyntax &node) {
+	_list->Push(node.GetKind());
+	node.GetExpression()->Accept(*this);
+	node.GetThenStatement()->Accept(*this);
+	if (node.GetElseStatement() != nullptr) {
+		node.GetElseStatement()->Accept(*this);
+	}
+}
+
+
 void TreeFlattener::VisitArgumentList(ArgumentListSyntax &node) {
 	_list->Push(node.GetKind());
 	for (ExpressionSyntax* child : *node.GetArguments()) {
@@ -106,5 +142,7 @@ void TreeFlattener::VisitArgumentList(ArgumentListSyntax &node) {
 }
 
 void TreeFlattener::VisitPropertyAccessExpression(PropertyAccessExpressionSyntax &node) {
-
+	_list->Push(node.GetKind());
+	node.GetExpresion()->Accept(*this);
+	node.GetName()->Accept(*this);	
 }

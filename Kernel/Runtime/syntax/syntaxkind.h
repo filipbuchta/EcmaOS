@@ -60,6 +60,11 @@ namespace r {
 		DO(BooleanLiteral)\
 		DO(WhileKeyword)\
 		DO(IterationStatement)\
+		DO(NullLiteral)\
+		DO(FunctionExpression)\
+		DO(ThisKeyword)\
+		DO(ThisExpression)\
+		DO(ExclamationEqualsToken)\
 		DO(IllegalToken)
 
 

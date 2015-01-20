@@ -25,7 +25,7 @@ namespace r {
 
 		SyntaxToken ParseExpected(SyntaxKind kind);
 
-		IterationStatementSyntax * ParseIterationStatement();
+		IterationStatementSyntax * ParseWhileStatement();
 
 		StatementSyntax *ParseStatement();
 
@@ -34,6 +34,8 @@ namespace r {
 		ParameterListSyntax * ParseParameterList();
 
 		FunctionDeclarationSyntax * ParseFunctionDeclaration();
+
+		IfStatementSyntax * Parser::ParseIfStatement();
 
 		AmbientFunctionDeclarationSyntax * ParseAmbientFunctionDeclaration();
 
@@ -73,9 +75,13 @@ namespace r {
 
 		LiteralSyntax *ParseLiteral();
 
+		NewExpressionSyntax *Parser::ParseNewExpression();
+
 		ExpressionSyntax *ParseBinaryExpression(ExpressionSyntax &left, int minPrecendence);
 
 		MemberExpressionSyntax *ParseMemberExpressionRest(LeftHandSideExpressionSyntax &expression);
+
+		FunctionExpressionSyntax * Parser::ParseFunctionExpression();
 	};
 
 }

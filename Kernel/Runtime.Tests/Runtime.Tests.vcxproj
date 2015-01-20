@@ -108,7 +108,10 @@
     <ClCompile Include="Semantic\declarationtests.cpp" />
     <ClCompile Include="Syntax\arithmetictests.cpp" />
     <ClCompile Include="Syntax\calltests.cpp" />
+    <ClCompile Include="Syntax\conditiontests.cpp" />
+    <ClCompile Include="Syntax\constructortests.cpp" />
     <ClCompile Include="Syntax\declarationtests.cpp" />
+    <ClCompile Include="Syntax\functiontests.cpp" />
     <ClCompile Include="Syntax\looptests.cpp" />
     <ClCompile Include="Syntax\treeflattener.cpp" />
   </ItemGroup>

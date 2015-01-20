@@ -54,7 +54,8 @@ namespace r {
 		for (int i = 1; i < operand._length; i++) {
 			_pc[i] = operand._buffer[i];
 		}
-
+		_pc += 1;
+		_pc += operand._length - 1;
 	}
 
 	void Assembler::Mov(Operand & dst, Register src) {
@@ -78,7 +79,24 @@ namespace r {
 		label.SetPosition((int)_pc);
 		
 		for (int value : *label.GetUnresolvedPositions()) {
-			*((int *)value) = label.GetPosition();
+			int offset = (int)_pc - value;
+			
+			*((int *)value) = (char)(offset - 2);
+		}
+	}
+
+	void Assembler::Jne(Label & label)
+	{
+		if (label.IsBound()) {
+			int offset = label.GetPosition() - (int)_pc;
+			Emit(0x75);
+			Emit((char)(offset - 2));
+		}
+		else {
+			Emit(0x0F);
+			Emit(0x85);
+			label.GetUnresolvedPositions()->Push((int)_pc);
+			_pc += sizeof(int);
 		}
 	}
 
@@ -89,8 +107,8 @@ namespace r {
 			int offset = label.GetPosition() - (int)_pc;
 			Emit(0x74);
 			Emit((char)(offset - 2));
-		}
-		else {
+		} else {
+			Emit(0x0F);
 			Emit(0x84);
 			label.GetUnresolvedPositions()->Push((int)_pc);
 			_pc += sizeof(int);
@@ -104,8 +122,7 @@ namespace r {
 			//ASSERT(offset < 0);
 			Emit(0xEB);
 			Emit((char)(offset - 2));
-		}
-		else {
+		} else {
 			Emit(0xE9);
 			label.GetUnresolvedPositions()->Push((int)_pc);
 			_pc += sizeof(int);

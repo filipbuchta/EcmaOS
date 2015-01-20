@@ -12,12 +12,25 @@ using namespace r;
 
 namespace RuntimeTests
 {		
-	TEST_CLASS(ArithmeticsTests)
+	TEST_CLASS(SyntaxTests)
 	{
 		BEGIN_TEST_CLASS_ATTRIBUTE()
 			TEST_CLASS_ATTRIBUTE(L"Category", L"Syntax")
 		END_TEST_CLASS_ATTRIBUTE()
 	public:
+
+		TEST_METHOD(NullLiteralTest)
+		{
+			PARSE_TREE(" null ");
+			N(FunctionDeclaration);
+			{
+				N(ExpressionStatement);
+				{
+					N(Literal); N(NullLiteral);
+				}
+			}
+		}
+
 
 		TEST_METHOD(StringLiteralTest)
 		{
@@ -27,7 +40,7 @@ namespace RuntimeTests
 			{
 				N(ExpressionStatement);
 				{
-					N(Literal);
+					N(Literal); N(StringLiteral);
 				}
 			}
 		}
@@ -52,7 +65,7 @@ namespace RuntimeTests
 		}
 
 		
-		TEST_METHOD(OperatorPrecedence)
+		TEST_METHOD(OperatorPrecedenceTest)
 		{
 			PARSE_TREE("(1 + 2) * 3 - 4 / 2");
 

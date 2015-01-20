@@ -19,19 +19,21 @@ namespace RuntimeTests
 			END_TEST_CLASS_ATTRIBUTE()
 	public:
 
-		TEST_METHOD(WhileLoopTest)
+		TEST_METHOD(ConstructorTests)
 		{
-			PARSE_TREE("while (true) { }");
+			PARSE_TREE("new foo();");
 
 			N(FunctionDeclaration);
 			{
-				N(IterationStatement);
+				N(ExpressionStatement);
 				{
-					N(Literal); N(BooleanLiteral); // true
-					N(Block); // { }
+					N(NewExpression); N(Identifier); N(IdentifierName);
+					N(ArgumentList);
 				}
 			}
 		}
+
+
 
 	};
 }

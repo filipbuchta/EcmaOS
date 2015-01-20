@@ -86,6 +86,12 @@ namespace r {
 		ExpressionSyntax *_expression;
 	};
 
+	class ThisExpressionSyntax : public PrimaryExpressionSyntax {
+	public:
+		DECLARE_NODE_TYPE(ThisExpression);
+	};
+
+
 	class IdentifierSyntax : public PrimaryExpressionSyntax {
 	public:
 		DECLARE_NODE_TYPE(Identifier);
@@ -128,6 +134,8 @@ namespace r {
 
 		void SetLeft(ExpressionSyntax *value) { _left = value; };
 		void SetRight(ExpressionSyntax *value) { _right = value; };
+		ExpressionSyntax* GetLeft() { return _left; };
+		ExpressionSyntax* GetRight() { return _right; };
 	private:
 		ExpressionSyntax *_left;
 		ExpressionSyntax *_right;
@@ -147,14 +155,14 @@ namespace r {
 	public:
 		DECLARE_NODE_TYPE(PropertyAccessExpression);
 
-		void SetName(IdentifierSyntax *value) { _name = value; }
-		IdentifierSyntax *GetName() { return _name; }
-
 		void SetExpression(ExpressionSyntax *value) { _expression = value; }
 		ExpressionSyntax *GetExpresion() { return _expression; }
+
+		void SetName(IdentifierSyntax *value) { _name = value; }
+		IdentifierSyntax *GetName() { return _name; }
 	private:
-		IdentifierSyntax *_name;
 		ExpressionSyntax *_expression;
+		IdentifierSyntax *_name;
 	};
 
 	class ParameterListSyntax : public SyntaxNode {
@@ -227,6 +235,21 @@ namespace r {
 
 	};
 
+	class FunctionExpressionSyntax : public PrimaryExpressionSyntax, public SignatureDeclarationSyntax {
+	public:
+		DECLARE_NODE_TYPE(FunctionExpression);
+
+		Vector<StatementSyntax*> *GetStatements() { return _statements; }
+		Scope * GetScope() { return _scope; }
+		void SetScope(Scope * value) { _scope = value; }
+		void SetFunction(JSFunction * value) { _function = value; }
+		JSFunction * GetFunction() { return _function; }
+	private:
+		Vector<StatementSyntax*>* _statements = new Vector<StatementSyntax*>();
+		Scope *_scope;
+		JSFunction *_function;
+	};
+
 	class CallExpressionSyntax : public LeftHandSideExpressionSyntax {
 	public:
 		DECLARE_NODE_TYPE(CallExpression);
@@ -241,19 +264,52 @@ namespace r {
 		ExpressionSyntax *_expression;
 	};
 
+	class NewExpressionSyntax : public PrimaryExpressionSyntax /*LeftHandSideExpressionSyntax*/ {
+	public:
+		DECLARE_NODE_TYPE(NewExpression);
+
+		void SetArguments(ArgumentListSyntax *value) { _arguments = value; }
+		ArgumentListSyntax *GetArguments() { return _arguments; }
+
+		void SetExpression(ExpressionSyntax *value) { _expression = value; }
+		ExpressionSyntax *GetExpression() { return _expression; }
+	private:
+		ArgumentListSyntax *_arguments;
+		ExpressionSyntax *_expression;
+	};
+
+	class IfStatementSyntax : public StatementSyntax {
+	public:
+		DECLARE_NODE_TYPE(IfStatement);
+
+
+		void SetExpression(ExpressionSyntax *value) { _expression = value; }
+		ExpressionSyntax *GetExpression() { return _expression; }
+
+		void SetThenStatement(StatementSyntax *value) { _thenStatement = value; }
+		StatementSyntax *GetThenStatement() { return _thenStatement; }
+
+		void SetElseStatement(StatementSyntax *value) { _elseStatement = value; }
+		StatementSyntax *GetElseStatement() { return _elseStatement; }
+
+	private:
+		ExpressionSyntax *_expression;
+		StatementSyntax *_thenStatement;
+		StatementSyntax *_elseStatement;
+	};
 
 	class IterationStatementSyntax : public StatementSyntax {
 	public:
 		DECLARE_NODE_TYPE(IterationStatement);
 
-		void SetStatement(StatementSyntax *value) { _statement = value; }
-		StatementSyntax *GetStatement() { return _statement; }
-
 		void SetExpression(ExpressionSyntax *value) { _expression = value; }
 		ExpressionSyntax *GetExpression() { return _expression; }
+
+		void SetStatement(StatementSyntax *value) { _statement = value; }
+		StatementSyntax *GetStatement() { return _statement; }
 	private:
-		StatementSyntax *_statement;
 		ExpressionSyntax *_expression;
+		StatementSyntax *_statement;
 	};
 
 	class LiteralSyntax : public PrimaryExpressionSyntax {

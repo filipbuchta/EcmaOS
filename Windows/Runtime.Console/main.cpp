@@ -1,4 +1,7 @@
 #include <iostream>
+#include <fstream>
+#include <string>
+#include <sstream>
 
 #include "../../Kernel/Runtime/isolate.h"
 #include "../../Kernel/Runtime/compiler.h"
@@ -12,27 +15,34 @@ void __cdecl test() {
 	int x = 1;
 }
 
-int main(int argc)
+int main(int argc, char* argv[])
 {
-
-	__asm xchg bx, bx
-	__asm xchg bx, bx
-	//while (true) 
-	//{
-
-	//}
-	__asm xchg bx, bx
-	__asm xchg bx, bx
+	if (argc > 0) {
+		std::cout << argv[0] << std::endl;
+	}
 
 
 	std::cout << "Hello, World!" << std::endl;
 
 	Isolate *isolate = new Isolate();
 
-	JSFunction* script = Compiler::Compile(isolate,
-		"declare function log(value);"
-		"function test() { var x = 123 + 543;  log(x); }"
-		"test();");
+
+	/*const char * code =
+		"declare function log(value);\n"
+		"while(true) { log(""test""); }\n\n";*/
+
+
+	std::ifstream t("C:\\Home\\Projects\\EcmaOS\\Kernel\\Kernel.js");
+	std::stringstream buffer;
+	buffer << t.rdbuf();
+
+	std::string str = buffer.str();
+	const char * code = str.c_str();
+
+		//"declare function log(value);\n"
+		//"while(true) { log(""test""); }\n\n";
+
+	JSFunction* script = Compiler::Compile(isolate, code);
 	
 
 

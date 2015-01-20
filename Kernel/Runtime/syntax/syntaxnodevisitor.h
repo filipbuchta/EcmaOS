@@ -16,10 +16,14 @@ namespace r {
 	V(AmbientFunctionDeclaration) \
     V(ParenthesizedExpression) \
     V(CallExpression) \
+	V(NewExpression) \
     V(PropertyAccessExpression) \
     V(ArgumentList) \
     V(IterationStatement) \
     V(ParameterList) \
+	V(FunctionExpression) \
+	V(ThisExpression) \
+	V(IfStatement)\
 	V(ParameterDeclaration) 
 
 #define DEF_FORWARD_DECLARE(type)                         \

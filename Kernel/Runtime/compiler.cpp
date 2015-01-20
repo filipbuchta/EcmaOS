@@ -16,12 +16,12 @@ namespace r {
 		Parser* parser = new Parser(scanner, binder);
 
 		FunctionDeclarationSyntax *sourceFile = parser->ParseProgram();
-		binder->BindProgram();
+
 
 		AstPrinter *treePrinter = new AstPrinter();
 		treePrinter->PrintTree(*sourceFile);
 
-
+		binder->BindProgram();
 
 		CodeGenerator* codeGenerator = new CodeGenerator();
 		JSFunction *function = codeGenerator->MakeCode(*sourceFile);

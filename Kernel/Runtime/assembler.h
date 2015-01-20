@@ -69,6 +69,8 @@ namespace r {
 
 		void Nop();
 
+		void Jne(Label & label);
+
 		void Je(Label & label);
 
 		void Jmp(Label & label);

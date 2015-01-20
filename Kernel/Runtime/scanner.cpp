@@ -49,6 +49,19 @@ namespace r {
 				_position++;
 				return SyntaxToken(SlashToken, "/");
 			}
+			case '!': {
+				_position++;
+				switch (GetChar()) {
+					case '=': {
+						_position++;
+						return SyntaxToken(ExclamationEqualsToken, "!=");
+					}
+					default: {
+						_position++;
+						return SyntaxToken(IllegalToken, "\0");
+					}
+				}
+			}
 			case '=': {
 				_position++;
 				return SyntaxToken(EqualsToken, "=");
@@ -56,6 +69,10 @@ namespace r {
 			case ';': {
 				_position++;
 				return SyntaxToken(SemicolonToken, ";");
+			} 
+			case '.': {
+				_position++;
+				return SyntaxToken(DotToken, ".");
 			}
 			case '\'':
 			case '"': {
@@ -129,6 +146,7 @@ namespace r {
 					delete cb;
 
 
+					//TODO: use some sort of map
 					if (strcmp(identifier, "var") == 0) {
 						return SyntaxToken(VarKeyword, "var");
 					}
@@ -138,11 +156,26 @@ namespace r {
 					else if (strcmp(identifier, "declare") == 0) {
 						return SyntaxToken(DeclareKeyword, "declare");
 					}
+					else if (strcmp(identifier, "if") == 0) {
+						return SyntaxToken(IfKeyword, "if");
+					}
+					else if (strcmp(identifier, "else") == 0) {
+						return SyntaxToken(ElseKeyword, "else");
+					}
 					else if (strcmp(identifier, "true") == 0) {
 						return SyntaxToken(BooleanLiteral, "true");
 					}
+					else if (strcmp(identifier, "this") == 0) {
+						return SyntaxToken(ThisKeyword, "this");
+					}
 					else if (strcmp(identifier, "false") == 0) {
 						return SyntaxToken(BooleanLiteral, "false");
+					}
+					else if (strcmp(identifier, "null") == 0) {
+						return SyntaxToken(NullLiteral, "null");
+					}
+					else if (strcmp(identifier, "new") == 0) {
+						return SyntaxToken(NewKeyword, "new");
 					}
 					else if (strcmp(identifier, "while") == 0) {
 						return SyntaxToken(WhileKeyword, "while");
@@ -159,7 +192,15 @@ namespace r {
 				else
 				{
 					_position++;
-					return SyntaxToken(IllegalToken, "\0");
+					Vector<char> *cb = new Vector<char>();
+					cb->Push(GetChar());
+					cb->Push('\0');
+
+					char * invalid = new char[cb->GetSize()];;
+					memcpy(invalid, cb->GetBuffer(), cb->GetSize());
+
+					delete cb;
+					return SyntaxToken(IllegalToken, invalid);
 				}
 			}
 			}
@@ -183,7 +224,7 @@ namespace r {
 	}
 
 	bool Scanner::IsWhiteSpace(char ch) {
-		return ch == ' ';
+		return ch == ' ' || ch == '\n';
 	}
 
 	bool Scanner::IsIdentifierPart(char ch) {

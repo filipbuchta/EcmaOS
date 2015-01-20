@@ -14,18 +14,26 @@ using namespace r;
 void Kernel::Main()
 {
 
-	__asm {
-		xchg bx, bx
-	}
+	//__asm {
+	//	xchg bx, bx
+	//}
 
 	ClearScreen();
-	ConsoleWrite("Hello world!\n");
+	ConsoleWrite("Welcome to EcmaOS!\n\n");
 
 	//Isolate *isolate = new Isolate();
 
-	Scanner* scanner = new Scanner(
-		"declare function log(value);"
-		"while(true) { log(""test""); }");
+	const char * code = 
+		"declare function log(value);\n"
+		"while(true) { log(123); }\n\n";
+
+	//const char * code =
+	//	""
+	//	"while(true) {  }\n\n";
+
+	ConsoleWrite(code);
+
+	Scanner* scanner = new Scanner(code);
 	Binder* binder = new Binder();
 	Parser* parser = new Parser(scanner, binder);
 
@@ -44,7 +52,8 @@ void Kernel::Main()
 	entry = (void(*) ())function->GetCode();
 
 	__asm {
-		xchg bx, bx
+			xchg bx, bx
+			xchg bx, bx
 	}
 	entry();
 

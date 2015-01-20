@@ -2,6 +2,7 @@
 
 #include "syntax\syntaxnode.h"
 #include "vector.h"
+#include "checks.h"
 
 
 namespace r {
@@ -35,49 +36,56 @@ namespace r {
 
 		switch (node.GetKind())
 		{
-		case AmbientFunctionDeclaration:
-		case FunctionDeclaration:
-		{
-			symbol = new FunctionSymbol();
-		}
-		break;
+			case AmbientFunctionDeclaration:
+			case FunctionDeclaration:
+			case FunctionExpression:
+			{
+				symbol = new FunctionSymbol();
+			}
+			break;
 
-		case ParameterDeclaration:
-		case VariableDeclaration:
-		{
-			symbol = new VariableSymbol();
-		}
-		break;
+			case ParameterDeclaration:
+			case VariableDeclaration:
+			{
+				symbol = new VariableSymbol();
+			}
+			break;
+			default:
+			{
+				NOT_IMPLEMENTED()
+			}
 		}
 
-		symbol->SetName(node.GetIdentifier()->GetName().Value);
+		if (node.GetIdentifier() != nullptr) {
+			symbol->SetName(node.GetIdentifier()->GetName().Value);
+		}
 		symbol->SetDeclaration(&node);
 
 		switch (_currentScope->GetKind()) {
-		case Global:
-		{
-			((GlobalScope*)_currentScope)->GetGlobals()->Push(symbol);
-		}
-		break;
-
-		case Function:
-		{
-			switch (node.GetKind())
+			case Global:
 			{
-			case ParameterDeclaration:
-			{
-				((FunctionScope*)_currentScope)->GetParameters()->Push(symbol);
+				((GlobalScope*)_currentScope)->GetGlobals()->Push(symbol);
 			}
 			break;
 
-			case VariableDeclaration:
+			case Function:
 			{
-				((FunctionScope*)_currentScope)->GetLocals()->Push(symbol);
-			}
-			break;
-			}
+				switch (node.GetKind())
+				{
+				case ParameterDeclaration:
+				{
+					((FunctionScope*)_currentScope)->GetParameters()->Push(symbol);
+				}
+				break;
 
-		}
+				case VariableDeclaration:
+				{
+					((FunctionScope*)_currentScope)->GetLocals()->Push(symbol);
+				}
+				break;
+				}
+
+			}
 		}
 	}
 

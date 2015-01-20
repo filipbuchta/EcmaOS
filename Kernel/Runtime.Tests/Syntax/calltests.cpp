@@ -12,7 +12,7 @@ using namespace r;
 
 namespace RuntimeTests
 {
-	TEST_CLASS(CallTests)
+	TEST_CLASS(SyntaxTests)
 	{
 		BEGIN_TEST_CLASS_ATTRIBUTE()
 			TEST_CLASS_ATTRIBUTE(L"Category", L"Syntax")
@@ -20,10 +20,9 @@ namespace RuntimeTests
 	public:
 
 		
-		TEST_METHOD(AmbientFunctionCall)
+		TEST_METHOD(AmbientFunctionDeclarationTest)
 		{
-			PARSE_TREE("declare function log(value);"
-				"log(1);");
+			PARSE_TREE("declare function log(value);");
 
 			N(FunctionDeclaration);
 			{
@@ -38,14 +37,27 @@ namespace RuntimeTests
 						}
 					}
 				}
+			}
+		}
+
+
+		TEST_METHOD(FunctionExpressionCallTest)
+		{
+			PARSE_TREE("(function() {})()");
+
+			N(FunctionDeclaration);
+			{
 				N(ExpressionStatement);
 				{
 					N(CallExpression);
 					{
-						N(Identifier); N(IdentifierName);
-						N(ArgumentList);
+						N(ParenthesizedExpression);
 						{
-							N(Literal); N(NumericLiteral);
+							N(FunctionExpression);
+							{
+								N(ParameterList);
+							}
+							N(ArgumentList);
 						}
 					}
 				}
@@ -53,10 +65,9 @@ namespace RuntimeTests
 		}
 
 
-
 		TEST_METHOD(CallExpressionTest)
 		{
-			PARSE_TREE(" log(\"string\"); ");
+			PARSE_TREE("log(\"string\");");
 
 			N(FunctionDeclaration);
 			{
@@ -76,6 +87,43 @@ namespace RuntimeTests
 
 
 
+		TEST_METHOD(FunctionExpressionTest)
+		{
+			PARSE_TREE("(function() {})");
 
+			N(FunctionDeclaration);
+			{
+				N(ExpressionStatement);
+				{
+					N(ParenthesizedExpression);
+					{
+						N(FunctionExpression);
+						{
+							N(ParameterList);
+						}
+					}
+				}
+			}
+		}
+
+		TEST_METHOD(FunctionExpressionAssignmentTest)
+		{
+			PARSE_TREE("var foo = function () {}");
+
+			N(FunctionDeclaration);
+			{
+				N(VariableStatement);
+				{
+					N(VariableDeclaration);
+					{
+						N(Identifier); N(IdentifierName);
+						N(FunctionExpression);
+						{
+							N(ParameterList);
+						}
+					}
+				}
+			}
+		}
 	};
 }
