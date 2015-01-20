@@ -18,98 +18,137 @@ HeadsPerCylinder	DW	2
 HiddenSectors		DD	0
 TotalSectorsBig		DD	0
 DriveNumber		DB	0
-			DB	0
+				DB	0
 ExtBootSignature	DB	0x29
 SerialNumber		DD	0xa0a1a2a3
 VolumeLabel		DB	"MOS FLOPPY "
 FileSystem		DB	"FAT12   "
 
 Step1:
-	xor	ax, ax
-	mov	ds, ax
-	mov	es, ax
 
+	xor		ax, ax
+	mov	    ds, ax
+	mov	    es, ax
 	mov     ss, ax
 	mov     sp, 0400h
 	mov     bp, sp
 
-	mov	SI, msg_init
-	call	PrintLine
 
-       
-        xor     eax, eax
-	mov	al, BYTE [NumberOfFATs]
-	mul	WORD [SectorsPerFAT]
-	add	ax, WORD [ReservedSectors] ; EAX = Starting sector of root directory
 
-        mov     cx, 1 ; number of sectors
-	mov	bx, RootDirectoryRegion ; destination
+	; Clear screen
+	mov     ax, 0x02
+	int     0x10
+
+
+
+	; Save boot drive
+	mov		[DriveNumber], dl
+	
+
+
+	mov	SI, InitMsg
+	call	PrintString
+
+
+
+	; Check for int 13 extensions
+
+	mov     ah, 0x41
+	mov     bx, 0x55aa
+	int     0x13
+	jc		HWUnsupportedError
+	cmp     bx, 0xaa55
+	jne     HWUnsupportedError
+
+
+
+
+	; TODO: this computation should not be done from sample values, but from actual values on disk
+    xor     eax, eax
+	mov		al, BYTE [NumberOfFATs]
+	mul		WORD [SectorsPerFAT]
+	add		ax, WORD [ReservedSectors] ; EAX = Starting sector of root directory
+
+	mov     bx, 0x050
+	mov		es, bx           ; Read to 0050:0000
+	mov     cx, 1			 ; 1 Sector
+	xor		di, di
 	call	ReadDisk
 
-        
-        call    FindStage2
-        
-	mov	SI, di
-	call	PrintLine
-        
-        mov     dx, [di + 26]
-        push    dx ; Store first sector of Stage2
-          
-        xor     eax, eax
-        mov     al, [NumberOfFATs]
-        mul     WORD [SectorsPerFAT]
-        add     ax, WORD [ReservedSectors]
-        mov     cx, 1
-        mov     bx, RootDirectoryRegion
-        call    ReadDisk
-        
-        
-        xor     eax, eax
-        mov     ax, 1 ; First sector is FAT table
-        mov     cx, [SectorsPerFAT]
-        mov     bx, FATRegion
-        call    ReadDisk
-        
-       
-        pop     ax ; Restore first sector of stage 2
-        mov     di, Stage2Region
-        call    ReadFile
-     
-        ;xchg bx, bx
+	mov		bx, 0x0050
+	mov		ds, bx
+	mov		ax, 0
+	mov		es, ax
+	mov		si, ax
 
-     	jmp     Stage2Region
+    call    FindStage2
 
-        ;mov     si, Stage2Region
-        ;call    PrintString
+    mov		bx, 0
+	mov		ds, bx
+	
+
+	push    ax ; Store first sector of Stage2
+		
+	
+    xor     eax, eax
+    mov     ax, 1 ; First sector is FAT table
+    mov     cx, [SectorsPerFAT]
+    mov     bx, 0x0050
+	mov		es, bx	; Read to 0000:0500
+	xor		di, di
+    call    ReadDisk
+
+	xor		eax, eax
+	mov		ds, eax
+	mov		si, ax
+
+	; load to 0800:0000
+
+	mov	    eax, 0x0800
+	mov     es, eax
+	xor		di, di
+ 
+    pop     ax ; Restore first sector of stage 2
+    
+
+	
+	
+    call    ReadFile
+    
+
+	xor		eax, eax
+	mov		es, eax
+	mov		ds, eax
+
+
+    jmp     0x0000:0x8000
+
         
-
-
-
-;	mov	eax, 33 ; sector to load
-;       mov     cx, 1 ; number of sectors
-;	mov	BX, 0x8000 ; destination
-;	call	ReadDisk
-;
-;	mov	SI, 0x8000
-;	call	PrintString
-
 
 	cli
 	hlt
 
+
+
+;;;;;;;;;;;;;;;;;;;;
+; ReadFile
+;
+; Input		   ax    = First LBA to read
+;			   es:di = Destination address
 ReadFile:
-        
+		
         push    ax
         
-        add     ax, 33
-        sub     ax, 2
-        xor     cx, cx
-        mov     cl, BYTE [SectorsPerCluster]
-        mov     bx, di
+        add     ax, 33			; boot sector + 2x fat + root directory ( 1 + 9 + 9 + 14 )
+        sub     ax, 2			; clusters starts from 2
+        mov		cx, 1			; [SectorsPerCluster]
         call    ReadDisk
        
-        add     di, [BytesPerSector]; * [SectorsPerCluster]
-          
+		mov		edx, es
+		add		edx, 0x20
+        mov     es, edx		    ; TODO: ([BytesPerSector] * [SectorsPerCluster]) >> 1
+        
+		xor eax, eax  
         ; compute address of first sector in fat table
         pop     ax
         push    ax
@@ -117,13 +156,20 @@ ReadFile:
         mov     dx, ax         
         shr     dx, 1
         add     ax, dx
- 
+
+		push ds 
        
-        mov     cx, FATRegion
+		mov		ecx, 0x050
+		mov		ds, ecx
+
+        xor		ecx, ecx
         add     cx, ax
         mov     si, cx
         
-        mov     cx, WORD [si]
+        mov     cx, WORD [ds:si]
+
+		pop		ds
+
         
         pop     ax
         test    ax, 1
@@ -141,25 +187,32 @@ ReadFile:
         
     ret
 
+;;;;;;;;;;;;;;;;;;;;
+; FindStage2
+;
+; Input		   ds:si = Address of first entry
+; Outputs	   ax = Address of first cluster
+
 FindStage2:
         xor    ecx, ecx
         mov    cx, WORD [RootEntries]
-        mov    di, 0x7F00
     .nextEntry:
         push   cx
         mov    cx, 11
-        mov    si, Stage2File
-        push   di
+        mov    di, Stage2File
+        push   si
         repe cmpsb
-        pop    di
+		pop    si
         pop    cx
-        je    .end
-        add    di, 32
+        je    .found
+        add    si, 32
         loop   .nextEntry
         jmp    .error
-    .end:
+    .found:
+		mov     ax, [ds:si+26]
         ret
     .error:
+		call HWUnsupportedError
         hlt
 
 ;;;;;;;;;;;;;;;;;;;;
@@ -167,89 +220,44 @@ FindStage2:
 ;
 ; Inputs:       eax     = LBA sector to read
 ;               cx      = number of sectors to read
-;               bx      = destination offset
+;               es:di   = destination
+
 ReadDisk:
-	call	DiskReset
-        push    cx ; store input for later
-        push    bx
-        push    eax
-        xor	dx, dx
-	div	WORD [SectorsPerTrack]
-	inc	dl
-	mov	cl, dl ; sector
- 
-	xor     dx, dx                              
-	div     WORD [HeadsPerCylinder]
-	mov     dh, dl ; head
- 
-	mov	ch, al ; track
-
-	mov	ah, 0x02
-	mov	al, 1 ; read one sector
-	mov	dl, [DriveNumber] ; drive
-
-	int	0x13
-	jc	.error
-
-        pop     eax
-        pop     bx
-        pop     cx
-        loop    ReadDisk
-	ret
-    .error:
-	mov	SI, msg_disk_read_failure
-	call	PrintLine
-	hlt
-
-DiskReset:
-	mov	AH, 0x00
-	mov	DL, [DriveNumber]
-	int	0x13
-	jc	DiskReset
-	ret
-
-
-PrintNumber:
-        mov     [TempRegion], BYTE 0
-        mov     di, TempRegion + 1
-
-    .start:
-	xor	edx, edx
-        mov     eax, ecx
-        mov     ebx, 0x10
-        div     ebx
-        mov     ecx, eax
-	xor	eax, eax
+	pushad
 	
-        mov     ebx, edx ; DX contains remainder
-        mov     si, Digits
-        mov     al, byte [bx + si] ; Store correct char         
-        mov     [di], BYTE al
-        inc     di
-        
-	or	ecx, ecx
-	jnz	.start
+
+	
+	mov	dl, [DriveNumber]
+
+	; Construct packet
+
+	push	DWORD 0x00
+	push    DWORD eax   ; soruce address
+
+	push    WORD es
+	push	WORD 0x00   ; destination address
+
+	push    WORD cx     ; number of sectors
+
+	push	WORD 0x10   ; packet size
 
 
-        dec    di
-    
-        std
-        mov    si, di
-    
-        call   PrintString
-        cld
-        
-        mov     si, NewLineConstant
-        call    PrintString
+	mov     ah, 0x42
+	mov     si, sp
+	
+	int     0x13
+
+	
+	add     sp, 0x10
+	popad
 
 	ret
 
-PrintLine:
-        call    PrintString
-        mov     si, NewLineConstant
-        call    PrintString
-        ret
-        
+;;;;;;;;;;;;;;;;;;;;
+; PrintString
+;
+; Inputs:       si     = Address of string to print
+
 PrintString:
 	lodsb
 	or	AL, AL
@@ -265,22 +273,26 @@ PrintString:
 	ret
 
 
-NewLineConstant db 13, 10, 0
-msg_init db 'Stage1', 0
-msg_disk_read_failure db 'FAILURE', 0
+HWUnsupportedError:
+	mov     si, ErrorMsg
+    call    PrintString
+	mov     si, HwErrorMsg
+    call    PrintString
 
-Stage2File		DB	"STAGE2  BIN" 
-;Stage2File		DB	"ENDWORLDTXT"
-;Stage2File		DB	"HELLOWORTXT"
-
-Digits                  DB      "0123456789ABCDEF"
+	hlt
 
 
-TempRegion              EQU      0x7E00
 
-RootDirectoryRegion     EQU      0x7F00
-FATRegion               EQU      0x8000
-Stage2Region            EQU      0x8100   
+InitMsg db 'Stage1', 13,10, 0
+msg_disk_read_failure db 'FAILURE', 13,10, 0
+
+HwErrorMsg db 'HW', 0
+ErrorMsg db 'Error: ', 0
+
+Stage2File		DB	"STAGE2  BIN"
+
+
+
 
 TIMES 510 - ($ - $$) DB 0
 DW 0xAA55

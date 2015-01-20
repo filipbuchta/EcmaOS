@@ -14,6 +14,10 @@ using namespace r;
 void Kernel::Main()
 {
 
+	__asm {
+		xchg bx, bx
+	}
+
 	ClearScreen();
 	ConsoleWrite("Hello world!\n");
 
@@ -21,8 +25,7 @@ void Kernel::Main()
 
 	Scanner* scanner = new Scanner(
 		"declare function log(value);"
-		"function test() { var x = 123 + 543; log(x); }"
-		"test();");
+		"while(true) { log(""test""); }");
 	Binder* binder = new Binder();
 	Parser* parser = new Parser(scanner, binder);
 

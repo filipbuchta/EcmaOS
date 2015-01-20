@@ -43,8 +43,10 @@ namespace r {
 		Emit(0xC0 | src << 3 | dst);
 	}
 
-	void Assembler::Mov(Register dst, unsigned int operand) {
-		NOT_IMPLEMENTED()
+	void Assembler::Mov(Register dst, unsigned int immediate) {
+		Emit(0xB8 + dst);
+		*((int *)_pc) = immediate;
+		_pc += sizeof(int);
 	}
 
 	void Assembler::EmitOperand(Operand & operand, Register reg) {
@@ -62,36 +64,51 @@ namespace r {
 
 	void Assembler::Test(Register dst, Register src)
 	{
-		NOT_IMPLEMENTED();
+		Emit(0x85);
+		Emit(0xC0 | src << 3 | dst);
 	}
 
-
-
-	void Assembler::Je(Label & label)
+	void Assembler::Nop()
 	{
-		NOT_IMPLEMENTED();
+		Emit(0x90);
 	}
 
 	void Assembler::Bind(Label & label)
 	{
-		label->SetPosition(_pc);
+		label.SetPosition((int)_pc);
+		
+		for (int value : *label.GetUnresolvedPositions()) {
+			*((int *)value) = label.GetPosition();
+		}
+	}
 
-		for (fixup : label->GetLinks()) {
-			(*fixup) = label->GetPosition();
+
+	void Assembler::Je(Label & label)
+	{
+		if (label.IsBound()) {
+			int offset = label.GetPosition() - (int)_pc;
+			Emit(0x74);
+			Emit((char)(offset - 2));
+		}
+		else {
+			Emit(0x84);
+			label.GetUnresolvedPositions()->Push((int)_pc);
+			_pc += sizeof(int);
 		}
 	}
 
 	void Assembler::Jmp(Label & label)
 	{
 		if (label.IsBound()) {
-			int offset = label->GetPosition() - _pc;
+			int offset = label.GetPosition() - (int)_pc;
 			//ASSERT(offset < 0);
 			Emit(0xEB);
 			Emit((char)(offset - 2));
 		}
 		else {
 			Emit(0xE9);
-			label.LinkTo(_pc);
+			label.GetUnresolvedPositions()->Push((int)_pc);
+			_pc += sizeof(int);
 		}
 	}
 

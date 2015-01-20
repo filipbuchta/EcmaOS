@@ -1,12 +1,18 @@
 #pragma once
 
+#include "vector.h"
+
 namespace r {
 
 	class Label {
 	public:
 		bool IsBound() { return _position != 0; }
+		void SetPosition(int value) { _position = value; }
+		int GetPosition() { return _position; }
+		Vector<int> * GetUnresolvedPositions() { return _unresolvedPositions; }
 	private:
-		int _position;
+		int _position = 0;
+		Vector<int> * _unresolvedPositions = new Vector<int>();
 	};
 
 	enum Register {
@@ -60,6 +66,8 @@ namespace r {
 		void Mov(Operand & dst, Register src);
 
 		void Test(Register dst, Register src);
+
+		void Nop();
 
 		void Je(Label & label);
 

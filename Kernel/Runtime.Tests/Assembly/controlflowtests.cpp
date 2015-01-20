@@ -15,13 +15,38 @@ namespace RuntimeTests
 			END_TEST_CLASS_ATTRIBUTE()
 	public:
 
-		TEST_METHOD(JmpTests)
+		TEST_METHOD(TestTests)
 		{
 			{
-				Label * label = new Label();
-				A(Jmp(*label));
-				A(Bind(*label));
-				B(0xEB, 0x02);
+				A(Test(EAX, EBX));
+				B(0x85, 0xD8)
+			}
+			{
+				A(Test(EAX, ECX));
+				B(0x85, 0xC8)
+			}
+		}
+
+		TEST_METHOD(JmpForwardTests)
+		{
+			{
+				Label label;
+				A(Jmp(label));
+				A(Bind(label));
+				B(0xE9, (unsigned char)(label.GetPosition()), (unsigned char)(label.GetPosition() >> 8), (unsigned char)(label.GetPosition() >> 16), (unsigned char)(label.GetPosition() >> 24));
+			}
+		}
+
+		TEST_METHOD(JmpBackwardTests)
+		{
+			{
+				Label label;
+				A(Bind(label));
+				A(Nop());
+				A(Nop());
+				A(Nop());
+				A(Jmp(label));
+				B(0x90, 0x90, 0x90, 0xEB, 0xFB);
 			}
 		}
 

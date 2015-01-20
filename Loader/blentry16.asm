@@ -1,5 +1,5 @@
 [BITS 16]
-[ORG 0x8100]
+[org 0x8000]
 
 entry:
     jmp Start
@@ -39,6 +39,14 @@ DATA_SEG equ gdt_ds - gdt_start
 
 Start:
 
+	
+	;cli
+	;mov		ax, cs
+	;mov		ds, ax
+	;mov		es, ax
+	;mov		ss, ax
+	
+	
 	mov	SI, msg_init
 	call	PrintLine16
         
@@ -54,11 +62,20 @@ Start:
         cli
         
         lgdt [gdtr]
-        mov eax, cr0
+        
+		xor     ax, ax
+        mov     ds, ax
+        mov     es, ax
+        mov     ss, ax
+        mov     fs, ax
+        mov     gs, ax
+		
+		mov eax, cr0
         or al, 1
         mov cr0, eax
         
-        jmp CODE_SEG:init_pmod
+		
+        jmp 0x08: init_pmod
 
 
 	cli
@@ -90,7 +107,7 @@ init_pmod:
     mov     ds, ax
     mov     ss, ax
     mov     es, ax
-    mov     esp, 90000h
+    mov     esp, 0x90000
 
      
      ; Prepare page tables
@@ -133,7 +150,8 @@ init_pmod:
 
     call   BlLoadImage
 
-    call    eax
+
+    call   eax
 
 
 ;    mov     ebx, ValidMessage

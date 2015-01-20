@@ -58,6 +58,10 @@ namespace RuntimeTests
 				A(Mov(Operand(EBX, -16), EAX))
 				B(0x89, 0x43, 0xF0)
 			}
+			{
+				A(Mov(EAX, 0x12345678))
+				B(0xB8, 0x78, 0x56, 0x34, 0x12)
+			}
 		}
 
 

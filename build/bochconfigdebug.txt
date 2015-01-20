@@ -614,7 +614,7 @@ private_colormap: enabled=0
 # The optional parameter 'write_protected' can be used to control the media
 # write protect switch. By default it is turned off.
 #=======================================================================
-floppya: 1_44=debug/ecmaos.img, status=inserted
+#floppya: 1_44=debug/ecmaos.img, status=inserted
 #floppya: image=../1.44, status=inserted
 #floppya: 1_44=/dev/fd0H1440, status=inserted
 #floppya: 1_2=../1_2, status=inserted
@@ -702,6 +702,7 @@ ata3: enabled=0, ioaddr1=0x168, ioaddr2=0x360, irq=9
 #   ata3-slave:  type=cdrom, path=iso.sample, status=inserted
 #=======================================================================
 #ata0-master: type=disk, mode=flat, path="30M.sample"
+ata0-master: type=disk, mode=flat, path="debug/ecmaos.img"
 #ata0-master: type=disk, mode=flat, path="30M.sample", cylinders=615, heads=6, spt=17
 #ata0-master: type=disk, mode=flat, path="c.img", cylinders=0 # autodetect
 #ata0-slave: type=disk, mode=vvfat, path=/bochs/images/vvfat, journal=vvfat.redolog
@@ -721,8 +722,8 @@ ata0-slave: type=cdrom, path="drive", status=inserted
 #   boot: network, disk
 #   boot: cdrom, floppy, disk
 #=======================================================================
-boot: floppy
-#boot: disk
+#boot: floppy
+boot: disk
 
 #=======================================================================
 # FLOPPY_BOOTSIG_CHECK: disabled=[0|1]
