@@ -25,15 +25,16 @@ namespace r {
 		return node;
 	}
 
-	void Parser::NextToken() {
-		_currentToken = _scanner->Next();
+	SyntaxToken Parser::NextToken() {
+		return _currentToken = _scanner->Next();
 	}
 
 	SyntaxToken Parser::ParseExpected(SyntaxKind kind) {
 		SyntaxToken token = _currentToken;
-
+		
 		if (_currentToken.Kind != kind) {
-			FATAL("Incorrect token %s, expected %s", _currentToken.Kind, kind);
+			FATAL("Incorrect token %s, expected %s", SyntaxKindNames[_currentToken.Kind], SyntaxKindNames[kind]);
+			
 		}
 		else {
 			NextToken();
@@ -58,12 +59,15 @@ namespace r {
 		case ExclamationEqualsToken:
 		case EqualsEqualsToken:
 			return 1;
+		case LessThanToken:
+		case GreaterThanToken:
+			return 2;
 		case MinusToken:
 		case PlusToken:
-			return 2;
+			return 3;
 		case AsteriskToken:
 		case SlashToken:
-			return 3;
+			return 4;
 		default:
 			return -1;
 		}
@@ -71,6 +75,10 @@ namespace r {
 
 	bool IsLeftHandSideExpression(SyntaxKind kind) {
 		switch (kind) {
+			case ArrayLiteralExpression:
+			//case ObjectLiteralExpression:
+			//case RegularExpressionLiteral:
+			case FunctionExpression:
 			case PropertyAccessExpression:
 			case NewExpression:
 			case ThisExpression:
@@ -88,9 +96,10 @@ namespace r {
 	}
 
 	IfStatementSyntax * Parser::ParseIfStatement() {
+		IfStatementSyntax * node = new IfStatementSyntax();
+		node->SetLocation(_scanner->GetLocation());
 		ParseExpected(IfKeyword);
 
-		IfStatementSyntax * node = new IfStatementSyntax();
 		ParseExpected(OpenParenthesisToken);
 		node->SetExpression(ParseExpression());
 		ParseExpected(CloseParenthesisToken);
@@ -103,9 +112,10 @@ namespace r {
 	}
 
 	IterationStatementSyntax * Parser::ParseWhileStatement() {
+		IterationStatementSyntax * node = new IterationStatementSyntax();
+		node->SetLocation(_scanner->GetLocation());
 		ParseExpected(WhileKeyword);
 
-		IterationStatementSyntax * node = new IterationStatementSyntax();
 		ParseExpected(OpenParenthesisToken);
 		node->SetExpression(ParseExpression());
 		ParseExpected(CloseParenthesisToken);
@@ -143,6 +153,7 @@ namespace r {
 
 	BlockSyntax * Parser::ParseBlock() {
 		BlockSyntax * node = new BlockSyntax();
+		node->SetLocation(_scanner->GetLocation());
 		ParseExpected(OpenBraceToken);
 		while (!ParseOptional(CloseBraceToken)) {
 			node->GetStatements()->Push(ParseStatement());
@@ -207,6 +218,7 @@ namespace r {
 	FunctionDeclarationSyntax * Parser::ParseFunctionDeclaration() {
 		ParseExpected(FunctionKeyword);
 		FunctionDeclarationSyntax * node = new FunctionDeclarationSyntax();
+		//TODO: location
 		node->SetIdentifier(ParseIdentifier());
 
 		FunctionScope * scope = new FunctionScope();
@@ -215,6 +227,7 @@ namespace r {
 
 		node->SetParameters(ParseParameterList());
 
+		//TODO: parse block?
 		ParseExpected(OpenBraceToken);
 		while (!ParseOptional(CloseBraceToken)) {
 			node->GetStatements()->Push(ParseStatement());
@@ -263,6 +276,7 @@ namespace r {
 
 	VariableStatementSyntax *Parser::ParseVariableStatement() {
 		VariableStatementSyntax *node = new VariableStatementSyntax();
+		node->SetLocation(_scanner->GetLocation());
 		node->SetDeclaration(ParseVariableDeclaration());
 		ParseOptional(SemicolonToken);
 		return node;
@@ -327,15 +341,43 @@ namespace r {
 		}
 	}
 
+	PrefixUnaryExpressionSyntax *Parser::ParsePrefixUnaryExpression() {
+		PrefixUnaryExpressionSyntax * node = new PrefixUnaryExpressionSyntax();
+
+		node->SetOperator(NextToken());
+		node->SetOperand(ParseUnaryExpression());
+		
+		return node;
+	}
+
 	UnaryExpressionSyntax *Parser::ParseUnaryExpression() {
 		switch (_currentToken.Kind) {
-		default:
-			return ParsePostfixExpression();
+			case MinusToken:
+			case PlusToken:
+				return ParsePrefixUnaryExpression();
+			default:
+				return ParsePostfixExpression();
 		}
 	}
 
 	PostfixExpressionSyntax *Parser::ParsePostfixExpression() {
-		return ParseLeftHandSideExpression();
+		LeftHandSideExpressionSyntax * lhs = ParseLeftHandSideExpression();
+
+		switch (_currentToken.Kind) {
+			case MinusMinusToken:
+			case PlusPlusToken:
+			{
+				PostfixUnaryExpressionSyntax * node = new PostfixUnaryExpressionSyntax();
+				node->SetOperand(lhs);
+				node->SetOperator(_currentToken);
+
+				NextToken();
+
+				return node;
+			}
+		}
+		return lhs;
+
 	}
 
 	LeftHandSideExpressionSyntax *Parser::ParseLeftHandSideExpression() {
@@ -353,8 +395,6 @@ namespace r {
 		LeftHandSideExpressionSyntax *lhs = &expression;
 
 		while (true) {
-
-			int start = _scanner->GetPosition();
 
 			if (ParseOptional(DotToken)) {
 				PropertyAccessExpressionSyntax *node = new PropertyAccessExpressionSyntax();
@@ -378,14 +418,42 @@ namespace r {
 		return node;
 	}
 
+	ThisExpressionSyntax *Parser::ParseThisExpression() {
+		ParseExpected(ThisKeyword);
+		ThisExpressionSyntax * node = new ThisExpressionSyntax();
+		return node;
+	}
+
+	ArrayLiteralExpressionSyntax *Parser::ParseArrayLiteralExpression() {
+		ParseExpected(OpenBracketToken);
+		ArrayLiteralExpressionSyntax * node = new ArrayLiteralExpressionSyntax();
+
+		while (true)
+		{
+			if (ParseOptional(CloseBracketToken))
+			{
+				break;
+			}
+			node->GetElements()->Push(ParseExpression());
+			if (!ParseOptional(CommaToken))
+			{
+				ParseExpected(CloseBracketToken);
+				break;
+			}
+		}
+		return node;
+	}
+
 	PrimaryExpressionSyntax *Parser::ParsePrimaryExpression() {
 		switch (_currentToken.Kind)
 		{
+			case OpenBracketToken:
+			{
+				return ParseArrayLiteralExpression();
+			}
 			case ThisKeyword:
 			{
-				ParseExpected(ThisKeyword);
-				ThisExpressionSyntax * node = new ThisExpressionSyntax();
-				return node;
+				return ParseThisExpression();
 			}
 			case FunctionKeyword:
 			{
@@ -487,6 +555,7 @@ namespace r {
 
 	ExpressionStatementSyntax *Parser::ParseExpressionStatement() {
 		ExpressionStatementSyntax *node = new ExpressionStatementSyntax();
+		node->SetLocation(_scanner->GetLocation());
 		node->SetExpression(ParseExpression());
 
 		ParseOptional(SemicolonToken);

@@ -14,7 +14,7 @@ class TreeFlattener : SyntaxNodeVisitor {
 
 public:
 
-	Vector<SyntaxKind>* GetList() { return _list; }
+	List<SyntaxKind>* GetList() { return _list; }
 
 #define DEF_VISIT(type)                         \
           void Visit##type(type##Syntax& node);
@@ -22,7 +22,7 @@ public:
 #undef DEF_VISIT
 
 private:
-	Vector<SyntaxKind>* _list = new Vector<SyntaxKind>();
+	List<SyntaxKind>* _list = new List<SyntaxKind>();
 
 };
 

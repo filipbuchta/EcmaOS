@@ -17,7 +17,7 @@ namespace r {
 	private:
 		Scanner* _scanner;
 		Binder* _binder;
-		void NextToken();
+		SyntaxToken NextToken();
 
 		SyntaxToken _currentToken = SyntaxToken(IllegalToken, "\0");
 
@@ -77,7 +77,13 @@ namespace r {
 
 		NewExpressionSyntax *Parser::ParseNewExpression();
 
+				ThisExpressionSyntax * ParseThisExpression();
+
+								ArrayLiteralExpressionSyntax * ParseArrayLiteralExpression();
+
 		ExpressionSyntax *ParseBinaryExpression(ExpressionSyntax &left, int minPrecendence);
+
+				PrefixUnaryExpressionSyntax * ParsePrefixUnaryExpression();
 
 		MemberExpressionSyntax *ParseMemberExpressionRest(LeftHandSideExpressionSyntax &expression);
 

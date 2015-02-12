@@ -61,9 +61,9 @@ namespace RuntimeTests
 		}
 		
 
-		TEST_METHOD(VariableDeclarationTest)
+		TEST_METHOD(NumericVariableDeclarationTest)
 		{
-			PARSE_TREE("var x = 1");
+			PARSE_TREE("var x = 1;");
 
 			N(FunctionDeclaration);
 			{
@@ -71,14 +71,68 @@ namespace RuntimeTests
 				{
 					N(VariableDeclaration);
 					{
-						N(Identifier); N(IdentifierName); // x
-						N(Literal); N(NumericLiteral); // 1
+						N(Identifier); N(IdentifierName);
+						N(Literal); N(NumericLiteral); 
 					}
 				}
 			}
 		}
 
-	
+		TEST_METHOD(StringVariableDeclarationTest)
+		{
+			PARSE_TREE("var x = \"test\";");
+
+			N(FunctionDeclaration);
+			{
+				N(VariableStatement);
+				{
+					N(VariableDeclaration);
+					{
+						N(Identifier); N(IdentifierName); 
+						N(Literal); N(StringLiteral); 
+					}
+				}
+			}
+		}
+
+
+		TEST_METHOD(ArrayVariableDeclarationTest)
+		{
+			PARSE_TREE("var x = [1,2];");
+
+			N(FunctionDeclaration);
+			{
+				N(VariableStatement);
+				{
+					N(VariableDeclaration);
+					{
+						N(Identifier); N(IdentifierName);
+						N(ArrayLiteralExpression);
+						{
+							N(Literal); N(NumericLiteral);
+							N(Literal); N(NumericLiteral);
+						}
+					}
+				}
+			}
+		}
+
+		TEST_METHOD(EmptyArrayVariableDeclarationTest)
+		{
+			PARSE_TREE("var x = [];");
+
+			N(FunctionDeclaration);
+			{
+				N(VariableStatement);
+				{
+					N(VariableDeclaration);
+					{
+						N(Identifier); N(IdentifierName);
+						N(ArrayLiteralExpression);
+					}
+				}
+			}
+		}
 
 	};
 }

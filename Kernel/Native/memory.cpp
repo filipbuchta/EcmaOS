@@ -4,11 +4,14 @@
 unsigned char *heap = (unsigned char*)0x100000;
 
 void *__cdecl operator new(size_t count){
-	unsigned char *allocated = heap;
-	heap += count;
-	return allocated;
+	return malloc(count);
 }
 
+void * __cdecl malloc(size_t size) {
+	char * allocated = (char*)heap;
+	heap += size;
+	return allocated;
+}
 
 void __cdecl operator delete(void *) {
 

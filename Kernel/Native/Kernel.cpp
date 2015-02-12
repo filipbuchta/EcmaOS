@@ -25,7 +25,7 @@ void Kernel::Main()
 
 	const char * code = 
 		"declare function log(value);\n"
-		"while(true) { log(123); }\n\n";
+		"log(123);\n\n";
 
 	//const char * code =
 	//	""

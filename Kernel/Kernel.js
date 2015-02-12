@@ -1,34 +1,47 @@
 
 
-
-declare function Runtime_LoadFunction(filename);
+declare function Runtime_SwitchWorker(workerId);
 declare function log(value);
 
 
-function Worker(entry) {
+var Worker = (function () {
+    function Worker(entry) {
+        this.entry = entry;
+    }
 
-    this.entry = entry;
-}
+    return Worker;
+})();
 
+var Kernel = (function () {
 
+    function Kernel() {
+        this.workers = [];
+        this.readyWorkers = [];
+        this.currentWorker = null;
+    }
 
+    Kernel.current = null;
 
-function Kernel() {
+    Kernel.entry = function () {
+        var kernel = new Kernel();
+        Kernel.current = kernel;
+        kernel.main();
+    };
 
-    this.workers = new Array();
+    Kernel.timerInterrupt = function() {
+        var kernel = Kernel.current;
+        kernel.readyWorkers.push(kernel.currentWorker);
+        kernel.currentWorker = null;
+    };
 
-    this.readyWorkers = new Array();
-
-    this.currentWorker = null;
-
-
-    this.main = function() {
+    Kernel.prototype.main = function () {
 
         var initWorker = new Worker(function () {
             while (true) {
                 log(1);
             }
         });
+
         this.readyWorkers.push(initWorker);
 
         var initWorker2 = new Worker(function () {
@@ -36,6 +49,7 @@ function Kernel() {
                 log(2);
             }
         });
+
         this.readyWorkers.push(initWorker2);
 
 
@@ -49,15 +63,14 @@ function Kernel() {
             }
         }
 
-    }
+    };
 
-    this.timerInterrupt = function() {
-        this.readyWorkers.push(this.currentWorker);
-        this.currentWorker = null;
-    }
-}
+    return Kernel;
+})();
 
-Kernel.prototype.entry = function() {
-    var kernel = new Kernel();
-    kernel.entry();
-}
+
+var kernel = new Kernel();
+
+Runtime_RegisterTimer(kernel.timerInterrupt);
+
+kernel.main();

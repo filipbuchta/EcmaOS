@@ -19,6 +19,12 @@ void TreeFlattener::VisitExpressionStatement(ExpressionStatementSyntax &node) {
 	node.GetExpression()->Accept(*this);
 }
 
+void TreeFlattener::VisitArrayLiteralExpression(ArrayLiteralExpressionSyntax &node) {
+	_list->Push(node.GetKind());
+	for (ExpressionSyntax* child : *node.GetElements()) {
+		child->Accept(*this);
+	}
+}
 
 void TreeFlattener::VisitVariableDeclaration(VariableDeclarationSyntax &node) {
 	_list->Push(node.GetKind());
@@ -145,4 +151,17 @@ void TreeFlattener::VisitPropertyAccessExpression(PropertyAccessExpressionSyntax
 	_list->Push(node.GetKind());
 	node.GetExpresion()->Accept(*this);
 	node.GetName()->Accept(*this);	
+}
+
+
+void TreeFlattener::VisitPostfixUnaryExpression(PostfixUnaryExpressionSyntax & node) {
+	_list->Push(node.GetKind());
+	node.GetOperand()->Accept(*this);
+	_list->Push(node.GetOperator().Kind);
+}
+
+void TreeFlattener::VisitPrefixUnaryExpression(PrefixUnaryExpressionSyntax & node) {
+	_list->Push(node.GetKind());
+	node.GetOperand()->Accept(*this);
+	_list->Push(node.GetOperator().Kind);
 }

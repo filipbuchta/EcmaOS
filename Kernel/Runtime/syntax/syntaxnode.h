@@ -1,10 +1,11 @@
 #pragma once
 
 #include "syntaxkind.h"
-#include "../vector.h"
+#include "../list.h"
 #include "syntaxtoken.h"
 #include "syntaxnodevisitor.h"
 #include "../scope.h"
+#include "../location.h"
 
 namespace r {
 
@@ -16,10 +17,15 @@ namespace r {
 	class Scope;
 	class JSFunction;
 
+
 	class SyntaxNode {
 	public:
 		virtual SyntaxKind GetKind() = 0;
 		virtual void Accept(SyntaxNodeVisitor &visitor) = 0;
+		void SetLocation(Location value) { _location = value; }
+		Location GetLocation() { return _location; }
+	private:
+		Location _location;
 	};
 
 	class DeclarationSyntax : public SyntaxNode {
@@ -146,9 +152,9 @@ namespace r {
 	public:
 		DECLARE_NODE_TYPE(Block);
 
-		Vector<StatementSyntax*> *GetStatements() { return _statements; }
+		List<StatementSyntax*> *GetStatements() { return _statements; }
 	private:
-		Vector<StatementSyntax*>* _statements = new Vector<StatementSyntax*>();
+		List<StatementSyntax*>* _statements = new List<StatementSyntax*>();
 	};
 
 	class PropertyAccessExpressionSyntax : public MemberExpressionSyntax {
@@ -168,17 +174,17 @@ namespace r {
 	class ParameterListSyntax : public SyntaxNode {
 	public:
 		DECLARE_NODE_TYPE(ParameterList);
-		Vector<ParameterDeclarationSyntax*>* GetParameters() { return _parameters; }
+		List<ParameterDeclarationSyntax*>* GetParameters() { return _parameters; }
 	private:
-		Vector<ParameterDeclarationSyntax*>* _parameters = new Vector<ParameterDeclarationSyntax*>();
+		List<ParameterDeclarationSyntax*>* _parameters = new List<ParameterDeclarationSyntax*>();
 	};
 
 	class ArgumentListSyntax : public SyntaxNode {
 	public:
 		DECLARE_NODE_TYPE(ArgumentList);
-		Vector<ExpressionSyntax*>* GetArguments() { return _arguments; }
+		List<ExpressionSyntax*>* GetArguments() { return _arguments; }
 	private:
-		Vector<ExpressionSyntax*>* _arguments = new Vector<ExpressionSyntax*>();
+		List<ExpressionSyntax*>* _arguments = new List<ExpressionSyntax*>();
 	};
 
 	class ExpressionStatementSyntax : public StatementSyntax {
@@ -223,29 +229,43 @@ namespace r {
 		//    private:
 		//        BlockSyntax* _body;
 
-		Vector<StatementSyntax*> *GetStatements() { return _statements; }
+		List<StatementSyntax*> *GetStatements() { return _statements; }
 		Scope * GetScope() { return _scope; }
 		void SetScope(Scope * value) { _scope = value; }
 		void SetFunction(JSFunction * value) { _function = value; }
 		JSFunction * GetFunction() { return _function; }
 	private:
-		Vector<StatementSyntax*>* _statements = new Vector<StatementSyntax*>();
+		List<StatementSyntax*>* _statements = new List<StatementSyntax*>();
 		Scope *_scope;
 		JSFunction *_function;
 
+	};
+
+	class PostfixUnaryExpressionSyntax : public PostfixExpressionSyntax
+	{
+	public:
+		DECLARE_NODE_TYPE(PostfixUnaryExpression);
+
+		LeftHandSideExpressionSyntax * GetOperand() { return _operand; }
+		void SetOperand(LeftHandSideExpressionSyntax * value) { _operand = value; }
+		SyntaxToken GetOperator() { return _operator; }
+		void SetOperator(SyntaxToken value) { _operator = value; }
+	private:
+		LeftHandSideExpressionSyntax * _operand;
+		SyntaxToken _operator = SyntaxToken(IllegalToken, '\0');
 	};
 
 	class FunctionExpressionSyntax : public PrimaryExpressionSyntax, public SignatureDeclarationSyntax {
 	public:
 		DECLARE_NODE_TYPE(FunctionExpression);
 
-		Vector<StatementSyntax*> *GetStatements() { return _statements; }
+		List<StatementSyntax*> *GetStatements() { return _statements; }
 		Scope * GetScope() { return _scope; }
 		void SetScope(Scope * value) { _scope = value; }
 		void SetFunction(JSFunction * value) { _function = value; }
 		JSFunction * GetFunction() { return _function; }
 	private:
-		Vector<StatementSyntax*>* _statements = new Vector<StatementSyntax*>();
+		List<StatementSyntax*>* _statements = new List<StatementSyntax*>();
 		Scope *_scope;
 		JSFunction *_function;
 	};
@@ -338,7 +358,26 @@ namespace r {
 		ExpressionSyntax *_right;
 		SyntaxToken _operator = SyntaxToken(IllegalToken, "\0");
 	};
+	
+	class ArrayLiteralExpressionSyntax : public PrimaryExpressionSyntax {
+	public:
+		DECLARE_NODE_TYPE(ArrayLiteralExpression);
+		List<ExpressionSyntax *> * GetElements() { return _elements; }
+	private:
+		List<ExpressionSyntax *> * _elements = new List<ExpressionSyntax *>();
+	};
 
+	class PrefixUnaryExpressionSyntax : public UnaryExpressionSyntax {
+	public:
+		DECLARE_NODE_TYPE(PrefixUnaryExpression);
+		UnaryExpressionSyntax * GetOperand() const { return _operand; }
+		void SetOperand(UnaryExpressionSyntax *value) { _operand = value; };
+		SyntaxToken GetOperator() const { return _operator; }
+		void SetOperator(SyntaxToken value) { _operator = value; };
+	private:
+		SyntaxToken _operator = SyntaxToken(IllegalToken, "\0");
+		UnaryExpressionSyntax * _operand;
+	};
 
 
 }

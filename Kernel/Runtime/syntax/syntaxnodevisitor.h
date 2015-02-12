@@ -24,6 +24,9 @@ namespace r {
 	V(FunctionExpression) \
 	V(ThisExpression) \
 	V(IfStatement)\
+	V(PostfixUnaryExpression)\
+	V(ArrayLiteralExpression)\
+	V(PrefixUnaryExpression)\
 	V(ParameterDeclaration) 
 
 #define DEF_FORWARD_DECLARE(type)                         \

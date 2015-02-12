@@ -1,5 +1,6 @@
 #include "scanner.h"
-#include "vector.h"
+#include "list.h"
+#include "global.h"
 
 namespace r {
 
@@ -7,8 +8,7 @@ namespace r {
 	{
 		while (true)
 		{
-			_startPosition = _position;
-
+			_startLocation = _location;
 
 			char ch = GetChar();
 
@@ -17,82 +17,120 @@ namespace r {
 			case '\0': {
 				return SyntaxToken(EndOfStreamToken, "\0");
 			}
+			case '[': {
+				Advance();
+				return SyntaxToken(OpenBracketToken, "[");
+			}
+			case ',': {
+				Advance();
+				return SyntaxToken(CommaToken, ",");
+			}
+			case ']': {
+				Advance();
+				return SyntaxToken(CloseBracketToken, "]");
+			}
 			case '(': {
-				_position++;
+				Advance();
 				return SyntaxToken(OpenParenthesisToken, "(");
 			}
 			case ')': {
-				_position++;
+				Advance();
 				return SyntaxToken(CloseParenthesisToken, ")");
 			}
 			case '{': {
-				_position++;
+				Advance();
 				return SyntaxToken(OpenBraceToken, "{");
 			}
 			case '}': {
-				_position++;
+				Advance();
 				return SyntaxToken(CloseBraceToken, "}");
 			}
+			case '<': {
+				Advance();
+				return SyntaxToken(LessThanToken, "<");
+			}
+			case '>': {
+				Advance();
+				return SyntaxToken(GreaterThanToken, "<");
+			}
 			case '+': {
-				_position++;
-				return SyntaxToken(PlusToken, "+");
+				Advance();
+				switch (GetChar()) {
+				case '+': {
+					Advance();
+					return SyntaxToken(PlusPlusToken, "++");
+				}
+				default: {
+					return SyntaxToken(PlusToken, "+");
+				}
+				}
+
 			}
 			case '-': {
-				_position++;
-				return SyntaxToken(MinusToken, "-");
+				Advance();
+				switch (GetChar()) {
+					case '-': {
+						Advance();
+						return SyntaxToken(MinusMinusToken, "--");
+					}
+					default: {
+						return SyntaxToken(MinusToken, "-");
+					}
+				}
+				
 			}
 			case '*': {
-				_position++;
+				Advance();
 				return SyntaxToken(AsteriskToken, "*");
 			}
 			case '/': {
-				_position++;
+				Advance();
 				return SyntaxToken(SlashToken, "/");
 			}
 			case '!': {
-				_position++;
+				Advance();
 				switch (GetChar()) {
 					case '=': {
-						_position++;
+						Advance();
 						return SyntaxToken(ExclamationEqualsToken, "!=");
 					}
 					default: {
-						_position++;
+						Advance();
 						return SyntaxToken(IllegalToken, "\0");
 					}
 				}
 			}
 			case '=': {
-				_position++;
+				Advance();
 				return SyntaxToken(EqualsToken, "=");
 			}
 			case ';': {
-				_position++;
+				Advance();
 				return SyntaxToken(SemicolonToken, ";");
 			} 
 			case '.': {
-				_position++;
+				Advance();
 				return SyntaxToken(DotToken, ".");
 			}
 			case '\'':
 			case '"': {
-				_position++;
+				Advance();
 
 				char quote = ch;
-				Vector<char> *cb = new Vector<char>();
+				List<char> *cb = new List<char>();
 
 				while (!IsEndOfStream() && quote != GetChar()) {
 					cb->Push(GetChar());
-					_position++;
+					Advance();
 				}
 				cb->Push('\0');
-				_position++;
+				Advance();
 
 
 				char * value = new char[cb->GetSize()];
 				memcpy(value, cb->GetBuffer(), cb->GetSize());
 
-				delete cb;
+				//delete cb;
 
 
 				return SyntaxToken(StringLiteral, value);
@@ -107,21 +145,32 @@ namespace r {
 			case '7':
 			case '8':
 			case '9': {
-				Vector<char> *cb = new Vector<char>();
-				cb->Push(GetChar());
-				_position++;
-
+				List<char> *cb = new List<char>();
+				
 				while (!IsEndOfStream() && IsDigit(GetChar()))
 				{
 					cb->Push(GetChar());
-					_position++;
+					Advance();
 				}
+				if (GetChar() == '.') {
+					cb->Push('.');
+					Advance();
+
+					while (!IsEndOfStream() && IsDigit(GetChar()))
+					{
+						cb->Push(GetChar());
+						Advance();
+					}
+				}
+
+				//TODO: if GetChar() == 'e' || 'E'
+
 				cb->Push('\0');
 
 				char * value = new char[cb->GetSize()];
 				memcpy(value, cb->GetBuffer(), cb->GetSize());
 
-				delete cb;
+				//delete cb;
 
 				return SyntaxToken(NumericLiteral, value);
 			}
@@ -130,20 +179,20 @@ namespace r {
 			{
 				if (IsIdentifierStart(GetChar()))
 				{
-					Vector<char> *cb = new Vector<char>();
+					List<char> *cb = new List<char>();
 					cb->Push(GetChar());
-					_position++;
+					Advance();
 
 					while (!IsEndOfStream() && IsIdentifierPart(GetChar())) {
 						cb->Push(GetChar());
-						_position++;
+						Advance();
 					}
 					cb->Push('\0');
 
 					char * identifier = new char[cb->GetSize()];;
 					memcpy(identifier, cb->GetBuffer(), cb->GetSize());
 
-					delete cb;
+					//delete cb;
 
 
 					//TODO: use some sort of map
@@ -187,19 +236,26 @@ namespace r {
 				}
 				else if (IsWhiteSpace(GetChar()))
 				{
-					_position++;
+					if (GetChar() == '\n') {
+						_location.Line++;
+						_location.Position++;
+						_location.Column = 0;
+					} else {
+						Advance();
+					}
 				}
 				else
 				{
-					_position++;
-					Vector<char> *cb = new Vector<char>();
+					Advance();
+
+					List<char> *cb = new List<char>();
 					cb->Push(GetChar());
 					cb->Push('\0');
 
 					char * invalid = new char[cb->GetSize()];;
 					memcpy(invalid, cb->GetBuffer(), cb->GetSize());
 
-					delete cb;
+					//delete cb;
 					return SyntaxToken(IllegalToken, invalid);
 				}
 			}
@@ -207,12 +263,17 @@ namespace r {
 		}
 	}
 
+	void Scanner::Advance() {
+		_location.Position++;
+		_location.Column++;
+	}
+
 	bool Scanner::IsEndOfStream() {
 		return GetChar() == '\0'; //TODO: this implementation is wrong
 	}
 
 	char Scanner::GetChar() {
-		return _source[_position];
+		return _source[_location.Position];
 	}
 
 	bool Scanner::IsDigit(char ch) {
@@ -224,7 +285,7 @@ namespace r {
 	}
 
 	bool Scanner::IsWhiteSpace(char ch) {
-		return ch == ' ' || ch == '\n';
+		return ch == ' ' || ch == '\n' || ch == '\t';
 	}
 
 	bool Scanner::IsIdentifierPart(char ch) {

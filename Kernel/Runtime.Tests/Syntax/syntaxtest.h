@@ -26,7 +26,7 @@ namespace Microsoft
 	FunctionDeclarationSyntax *tree = parser->ParseProgram();   \
 	TreeFlattener *flattener = new TreeFlattener(); \
 	flattener->VisitFunctionDeclaration(*tree); \
-	Vector<SyntaxKind> *list = flattener->GetList(); \
+	List<SyntaxKind> *list = flattener->GetList(); \
 	SyntaxKind* current = list->begin(); 
 
 #define N(syntaxKind) \

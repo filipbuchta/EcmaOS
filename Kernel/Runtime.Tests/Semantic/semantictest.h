@@ -25,11 +25,11 @@ namespace Microsoft
 	FunctionDeclarationSyntax *tree = parser->ParseProgram();   \
 	TreeFlattener *flattener = new TreeFlattener(); \
 	flattener->VisitFunctionDeclaration(*tree); \
-	Vector<SyntaxKind> *list = flattener->GetList(); \
+	List<SyntaxKind> *list = flattener->GetList(); \
 	SyntaxKind* current = list->begin(); \
 	Scope * currentScope = binder->GetGlobalScope(); \
 	Scope * lastScope = nullptr; \
-	Vector<Scope *>* scopeStack = new Vector<Scope *>(); scopeStack->Push(currentScope); \
+	List<Scope *>* scopeStack = new List<Scope *>(); scopeStack->Push(currentScope); \
 
 #define GLOBAL(name) \
 	{ Assert::AreEqual(ScopeKind::Global, currentScope->GetKind()); \
@@ -55,7 +55,7 @@ namespace Microsoft
 #define ENTER_SCOPE() \
 	{ 																									\
 		Scope * found = nullptr;																				\
-		Vector<Scope*>* __range = currentScope->GetInnerScopes();												\
+		List<Scope*>* __range = currentScope->GetInnerScopes();												\
 		for (Scope ** __begin = __range->begin(), ** __end = __range->end(); __begin != __end; ++__begin)		\
 		{																										\
 			if (__begin == &lastScope)																			\

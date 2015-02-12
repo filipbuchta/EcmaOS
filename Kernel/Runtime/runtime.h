@@ -2,7 +2,7 @@
 
 
 #include "platform.h"
-
+#include "heap.h"
 
 
 namespace r {
@@ -12,8 +12,7 @@ namespace r {
 	{
 	public:
 		static const unsigned int Undefined = 0xCCCCCCCC;
-		static void __cdecl Runtime::DebugPrint(int value);
-
+		static void Runtime::DebugPrint(Number * value);
 	};
 
 

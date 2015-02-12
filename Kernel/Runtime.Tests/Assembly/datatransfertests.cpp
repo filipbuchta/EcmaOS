@@ -43,9 +43,32 @@ namespace RuntimeTests
 			}
 		}
 
+		TEST_METHOD(MovdTests)
+		{
+			//movd eax, xmm0
+			{
+				A(Movd(Operand(EAX), XMM0));
+				B(0x66, 0x0F, 0x7E, 0xC0);
+			}
+			//movsd xmm0, ecx
+			{
+				A(Movd(XMM0, Operand(ECX)));
+				B(0x66, 0x0F, 0x6E, 0xC1);
+			}
+		}
 
 		TEST_METHOD(MovTests)
 		{
+			//mov dword ptr [eax - 4], 1
+			{
+				A(Mov(Operand(EAX, -4), 1));
+				B(0xC7, 0x40, 0xFC, 0x01, 0x00, 0x00, 0x00);
+			}
+			//mov dword ptr [eax], 1
+		/*	{
+				A(Mov(Operand(EAX, 0), 1));
+				B(0xC7, 0x00, 0x01, 0x00, 0x00, 0x00);
+			}*/
 			{
 				A(Mov(EAX, EBX))
 				B(0x89, 0xD8)

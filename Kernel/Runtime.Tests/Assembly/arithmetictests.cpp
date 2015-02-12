@@ -32,6 +32,14 @@ namespace RuntimeTests
 		TEST_METHOD(AddTests)
 		{
 			{
+				A(Add(EAX, 123456));
+				B(0x05, 0x40, 0xe2, 0x01, 0x00);
+			}
+			{
+				A(Add(EBX, 123456));
+				B(0x81, 0xc3, 0x40, 0xe2, 0x01, 0x00);
+			}
+			{
 				A(Add(EAX, EBX));
 				B(0x01, 0xD8);
 			}
@@ -42,6 +50,15 @@ namespace RuntimeTests
 			{
 				A(Add(EBX, EDX));
 				B(0x01, 0xD3);
+			}
+		}
+
+
+		TEST_METHOD(CmpTests)
+		{
+			{
+				A(Cmp(Operand(EBX), 123456));
+				B(0x81, 0xFB, 0x40, 0xE2, 0x01, 0x00);
 			}
 		}
 

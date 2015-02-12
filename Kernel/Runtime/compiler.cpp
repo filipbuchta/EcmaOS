@@ -9,7 +9,11 @@ namespace r {
 	Compiler::Compiler() {
 	}
 
-	JSFunction* Compiler::Compile(Isolate *isolate, char const *source) {
+	Code* Compiler::Compile(Isolate *isolate, char const *source) {
+
+		Code * code = new Code();
+		code->SetSource(source);
+		//code->SetFilename();
 
 		Scanner* scanner = new Scanner(source);
 		Binder *binder = new Binder();
@@ -25,8 +29,9 @@ namespace r {
 
 		CodeGenerator* codeGenerator = new CodeGenerator();
 		JSFunction *function = codeGenerator->MakeCode(*sourceFile);
+		code->SetEntryPoint(function);
 
-		return function;
+		return code;
 	}
 
 }

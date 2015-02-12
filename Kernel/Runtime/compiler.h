@@ -17,7 +17,7 @@ namespace r {
 
 	class Compiler {
 	public:
-		static JSFunction* Compile(Isolate *source, char const *string);
+		static Code* Compile(Isolate *source, char const *string);
 		Compiler();
 	};
 

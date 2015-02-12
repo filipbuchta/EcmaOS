@@ -65,6 +65,17 @@ namespace r {
 		DO(ThisKeyword)\
 		DO(ThisExpression)\
 		DO(ExclamationEqualsToken)\
+		DO(MinusMinusToken)\
+		DO(LessThanToken)\
+		DO(LessThanEqualsToken)\
+		DO(GreaterThanToken)\
+		DO(GreaterThanEqualsToken)\
+		DO(PostfixUnaryExpression)\
+		DO(ArrayLiteralExpression)\
+		DO(OpenBracketToken)\
+		DO(CloseBracketToken)\
+		DO(PlusPlusToken)\
+		DO(PrefixUnaryExpression)\
 		DO(IllegalToken)
 
 

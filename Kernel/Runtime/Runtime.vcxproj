@@ -142,6 +142,7 @@
     <ClCompile Include="binder.cpp" />
     <ClCompile Include="codegenerator.cpp" />
     <ClCompile Include="compiler.cpp" />
+    <ClCompile Include="heap.cpp" />
     <ClCompile Include="isolate.cpp" />
     <ClCompile Include="parser.cpp" />
     <ClCompile Include="runtime.cpp" />
@@ -158,6 +159,9 @@
     <ClInclude Include="checks.h" />
     <ClInclude Include="codegenerator.h" />
     <ClInclude Include="compiler.h" />
+    <ClInclude Include="global.h" />
+    <ClInclude Include="heap.h" />
+    <ClInclude Include="location.h" />
     <ClInclude Include="platform.h" />
     <ClInclude Include="isolate.h" />
     <ClInclude Include="parser.h" />
@@ -169,7 +173,7 @@
     <ClInclude Include="syntax\syntaxnode.h" />
     <ClInclude Include="syntax\syntaxnodevisitor.h" />
     <ClInclude Include="syntax\syntaxtoken.h" />
-    <ClInclude Include="vector.h" />
+    <ClInclude Include="list.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

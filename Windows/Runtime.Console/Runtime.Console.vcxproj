@@ -44,9 +44,11 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
+      <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <DataExecutionPrevention>false</DataExecutionPrevention>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -65,12 +67,19 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="dwarf.cpp" />
+    <ClCompile Include="pe.cpp" />
     <ClCompile Include="platform-win32.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Kernel\Runtime\Runtime.vcxproj">
       <Project>{1745240a-66bd-468d-9984-3245a7b7155a}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="dwarf.h" />
+    <ClInclude Include="pe.h" />
+    <ClInclude Include="writer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

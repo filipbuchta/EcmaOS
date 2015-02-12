@@ -198,4 +198,31 @@ namespace r {
 		_indent--;
 	}
 
+	void AstPrinter::VisitArrayLiteralExpression(ArrayLiteralExpressionSyntax &node) {
+		PrintIndented("ArrayLiteralExpression\n");
+		_indent++;
+		for (ExpressionSyntax* child : *node.GetElements()) {
+			child->Accept(*this);
+		}
+		_indent--;
+	}
+
+
+	void AstPrinter::VisitPostfixUnaryExpression(PostfixUnaryExpressionSyntax & node) {
+		PrintIndented("PostfixUnaryExpression");
+		Print(node.GetOperator().Value);
+		Print("\n");
+		_indent++;
+		node.GetOperand()->Accept(*this);
+		_indent--;
+	}
+
+	void AstPrinter::VisitPrefixUnaryExpression(PrefixUnaryExpressionSyntax &node) {
+		PrintIndented("PrefixUnaryExpression\n");
+		Print(node.GetOperator().Value);
+		Print("\n");
+		_indent++;
+		node.GetOperand()->Accept(*this);
+		_indent--;
+	}
 }

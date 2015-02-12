@@ -18,17 +18,28 @@ namespace RuntimeTests
 			END_TEST_CLASS_ATTRIBUTE()
 	public:
 
-		TEST_METHOD(FunctionTests)
+
+		TEST_METHOD(FunctionCallTest)
 		{
-			COMPILE_TREE("function foo() { } foo();");
-			PROLOGUE();
-			A(Call((unsigned char *)((int)a->GetPC() - 0xFFFFFFFC)));
-			EPILOGUE();
-			ENTER_METHOD("foo");
-			PROLOGUE();
-			EPILOGUE();
+			CompileAndVerify("function test() { log(123); } test();", "123");
 		}
 
+		TEST_METHOD(FunctionArgumentTest)
+		{
+			Assert::Fail();
+			CompileAndVerify("function test(x) { log(x); } test(123);", "123");
+		}
 
+		TEST_METHOD(FunctionReturnNumberTest)
+		{
+			Assert::Fail(L"This test causes test runtime to crash");
+			CompileAndVerify("function test() { return 123; } log(test());", "123");
+		}
+
+		TEST_METHOD(FunctionReturnFunctionNumberTest)
+		{
+			Assert::Fail();
+			CompileAndVerify("function test() { return function() { log(123); }; } test()();", "123");
+		}
 	};
 }

@@ -63,6 +63,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <DataExecutionPrevention>false</DataExecutionPrevention>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -99,8 +100,10 @@
     <ClCompile Include="Assembly\datatransfertests.cpp" />
     <ClCompile Include="Assembly\logictests.cpp" />
     <ClCompile Include="Assembly\shiftandrotatetests.cpp" />
+    <ClCompile Include="Assembly\sse2tests.cpp" />
     <ClCompile Include="CodeGen\arithmetictests.cpp" />
-    <ClCompile Include="CodeGen\calltests.cpp" />
+    <ClCompile Include="CodeGen\classtests.cpp" />
+    <ClCompile Include="CodeGen\codegentests.cpp" />
     <ClCompile Include="CodeGen\functiontests.cpp" />
     <ClCompile Include="CodeGen\localtests.cpp" />
     <ClCompile Include="CodeGen\looptests.cpp" />

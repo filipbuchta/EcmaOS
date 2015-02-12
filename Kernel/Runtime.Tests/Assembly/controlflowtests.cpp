@@ -32,8 +32,11 @@ namespace RuntimeTests
 			{
 				Label label;
 				A(Jmp(label));
+				A(Nop());
+				A(Nop());
+				A(Nop());
 				A(Bind(label));
-				B(0xE9, (unsigned char)(label.GetPosition()), (unsigned char)(label.GetPosition() >> 8), (unsigned char)(label.GetPosition() >> 16), (unsigned char)(label.GetPosition() >> 24));
+				B(0xE9, 0x03, 0x00, 0x00, 0x00);
 			}
 		}
 
@@ -46,7 +49,8 @@ namespace RuntimeTests
 				A(Nop());
 				A(Nop());
 				A(Jmp(label));
-				B(0x90, 0x90, 0x90, 0xEB, 0xFB);
+				B(0x90, 0x90, 0x90);
+				B(0xE9, 0xFB, 0xFF, 0xFF, 0xFF);
 			}
 		}
 

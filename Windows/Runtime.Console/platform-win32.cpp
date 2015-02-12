@@ -1,5 +1,6 @@
 
 #include "../../Kernel/Runtime/platform.h"
+
 #include <iostream>
 
 #include <string> 
@@ -7,7 +8,12 @@
 #include <stdarg.h>
 
 namespace r {
-	
+
+	unsigned char * Platform::AllocateMemory(int size, bool executable) {
+		return (unsigned char *)malloc(size);
+	}
+
+
 	void Platform::Print(const char *value) {
 		std::cout << value;
 	}

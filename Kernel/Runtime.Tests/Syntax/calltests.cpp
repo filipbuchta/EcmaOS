@@ -64,6 +64,26 @@ namespace RuntimeTests
 			}
 		}
 
+		TEST_METHOD(CallTwoArgumentsxpressionTest)
+		{
+			PARSE_TREE("log(\"string\",2);");
+
+			N(FunctionDeclaration);
+			{
+				N(ExpressionStatement);
+				{
+					N(CallExpression);
+					{
+						N(Identifier); N(IdentifierName);
+						N(ArgumentList);
+						{
+							N(Literal); N(StringLiteral);
+							N(Literal); N(NumericLiteral);
+						}
+					}
+				}
+			}
+		}
 
 		TEST_METHOD(CallExpressionTest)
 		{

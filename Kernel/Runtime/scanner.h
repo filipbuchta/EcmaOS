@@ -1,12 +1,9 @@
-#ifndef SCANNER_H_
-#define SCANNER_H_
+#pragma once
 
 #include "syntax/syntaxtoken.h"
 #include "syntax/syntaxkind.h"
+#include "location.h"
 
-
-extern "C" void *__cdecl memcpy(void *dest, const void *src, size_t count);
-extern "C" int __cdecl strcmp(const char * str1, const char * str2);
 
 namespace r {
 
@@ -17,12 +14,12 @@ namespace r {
 		Scanner(char const *string);
 
 		SyntaxToken Next();
-		int GetPosition() { return _position; }
+		Location GetLocation() { return _location; }
 	private:
 		bool IsEndOfStream();
 
-		int _position = 0;
-		int _startPosition = _position;
+		Location _startLocation = _location;
+		Location _location;
 
 		char GetChar();
 
@@ -35,9 +32,9 @@ namespace r {
 		bool IsWhiteSpace(char ch);
 
 		bool IsIdentifierPart(char ch);
+
+		void Advance();
 	};
 
 }
 
-
-#endif

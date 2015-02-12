@@ -1,19 +1,20 @@
 #pragma once
 
-#include "stdlib.h"
+#include "global.h"
 
 
 template <class T>
-class Vector {
+class List {
 
 public:
-	Vector();
-	Vector(const Vector<T>& copy);
-	~Vector();
+	List();
+	List(const List<T>& copy);
+	~List();
 
-	Vector<T>& operator=(const Vector<T>& copy);
+	List<T>& operator=(const List<T>& copy);
 
 	void Push(const T& value);
+		void Insert(int position, const T & value);
 	T Pop();
 
 	T* GetBuffer() { return _buffer; }
@@ -21,6 +22,8 @@ public:
 
 	T* begin() { return _size > 0 ? &_buffer[0] : nullptr; }
 	T* end() { return _size > 0 ? &_buffer[_size] : nullptr; }
+
+	T Get(int index);
 
 
 private:
@@ -35,13 +38,13 @@ private:
 };
 
 template<class T>
-Vector<T>::~Vector() {
-	delete[] _buffer;
+List<T>::~List() {
+	//delete[] _buffer;
 }
 
 
 template<class T>
-Vector<T>::Vector()
+List<T>::List()
 	: _capacity(0),
 	_size(0),
 	_buffer(nullptr)
@@ -49,7 +52,7 @@ Vector<T>::Vector()
 }
 
 template<class T>
-Vector<T>::Vector(const Vector<T> &copy)
+List<T>::List(const List<T> &copy)
 {
 	_capacity = copy._capacity;
 	_size = copy._size;
@@ -60,7 +63,7 @@ Vector<T>::Vector(const Vector<T> &copy)
 }
 
 template<class T>
-Vector<T> & Vector<T>::operator=(const Vector<T> &copy) {
+List<T> & List<T>::operator=(const List<T> &copy) {
 	_capacity = copy._capacity;
 	_size = copy._size;
 	_buffer = new T[_capacity];
@@ -72,7 +75,7 @@ Vector<T> & Vector<T>::operator=(const Vector<T> &copy) {
 }
 
 template <class T>
-T Vector<T>::Pop() {
+T List<T>::Pop() {
 	if (_size == 0) {
 		return nullptr;
 	}
@@ -81,7 +84,7 @@ T Vector<T>::Pop() {
 }
 
 template <class T>
-void Vector<T>::Push(const T& value) {
+void List<T>::Push(const T& value) {
 	if (_size >= _capacity) {
 		Reserve(_size + 8);
 	}
@@ -91,17 +94,39 @@ void Vector<T>::Push(const T& value) {
 }
 
 template <class T>
-void Vector<T>::Reserve(int capacity) {
+void List<T>::Insert(int position, const T& value) {
+	if (_size >= _capacity) {
+		Reserve(_size + 8);
+	}
+
+	for (int i = _size; i > position; i--) {
+		_buffer[i] = _buffer[i - 1];
+	}
+
+	_buffer[position] = value;
+	_size++;
+}
+
+
+
+template <class T>
+void List<T>::Reserve(int capacity) {
 	if (capacity <= _capacity) {
 		return;
 	}
 
 	_capacity = capacity;
-	T* buffer = new T[capacity];
+	T* buffer = (T*) malloc(sizeof(T) * capacity);
 
 	for (int i = 0; i < _size; i++) {
 		buffer[i] = _buffer[i];
 	}
-	delete[] _buffer;
+//	delete[_size - 1] _buffer;
 	_buffer = buffer;
+}
+
+
+template <class T>
+T List<T>::Get(int index) {
+	return _buffer[index];
 }
