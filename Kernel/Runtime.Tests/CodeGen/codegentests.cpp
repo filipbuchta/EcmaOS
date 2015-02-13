@@ -29,7 +29,8 @@ void CompileAndVerify(const char * code, const char *expectedOutput)
 	FunctionDeclarationSyntax *node = parser->ParseProgram();
 	binder->BindProgram();
 
-	CodeGenerator * codeGenerator = new CodeGenerator();
+	Heap * heap = new Heap();
+	CodeGenerator * codeGenerator = new CodeGenerator(heap);
 	JSFunction * function = codeGenerator->MakeCode(*node);
 
 	output.clear();

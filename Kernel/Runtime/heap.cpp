@@ -15,5 +15,7 @@ namespace r {
 
 		_trueValue = new Boolean();
 		_falseValue = new Boolean();
+
+		_undefinedValue = new Object();
 	}
 }

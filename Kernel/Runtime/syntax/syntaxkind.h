@@ -76,6 +76,8 @@ namespace r {
 		DO(CloseBracketToken)\
 		DO(PlusPlusToken)\
 		DO(PrefixUnaryExpression)\
+		DO(ReturnStatement)\
+		DO(ReturnKeyword)\
 		DO(IllegalToken)
 
 

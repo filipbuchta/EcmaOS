@@ -7,6 +7,7 @@
 
 namespace r {
 
+	class ExpressionContext;
 
 	class JSFunction {
 
@@ -17,6 +18,7 @@ namespace r {
 		int GetCodeSize() { return _codeSize; }
 		LineInfo * GetLineInfo() { return _lineInfo; }
 		void SetLineInfo(LineInfo * value) { _lineInfo = value; }
+
 	private:
 		unsigned char *_code;
 		int _codeSize;
@@ -42,12 +44,14 @@ namespace r {
 
 	class CodeGenerator : public SyntaxNodeVisitor {
 	public:
-		CodeGenerator();
+		CodeGenerator(Heap * heap);
 		void EmitFunctionPrologue(FunctionDeclarationSyntax & node);
 		void EmitFunctionEpilogue(FunctionDeclarationSyntax & node);
 		JSFunction *MakeCode(FunctionDeclarationSyntax &script);
 
 		Assembler * GetAssembler() { return _assembler; }
+
+		ExpressionContext * GetContext() { return _context; }
 
 #define DEF_VISIT(type)                         \
           void Visit##type(type##Syntax& node);
@@ -56,16 +60,54 @@ namespace r {
 
 
 	private:
-		void CodeGenerator::CodeForStatementPosition(StatementSyntax & node);
-		void CodeGenerator::RecordPositions(Location location);
+		void CodeForStatementPosition(StatementSyntax & node);
+		void RecordPositions(Location location);
 
-		void Load(ExpressionSyntax &node);
+		void VisitForStackValue(SyntaxNode & node);
+		void VisitForAccumulatorValue(SyntaxNode & node);
+		void VisitForEffect(SyntaxNode & node);
+
+		void PushContext(ExpressionContext * context);
+		void PopContext();
 
 		void DynamicAllocate(Register result, int size);
 
 		Assembler *_assembler;
 		Heap * _heap;
+
+		Label _returnLabel;
+
+		ExpressionContext * _context;
 	};
 
+
+	class ExpressionContext {
+	public:
+		ExpressionContext(CodeGenerator * codeGenerator) : _codeGenerator(codeGenerator), _old(codeGenerator->GetContext()) { }
+		virtual void Plug(Register reg) = 0;
+		ExpressionContext * GetOld() { return _old; }
+	protected:
+		CodeGenerator * _codeGenerator;
+	private:
+		ExpressionContext * _old;
+	};
+
+	class AccumulatorContext : public ExpressionContext {
+	public:
+		AccumulatorContext(CodeGenerator * codeGenerator) : ExpressionContext(codeGenerator) { }
+		void Plug(Register reg) { _codeGenerator->GetAssembler()->Mov(EAX, reg); }
+	};
+
+	class EffectContext : public ExpressionContext {
+	public:
+		EffectContext(CodeGenerator * codeGenerator) : ExpressionContext(codeGenerator) { }
+		void Plug(Register reg) { }
+	};
+
+	class StackValueContext : public ExpressionContext {
+	public:
+		StackValueContext(CodeGenerator * codeGenerator) : ExpressionContext(codeGenerator) { }
+		void Plug(Register reg) { _codeGenerator->GetAssembler()->Push(reg); }
+	};
 
 }

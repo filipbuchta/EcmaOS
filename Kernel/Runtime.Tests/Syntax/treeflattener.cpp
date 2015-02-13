@@ -165,3 +165,8 @@ void TreeFlattener::VisitPrefixUnaryExpression(PrefixUnaryExpressionSyntax & nod
 	node.GetOperand()->Accept(*this);
 	_list->Push(node.GetOperator().Kind);
 }
+
+void TreeFlattener::VisitReturnStatement(ReturnStatementSyntax &node) {
+	_list->Push(node.GetKind());
+	node.GetExpression()->Accept(*this);
+}

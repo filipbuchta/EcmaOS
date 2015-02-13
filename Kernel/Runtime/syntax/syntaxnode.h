@@ -380,5 +380,15 @@ namespace r {
 	};
 
 
+	class ReturnStatementSyntax : public StatementSyntax {
+	public:
+		DECLARE_NODE_TYPE(ReturnStatement);
+		ExpressionSyntax * GetExpression() const { return _expression; }
+		void SetExpression(ExpressionSyntax *value) { _expression = value; };
+	private:
+		ExpressionSyntax * _expression;
+	};
+
+
 }
 

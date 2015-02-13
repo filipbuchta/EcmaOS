@@ -19,6 +19,24 @@ namespace RuntimeTests
 			END_TEST_CLASS_ATTRIBUTE()
 	public:
 
+		TEST_METHOD(FunctionReturnNumberTest)
+		{
+			PARSE_TREE("function foo() { return 1; }");
+
+			N(FunctionDeclaration);
+			{
+				N(FunctionDeclaration);
+				{
+					N(Identifier); N(IdentifierName);
+					N(ParameterList);
+					N(ReturnStatement);
+					{
+						N(Literal); N(NumericLiteral);
+					}
+				}
+			}
+		}
+
 		TEST_METHOD(FunctionMemberAssignmentTest)
 		{
 			PARSE_TREE("function foo() { this.bar = 1; }");

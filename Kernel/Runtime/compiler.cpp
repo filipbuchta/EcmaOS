@@ -26,8 +26,8 @@ namespace r {
 		treePrinter->PrintTree(*sourceFile);
 
 		binder->BindProgram();
-
-		CodeGenerator* codeGenerator = new CodeGenerator();
+		Heap * heap = new Heap();
+		CodeGenerator* codeGenerator = new CodeGenerator(heap);
 		JSFunction *function = codeGenerator->MakeCode(*sourceFile);
 		code->SetEntryPoint(function);
 

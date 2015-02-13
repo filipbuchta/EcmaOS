@@ -18,8 +18,8 @@ using namespace r;
 using namespace std;
 
 //
-void test(Number * n) {
-	
+int test() {
+	return 123;
 }
 
 void CreatePE(Code * code) {
@@ -84,8 +84,8 @@ int main(int argc, char* argv[])
 	treePrinter->PrintTree(*node);
 
 	binder->BindProgram();
-
-	CodeGenerator* codeGenerator = new CodeGenerator();
+	Heap * heap = new Heap();
+	CodeGenerator* codeGenerator = new CodeGenerator(heap);
 	JSFunction *entryPoint = codeGenerator->MakeCode(*node);
 
 
@@ -99,9 +99,8 @@ int main(int argc, char* argv[])
 
 
 
-	Number * n = new Number(1);
 
-	test(n);
+	int x = test();
 
 	void(*entry) ();
 	entry = (void(*) ())code->GetEntryPoint()->GetCode();

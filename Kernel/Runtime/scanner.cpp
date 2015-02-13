@@ -229,6 +229,9 @@ namespace r {
 					else if (strcmp(identifier, "while") == 0) {
 						return SyntaxToken(WhileKeyword, "while");
 					}
+					else if (strcmp(identifier, "return") == 0) {
+						return SyntaxToken(ReturnKeyword, "return");
+					}
 					else
 					{
 						return SyntaxToken(IdentifierName, identifier);

@@ -30,9 +30,12 @@ namespace RuntimeTests
 			CompileAndVerify("function test(x) { log(x); } test(123);", "123");
 		}
 
+		TEST_METHOD(FunctionPrematureReturnTest)
+		{
+			CompileAndVerify("function test() { return; log(123); } test();", "");
+		}
 		TEST_METHOD(FunctionReturnNumberTest)
 		{
-			Assert::Fail(L"This test causes test runtime to crash");
 			CompileAndVerify("function test() { return 123; } log(test());", "123");
 		}
 

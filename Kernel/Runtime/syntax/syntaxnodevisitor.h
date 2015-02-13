@@ -1,6 +1,5 @@
 #pragma once
 
-
 namespace r {
 
 #define AST_NODE_LIST(V)  \
@@ -27,7 +26,11 @@ namespace r {
 	V(PostfixUnaryExpression)\
 	V(ArrayLiteralExpression)\
 	V(PrefixUnaryExpression)\
+	V(ReturnStatement)\
 	V(ParameterDeclaration) 
+
+
+	class SyntaxNode;
 
 #define DEF_FORWARD_DECLARE(type)                         \
     class type##Syntax;
@@ -37,10 +40,13 @@ namespace r {
 	class SyntaxNodeVisitor {
 	public:
 
+		void Visit(SyntaxNode & node);
+
 #define DEF_VISIT(type)                         \
   virtual void Visit##type(type##Syntax& node) { };
 		AST_NODE_LIST(DEF_VISIT)
 #undef DEF_VISIT
+
 
 	};
 

@@ -150,6 +150,7 @@
     <ClCompile Include="scope.cpp" />
     <ClCompile Include="symbol.cpp" />
     <ClCompile Include="syntax\syntaxnode.cpp" />
+    <ClCompile Include="syntax\syntaxnodevisitor.cpp" />
     <ClCompile Include="syntax\syntaxtoken.cpp" />
   </ItemGroup>
   <ItemGroup>

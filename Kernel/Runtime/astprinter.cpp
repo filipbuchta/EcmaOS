@@ -225,4 +225,12 @@ namespace r {
 		node.GetOperand()->Accept(*this);
 		_indent--;
 	}
+
+	void AstPrinter::VisitReturnStatement(ReturnStatementSyntax &node) {
+		PrintIndented("ReturnStatement\n");
+		Print("\n");
+		_indent++;
+		node.GetExpression()->Accept(*this);
+		_indent--;
+	}
 }

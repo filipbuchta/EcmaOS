@@ -125,6 +125,20 @@ namespace r {
 		
 	}
 
+	ReturnStatementSyntax * Parser::ParseReturnStatement() {		
+		ReturnStatementSyntax * node = new ReturnStatementSyntax();
+		node->SetLocation(_scanner->GetLocation());
+
+		ParseExpected(ReturnKeyword);
+
+		if (!ParseOptional(SemicolonToken)) {
+			node->SetExpression(ParseExpression());
+			ParseOptional(SemicolonToken);
+		}
+
+		return node;
+	}
+
 	StatementSyntax * Parser::ParseStatement() {
 		switch (_currentToken.Kind) {
 			case VarKeyword: {
@@ -138,6 +152,9 @@ namespace r {
 			}
 			case FunctionKeyword: {
 				return ParseFunctionDeclaration();
+			}
+			case ReturnKeyword: {
+				return ParseReturnStatement();
 			}
 			case DeclareKeyword: {
 				return ParseAmbientDeclaration();

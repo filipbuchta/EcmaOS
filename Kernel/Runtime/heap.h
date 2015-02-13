@@ -41,12 +41,14 @@ namespace r {
 		Heap::Heap();
 		Boolean * GetTrueValue() { return _trueValue; }
 		Boolean * GetFalseValue() { return _falseValue; }
+		Object * GetUndefinedValue() { return _undefinedValue; }
 		void CreateInitialObjects();
 		unsigned int  GetAllocationTop() { return (unsigned int)(&_allocationTop); }
 
 	private:
 		Boolean * _trueValue;
 		Boolean * _falseValue;
+		Object * _undefinedValue;
 		
 		unsigned int _allocationTop;
 		unsigned char * _space;

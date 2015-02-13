@@ -77,9 +77,12 @@ namespace r {
 
 		NewExpressionSyntax *Parser::ParseNewExpression();
 
-				ThisExpressionSyntax * ParseThisExpression();
+		ThisExpressionSyntax * ParseThisExpression();
 
-								ArrayLiteralExpressionSyntax * ParseArrayLiteralExpression();
+		ArrayLiteralExpressionSyntax * ParseArrayLiteralExpression();
+
+		ReturnStatementSyntax * Parser::ParseReturnStatement();
+
 
 		ExpressionSyntax *ParseBinaryExpression(ExpressionSyntax &left, int minPrecendence);
 
