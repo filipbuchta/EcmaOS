@@ -1,14 +1,16 @@
 #include "runtime.h"
 #include "list.h"
 
+typedef long long int64;
+
 namespace r {
 
-	void PrintNumber(__int64 number, List<char> * buffer) {
+	void PrintNumber(int64 number, List<char> * buffer) {
 		const char table[] = "0123456789";
 
 		int position = buffer->GetSize();
 
-		__int64 temp = number;
+		int64 temp = number;
 
 		while (temp > 0) {
 			buffer->Insert(position, table[temp % 10]);
@@ -16,18 +18,18 @@ namespace r {
 		}
 	}
 
-	void Runtime::DebugPrint(Number * number)
+	Object * Runtime::DebugPrint(Number * number)
 	{
-		__int64 value = *(__int64*)(number + Number::ValueOffset);
+		int64 value = *(int64*)(number + Number::ValueOffset);
 
-		//__int64 mantissa = value & 0xFFFFFFFFFFFFF;
+		//int64 mantissa = value & 0xFFFFFFFFFFFFF;
 
-		__int64 fraction = value & 0xFFFFFFFFFFFFF;
+		int64 fraction = value & 0xFFFFFFFFFFFFF;
 		fraction |= 0x10000000000000;
 
 		const int exponentBias = 1023;
 
-		__int64 exponent = ((value & (0x7FF0000000000000)) >> 52) - exponentBias;
+		int64 exponent = ((value & (0x7FF0000000000000)) >> 52) - exponentBias;
 
 		bool sign = (value & 0x8000000000000000) != 0;
 			
@@ -37,12 +39,12 @@ namespace r {
 			result->Push('-');
 		}
 
-		__int64 temp;
+		int64 temp;
 		if (52 - exponent > 0) {
-			temp = fraction >> __int64(52 - exponent);
+			temp = fraction >> int64(52 - exponent);
 		}
 		else {
-			temp = fraction << __int64(exponent - 52);
+			temp = fraction << int64(exponent - 52);
 		}
 		PrintNumber(temp, result);
 
@@ -55,6 +57,8 @@ namespace r {
 		//delete result;
 
 		Platform::Print(str);
+
+		return 0;
 	}
 
 }

@@ -11,8 +11,7 @@ namespace r {
 	class Runtime
 	{
 	public:
-		static const unsigned int Undefined = 0xCCCCCCCC;
-		static void Runtime::DebugPrint(Number * value);
+		static Object * Runtime::DebugPrint(Number * value);
 	};
 
 

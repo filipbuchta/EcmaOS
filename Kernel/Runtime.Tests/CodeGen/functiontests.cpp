@@ -19,6 +19,11 @@ namespace RuntimeTests
 	public:
 
 
+		TEST_METHOD(CallFunctionExpression)
+		{
+			CompileAndVerify("(function() { log(123); })();", "123");
+		}
+
 		TEST_METHOD(FunctionCallTest)
 		{
 			CompileAndVerify("function test() { log(123); } test();", "123");
@@ -26,7 +31,6 @@ namespace RuntimeTests
 
 		TEST_METHOD(FunctionArgumentTest)
 		{
-			Assert::Fail();
 			CompileAndVerify("function test(x) { log(x); } test(123);", "123");
 		}
 
@@ -41,7 +45,6 @@ namespace RuntimeTests
 
 		TEST_METHOD(FunctionReturnFunctionNumberTest)
 		{
-			Assert::Fail();
 			CompileAndVerify("function test() { return function() { log(123); }; } test()();", "123");
 		}
 	};

@@ -12,7 +12,7 @@ namespace r {
 		_heap = heap;
 	}
 
-	JSFunction* CodeGenerator::MakeCode(FunctionDeclarationSyntax & node) {
+	JSFunction* CodeGenerator::MakeCode(FunctionLikeDeclarationSyntax & node) {
 
 		_assembler->StartLineRecording();
 
@@ -44,7 +44,7 @@ namespace r {
 
 
 	//TODO: pass scope
-	void CodeGenerator::EmitFunctionPrologue(FunctionDeclarationSyntax & node)
+	void CodeGenerator::EmitFunctionPrologue(FunctionLikeDeclarationSyntax & node)
 	{
 		_assembler->Push(EBP);
 		_assembler->Mov(EBP, ESP);
@@ -72,7 +72,7 @@ namespace r {
 //		_assembler->Emit(0xcc);
 	}
 	//TODO: pass scope
-	void CodeGenerator::EmitFunctionEpilogue(FunctionDeclarationSyntax & node)
+	void CodeGenerator::EmitFunctionEpilogue(FunctionLikeDeclarationSyntax & node)
 	{
 		Handle<Object> undefinedValue = (Handle<Object>)_heap->GetUndefinedValue();
 		_assembler->Mov(EAX, (unsigned int)undefinedValue.GetLocation());
@@ -264,9 +264,6 @@ namespace r {
 	void CodeGenerator::VisitThisExpression(ThisExpressionSyntax &node) {
 		NOT_IMPLEMENTED()
 	}
-	void CodeGenerator::VisitFunctionExpression(FunctionExpressionSyntax &node) {
-		NOT_IMPLEMENTED()
-	}
 
 	void CodeGenerator::VisitNewExpression(NewExpressionSyntax & node) {
 		NOT_IMPLEMENTED()
@@ -274,41 +271,31 @@ namespace r {
 
 	void CodeGenerator::VisitCallExpression(CallExpressionSyntax & node) {
 
-		Symbol * symbol = nullptr;
-		if (node.GetExpression()->GetKind() == SyntaxKind::Identifier) {
-			symbol = ((IdentifierSyntax*)node.GetExpression())->GetSymbol();
-		}
-		else {
-			NOT_IMPLEMENTED()
-		}
+
+
 
 
 		//Load(*node.GetExpresion());
 		
 		VisitForStackValue(*node.GetArguments());
 
-		if (symbol->GetDeclaration()->GetKind() == SyntaxKind::FunctionDeclaration) { //if (symbol.GetKind() == Function) 
-			FunctionDeclarationSyntax * declaration = ((FunctionDeclarationSyntax *)symbol->GetDeclaration());
-
-			_assembler->Call(declaration->GetFunction()->GetCode());
-		}
-		else if (symbol->GetDeclaration()->GetKind() == SyntaxKind::AmbientFunctionDeclaration) {
-			//symbol->GetDeclaration();
-
+		if (node.GetExpression()->GetKind() == SyntaxKind::Identifier && ((IdentifierSyntax*)node.GetExpression())->GetSymbol()->GetDeclaration()->GetKind() == SyntaxKind::AmbientFunctionDeclaration) {
 			_assembler->Call((unsigned char *)&Runtime::DebugPrint);
 		}
 		else {
-			NOT_IMPLEMENTED();
+			VisitForAccumulatorValue(*node.GetExpression());
+			_assembler->Call(Operand(EAX));
 		}
+
+
 
 		int argumentsSize = node.GetArguments()->GetArguments()->GetSize() * 4;
 		if (argumentsSize > 0) {
 			_assembler->Add(ESP, argumentsSize);
 		}
 
-		if (symbol->GetDeclaration()->GetKind() != SyntaxKind::AmbientFunctionDeclaration) {
-			_context->Plug(EAX);
-		}
+
+		_context->Plug(EAX);
 	}
 
 
@@ -360,6 +347,12 @@ namespace r {
 
 	}
 
+
+	void CodeGenerator::VisitFunctionExpression(FunctionExpressionSyntax &node) {
+		CodeGenerator* codeGenerator = new CodeGenerator(_heap);
+		codeGenerator->MakeCode(node);
+	}
+
 	void CodeGenerator::VisitFunctionDeclaration(FunctionDeclarationSyntax &node) {
 		CodeGenerator* codeGenerator = new CodeGenerator(_heap);
 		codeGenerator->MakeCode(node);
@@ -375,12 +368,39 @@ namespace r {
 		NOT_IMPLEMENTED()
 	}
 
+	int CodeGenerator::GetSlotOffset(VariableSymbol & symbol) {
+	
+		int offset = -symbol.GetSlot() * 4;
+
+		switch (symbol.GetLocation())
+		{
+		case SymbolLocation::Local:
+			offset += -4;
+			break;
+		case SymbolLocation::Parameter:
+			offset += (((FunctionScope*)symbol.GetScope())->GetParameters()->GetSize() + 1) * 4;
+			break;
+		default:
+			NOT_IMPLEMENTED();
+			break;
+		}
+
+		return offset;
+	}
+
 	void CodeGenerator::VisitIdentifier(IdentifierSyntax &node) {
 		Symbol * symbol = node.GetSymbol();
 
 		// Load variable
-		_assembler->Mov(EAX, Operand(EBP, -8)); //TODO: use correct slot
-		_context->Plug(EAX);
+		switch (symbol->GetLocation()) {
+			case SymbolLocation::Parameter:
+			case SymbolLocation::Local:
+			{
+				_assembler->Mov(EAX, Operand(EBP, GetSlotOffset(*(VariableSymbol*)symbol))); //TODO: use correct slot
+				_context->Plug(EAX);
+			}
+			break;
+		}
 	}
 
 	void CodeGenerator::VisitExpressionStatement(ExpressionStatementSyntax &node) {
@@ -413,9 +433,11 @@ namespace r {
 	{
 		if (node.GetInitializer() != nullptr) {
 			VisitForAccumulatorValue(*node.GetInitializer());
+			
+			Symbol * symbol = node.GetIdentifier()->GetSymbol();
 
 			// Store variable
-			_assembler->Mov(Operand(EBP, -8), EAX); //TODO: use correct slot
+			_assembler->Mov(Operand(EBP, GetSlotOffset(*(VariableSymbol*)symbol)), EAX); //TODO: use correct slot
 		}
 	}
 

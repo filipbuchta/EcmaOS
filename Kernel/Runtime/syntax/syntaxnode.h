@@ -221,10 +221,9 @@ namespace r {
 		Scope *_scope;
 	};
 
-	class FunctionDeclarationSyntax : public StatementSyntax, public SignatureDeclarationSyntax {
-	public:
-		DECLARE_NODE_TYPE(FunctionDeclaration);
 
+	class FunctionLikeDeclarationSyntax : public SignatureDeclarationSyntax {
+	public:
 		//        BlockSyntax* GetBody() { return _body; }
 		//    private:
 		//        BlockSyntax* _body;
@@ -238,7 +237,19 @@ namespace r {
 		List<StatementSyntax*>* _statements = new List<StatementSyntax*>();
 		Scope *_scope;
 		JSFunction *_function;
+	};
 
+	class FunctionDeclarationSyntax : public StatementSyntax, public FunctionLikeDeclarationSyntax {
+	public:
+		DECLARE_NODE_TYPE(FunctionDeclaration);
+
+
+	};
+
+
+	class FunctionExpressionSyntax : public PrimaryExpressionSyntax, public FunctionLikeDeclarationSyntax {
+	public:
+		DECLARE_NODE_TYPE(FunctionExpression);
 	};
 
 	class PostfixUnaryExpressionSyntax : public PostfixExpressionSyntax
@@ -253,21 +264,6 @@ namespace r {
 	private:
 		LeftHandSideExpressionSyntax * _operand;
 		SyntaxToken _operator = SyntaxToken(IllegalToken, '\0');
-	};
-
-	class FunctionExpressionSyntax : public PrimaryExpressionSyntax, public SignatureDeclarationSyntax {
-	public:
-		DECLARE_NODE_TYPE(FunctionExpression);
-
-		List<StatementSyntax*> *GetStatements() { return _statements; }
-		Scope * GetScope() { return _scope; }
-		void SetScope(Scope * value) { _scope = value; }
-		void SetFunction(JSFunction * value) { _function = value; }
-		JSFunction * GetFunction() { return _function; }
-	private:
-		List<StatementSyntax*>* _statements = new List<StatementSyntax*>();
-		Scope *_scope;
-		JSFunction *_function;
 	};
 
 	class CallExpressionSyntax : public LeftHandSideExpressionSyntax {

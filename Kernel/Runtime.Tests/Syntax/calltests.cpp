@@ -55,6 +55,7 @@ namespace RuntimeTests
 						{
 							N(FunctionExpression);
 							{
+								N(Identifier);  N(IdentifierName);
 								N(ParameterList);
 							}
 							N(ArgumentList);
@@ -119,6 +120,7 @@ namespace RuntimeTests
 					{
 						N(FunctionExpression);
 						{
+							N(Identifier); N(IdentifierName);
 							N(ParameterList);
 						}
 					}
@@ -139,6 +141,7 @@ namespace RuntimeTests
 						N(Identifier); N(IdentifierName);
 						N(FunctionExpression);
 						{
+							N(Identifier); N(IdentifierName);
 							N(ParameterList);
 						}
 					}

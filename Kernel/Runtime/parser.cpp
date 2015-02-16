@@ -212,6 +212,11 @@ namespace r {
 		if (_currentToken.Kind == IdentifierName) {
 			node->SetIdentifier(ParseIdentifier());
 		}
+		else {
+			IdentifierSyntax * emptyIdentifier = new IdentifierSyntax();
+			emptyIdentifier->SetName(SyntaxToken(SyntaxKind::IdentifierName, ""));
+			node->SetIdentifier(emptyIdentifier);
+		}
 
 		FunctionScope * scope = new FunctionScope();
 		node->SetScope(scope);
@@ -539,7 +544,6 @@ namespace r {
 				CallExpressionSyntax *node = new CallExpressionSyntax();
 				node->SetExpression(lhs);
 				node->SetArguments(ParseArgumentList());
-
 				lhs = node;
 
 				continue;
@@ -582,7 +586,7 @@ namespace r {
 
 	IdentifierSyntax *Parser::ParseIdentifier() {
 		IdentifierSyntax *node = new IdentifierSyntax();
-		node->SetName(ParseExpected(IdentifierName));
+		node->SetName(ParseExpected(SyntaxKind::IdentifierName));
 
 		return node;
 	}

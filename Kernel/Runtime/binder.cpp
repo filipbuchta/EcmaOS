@@ -14,7 +14,7 @@ namespace r {
 		ResolveVariables(*_globalScope);
 	}
 
-	void Binder::ResolveVariables(Scope &scope) {
+	void Binder::ResolveVariables(Scope & scope) {
 		for (IdentifierSyntax* child : *scope.GetUnresolvedSymbols()) {
 			Symbol * symbol = scope.LookupSymbol(child->GetName().Value);
 			if (symbol == nullptr) {
@@ -64,6 +64,9 @@ namespace r {
 		switch (_currentScope->GetKind()) {
 			case Global:
 			{
+				//TODO: this is kind of hack, globals probably should not have slots
+				((VariableSymbol*)symbol)->SetSlot(((GlobalScope*)_currentScope)->GetGlobals()->GetSize());
+				((VariableSymbol*)symbol)->SetLocation(SymbolLocation::Local);
 				((GlobalScope*)_currentScope)->GetGlobals()->Push(symbol);
 			}
 			break;
@@ -72,21 +75,31 @@ namespace r {
 			{
 				switch (node.GetKind())
 				{
-				case ParameterDeclaration:
-				{
-					((FunctionScope*)_currentScope)->GetParameters()->Push(symbol);
-				}
-				break;
+					case ParameterDeclaration:
+					{
+						((VariableSymbol*)symbol)->SetSlot(((FunctionScope*)_currentScope)->GetParameters()->GetSize());
+						((VariableSymbol*)symbol)->SetLocation(SymbolLocation::Parameter);
+						((FunctionScope*)_currentScope)->GetParameters()->Push(symbol);
+					}
+					break;
 
-				case VariableDeclaration:
-				{
-					((FunctionScope*)_currentScope)->GetLocals()->Push(symbol);
-				}
-				break;
+					case VariableDeclaration:
+					{
+						((VariableSymbol*)symbol)->SetSlot(((FunctionScope*)_currentScope)->GetLocals()->GetSize());
+						((VariableSymbol*)symbol)->SetLocation(SymbolLocation::Local);
+						((FunctionScope*)_currentScope)->GetLocals()->Push(symbol);
+					}
+					break;
 				}
 
 			}
+			break;
+			default:
+				NOT_IMPLEMENTED();
 		}
+
+		symbol->SetScope(_currentScope);
+		node.GetIdentifier()->SetSymbol(symbol);
 	}
 
 	void Binder::EnterScope(Scope * scope)

@@ -323,6 +323,11 @@ namespace r {
 		_pc += sizeof(int);
 	}
 
+	void Assembler::Call(Operand & address) {
+		Emit(0xFF);
+		EmitOperand(EDX, address);
+	}
+
 	void Assembler::Call(unsigned char* address) {
 		Emit(0xE8);
 

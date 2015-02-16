@@ -161,6 +161,7 @@ namespace r {
 
 		void Push(int value);
 
+		void Assembler::Call(Operand & address);
 		void Call(unsigned char* address);
 
 		void Push(Register reg);

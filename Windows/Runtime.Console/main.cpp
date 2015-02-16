@@ -18,8 +18,14 @@ using namespace r;
 using namespace std;
 
 //
-int test() {
-	return 123;
+int test(int x, int y, int z) {
+	int a = x;
+	int b = y;
+	int c = z;
+
+	return a;
+	return b;
+	return c;
 }
 
 void CreatePE(Code * code) {
@@ -69,7 +75,7 @@ int main(int argc, char* argv[])
 
 
 	const char * source = "declare function log(value);"
-						  "var x = 5; while (x > 0) { log(x); x--; }";
+		"function test() { return 123; } log(test());";
 
 
 
@@ -100,7 +106,7 @@ int main(int argc, char* argv[])
 
 
 
-	int x = test();
+	int x = test(1,2,3);
 
 	void(*entry) ();
 	entry = (void(*) ())code->GetEntryPoint()->GetCode();

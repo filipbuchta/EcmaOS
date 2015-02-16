@@ -93,6 +93,9 @@
       <Project>{1745240a-66bd-468d-9984-3245a7b7155a}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\..\..\Program Files (x86)\Microsoft Visual Studio 14.0\VC\crt\src\i386\lldiv.asm" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

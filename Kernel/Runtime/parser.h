@@ -35,7 +35,7 @@ namespace r {
 
 		FunctionDeclarationSyntax * ParseFunctionDeclaration();
 
-		IfStatementSyntax * Parser::ParseIfStatement();
+		IfStatementSyntax * ParseIfStatement();
 
 		AmbientFunctionDeclarationSyntax * ParseAmbientFunctionDeclaration();
 
@@ -65,17 +65,17 @@ namespace r {
 
 		MemberExpressionSyntax * ParseMemberExpression();
 
-		ArgumentListSyntax *Parser::ParseArgumentList();
+		ArgumentListSyntax * ParseArgumentList();
 
 		ParenthesizedExpressionSyntax * ParseParenthesizedExpression();
 
-		ExpressionSyntax *ParseExpression();
+		ExpressionSyntax * ParseExpression();
 
-		LeftHandSideExpressionSyntax *ParseCallExpression(LeftHandSideExpressionSyntax &expression);
+		LeftHandSideExpressionSyntax * ParseCallExpression(LeftHandSideExpressionSyntax &expression);
 
-		LiteralSyntax *ParseLiteral();
+		LiteralSyntax * ParseLiteral();
 
-		NewExpressionSyntax *Parser::ParseNewExpression();
+		NewExpressionSyntax * Parser::ParseNewExpression();
 
 		ThisExpressionSyntax * ParseThisExpression();
 
@@ -84,9 +84,9 @@ namespace r {
 		ReturnStatementSyntax * Parser::ParseReturnStatement();
 
 
-		ExpressionSyntax *ParseBinaryExpression(ExpressionSyntax &left, int minPrecendence);
+		ExpressionSyntax * ParseBinaryExpression(ExpressionSyntax &left, int minPrecendence);
 
-				PrefixUnaryExpressionSyntax * ParsePrefixUnaryExpression();
+		PrefixUnaryExpressionSyntax * ParsePrefixUnaryExpression();
 
 		MemberExpressionSyntax *ParseMemberExpressionRest(LeftHandSideExpressionSyntax &expression);
 

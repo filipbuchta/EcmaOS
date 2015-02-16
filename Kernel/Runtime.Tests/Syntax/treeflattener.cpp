@@ -89,12 +89,10 @@ void TreeFlattener::VisitFunctionDeclaration(FunctionDeclarationSyntax &node) {
 
 void TreeFlattener::VisitFunctionExpression(FunctionExpressionSyntax &node) {
 	_list->Push(node.GetKind());
-	if (node.GetIdentifier() != nullptr) {
-		node.GetIdentifier()->Accept(*this);
-	}
-	if (node.GetParameters() != nullptr) {
-		node.GetParameters()->Accept(*this);
-	}
+	node.GetIdentifier()->Accept(*this);
+	
+	node.GetParameters()->Accept(*this);
+	
 	for (StatementSyntax* child : *node.GetStatements()) {
 		child->Accept(*this);
 	}

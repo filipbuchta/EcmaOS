@@ -45,9 +45,9 @@ namespace r {
 	class CodeGenerator : public SyntaxNodeVisitor {
 	public:
 		CodeGenerator(Heap * heap);
-		void EmitFunctionPrologue(FunctionDeclarationSyntax & node);
-		void EmitFunctionEpilogue(FunctionDeclarationSyntax & node);
-		JSFunction *MakeCode(FunctionDeclarationSyntax &script);
+		void EmitFunctionPrologue(FunctionLikeDeclarationSyntax & node);
+		void EmitFunctionEpilogue(FunctionLikeDeclarationSyntax & node);
+		JSFunction *MakeCode(FunctionLikeDeclarationSyntax &script);
 
 		Assembler * GetAssembler() { return _assembler; }
 
@@ -78,6 +78,7 @@ namespace r {
 		Label _returnLabel;
 
 		ExpressionContext * _context;
+	int GetSlotOffset(VariableSymbol & symbol);
 	};
 
 

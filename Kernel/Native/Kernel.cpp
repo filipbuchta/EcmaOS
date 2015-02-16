@@ -42,8 +42,9 @@ void Kernel::Main()
 	AstPrinter *treePrinter = new AstPrinter();
 	treePrinter->PrintTree(*sourceFile);
 
+	Heap * heap = new Heap();
 
-	CodeGenerator* codeGenerator = new CodeGenerator();
+	CodeGenerator* codeGenerator = new CodeGenerator(heap);
 	JSFunction *function = codeGenerator->MakeCode(*sourceFile);
 
 	//JSFunction* script = Compiler::Compile(isolate, "");
