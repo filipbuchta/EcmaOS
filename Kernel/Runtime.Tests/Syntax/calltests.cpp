@@ -128,6 +128,28 @@ namespace RuntimeTests
 			}
 		}
 
+		TEST_METHOD(FunctionExpressionInvocationTest)
+		{
+			PARSE_TREE("(function() {})()");
+			N(FunctionDeclaration);
+			{
+				N(ExpressionStatement);
+				{
+					N(CallExpression);
+					{
+						N(ParenthesizedExpression);
+						{
+							N(FunctionExpression);
+							{
+								N(Identifier); N(IdentifierName);
+								N(ParameterList);
+							}
+						}
+					}
+				}
+			}
+		}
+
 		TEST_METHOD(FunctionExpressionAssignmentTest)
 		{
 			PARSE_TREE("var foo = function () {}");

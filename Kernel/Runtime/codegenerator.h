@@ -9,7 +9,7 @@ namespace r {
 
 	class ExpressionContext;
 
-	class JSFunction {
+	class FunctionInfo {
 
 	public:
 		void SetCode(unsigned char *value) { _code = value; }
@@ -31,14 +31,14 @@ namespace r {
 		int GetCodeStart() { return (int)_entryPoint->GetCode(); }
 		int GetCodeSize() { return _entryPoint->GetCodeSize(); }
 		const char * GetFilename() { return _filename; }
-		JSFunction * GetEntryPoint() { return _entryPoint; }
-		void SetEntryPoint(JSFunction * value) { _entryPoint = value; }
+		FunctionInfo * GetEntryPoint() { return _entryPoint; }
+		void SetEntryPoint(FunctionInfo * value) { _entryPoint = value; }
 		void SetSource(const char * value) { _source = value; }
 		void SetFilename(const char * value) { _filename = value; }
 	private:
 		const char * _filename;
 		const char * _source;
-		JSFunction * _entryPoint;
+		FunctionInfo * _entryPoint;
 	};
 
 
@@ -47,7 +47,7 @@ namespace r {
 		CodeGenerator(Heap * heap);
 		void EmitFunctionPrologue(FunctionLikeDeclarationSyntax & node);
 		void EmitFunctionEpilogue(FunctionLikeDeclarationSyntax & node);
-		JSFunction *MakeCode(FunctionLikeDeclarationSyntax &script);
+		FunctionInfo *MakeCode(FunctionLikeDeclarationSyntax &script);
 
 		Assembler * GetAssembler() { return _assembler; }
 

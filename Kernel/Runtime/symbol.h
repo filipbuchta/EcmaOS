@@ -13,7 +13,9 @@ namespace r {
 
 	enum class SymbolLocation {
 		Parameter,
-		Local
+		Local,
+		Global,
+		Ambient,
 	};
 
 	class Symbol

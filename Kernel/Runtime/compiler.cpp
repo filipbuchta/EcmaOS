@@ -28,7 +28,7 @@ namespace r {
 		binder->BindProgram();
 		Heap * heap = new Heap();
 		CodeGenerator* codeGenerator = new CodeGenerator(heap);
-		JSFunction *function = codeGenerator->MakeCode(*sourceFile);
+		FunctionInfo *function = codeGenerator->MakeCode(*sourceFile);
 		code->SetEntryPoint(function);
 
 		return code;

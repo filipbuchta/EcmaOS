@@ -101,6 +101,14 @@ namespace r {
 		EmitSSEOperand(dst, src);
 	}
 
+	void Assembler::Mulsd(XMMRegister dst, XMMRegister src) {
+		Emit(0xF2);
+		Emit(0x0F);
+		Emit(0x59);
+		EmitSSEOperand(dst, src);
+	}
+
+
 	void Assembler::Movd(XMMRegister dst, Operand& src) {
 		Emit(0x66);
 		Emit(0x0F);

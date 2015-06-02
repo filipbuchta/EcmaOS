@@ -153,6 +153,7 @@
     <ClCompile Include="syntax\syntaxnode.cpp" />
     <ClCompile Include="syntax\syntaxnodevisitor.cpp" />
     <ClCompile Include="syntax\syntaxtoken.cpp" />
+    <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="assembler.h" />
@@ -176,6 +177,7 @@
     <ClInclude Include="syntax\syntaxnodevisitor.h" />
     <ClInclude Include="syntax\syntaxtoken.h" />
     <ClInclude Include="list.h" />
+    <ClInclude Include="utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

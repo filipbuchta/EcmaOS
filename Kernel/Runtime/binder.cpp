@@ -66,7 +66,21 @@ namespace r {
 			{
 				//TODO: this is kind of hack, globals probably should not have slots
 				((VariableSymbol*)symbol)->SetSlot(((GlobalScope*)_currentScope)->GetGlobals()->GetSize());
-				((VariableSymbol*)symbol)->SetLocation(SymbolLocation::Local);
+				switch (node.GetKind()) 
+				{
+					case AmbientFunctionDeclaration: 
+					{
+						((VariableSymbol*)symbol)->SetLocation(SymbolLocation::Ambient);
+					}
+					break;
+
+					default: 
+					{
+						((VariableSymbol*)symbol)->SetLocation(SymbolLocation::Global);
+					}
+					break;
+				}
+				
 				((GlobalScope*)_currentScope)->GetGlobals()->Push(symbol);
 			}
 			break;

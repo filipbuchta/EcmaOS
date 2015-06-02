@@ -74,8 +74,7 @@ int main(int argc, char* argv[])
 	//const char * source = str.c_str();
 
 
-	const char * source = "declare function log(value);"
-		"function test() { return 123; } log(test());";
+	const char * source = "declare function log(text); function test() { log(123); } test();";
 
 
 
@@ -92,7 +91,7 @@ int main(int argc, char* argv[])
 	binder->BindProgram();
 	Heap * heap = new Heap();
 	CodeGenerator* codeGenerator = new CodeGenerator(heap);
-	JSFunction *entryPoint = codeGenerator->MakeCode(*node);
+	FunctionInfo *entryPoint = codeGenerator->MakeCode(*node);
 
 
 	Code * code = new Code();

@@ -77,7 +77,7 @@ List<T> & List<T>::operator=(const List<T> &copy) {
 template <class T>
 T List<T>::Pop() {
 	if (_size == 0) {
-		return nullptr;
+		return T();
 	}
 	_size--;
 	return _buffer[_size];

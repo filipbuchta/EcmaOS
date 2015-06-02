@@ -2,24 +2,28 @@
 
 #include "runtime.h"
 #include "checks.h"
+#include "utils.h"
 
 namespace r {
 
-	CodeGenerator::CodeGenerator(Heap * heap) {
+	CodeGenerator::CodeGenerator(Heap * heap) 
+	{
 		unsigned char * buffer = Platform::AllocateMemory(1 << 16, true);
 		//_assembler = new Assembler(buffer, 1 << 16);
 		_assembler = new Assembler(buffer, 0x100);
 		_heap = heap;
 	}
 
-	JSFunction* CodeGenerator::MakeCode(FunctionLikeDeclarationSyntax & node) {
+	FunctionInfo* CodeGenerator::MakeCode(FunctionLikeDeclarationSyntax & node) 
+	{
 
 		_assembler->StartLineRecording();
 
 		EmitFunctionPrologue(node);
 
 		PushContext(new EffectContext(this));
-		for (StatementSyntax * child : *node.GetStatements()) {
+		for (StatementSyntax * child : *node.GetStatements()) 
+		{
 			Visit(*child);
 		}
 		PopContext();
@@ -28,7 +32,7 @@ namespace r {
 
 
 
-		JSFunction *jsFunction = new JSFunction();
+		FunctionInfo *jsFunction = new FunctionInfo();
 
 		jsFunction->SetLineInfo(_assembler->EndLineRecording());
 		
@@ -46,12 +50,15 @@ namespace r {
 	//TODO: pass scope
 	void CodeGenerator::EmitFunctionPrologue(FunctionLikeDeclarationSyntax & node)
 	{
+
+		//TODO: use enter, leave instructions?
+
 		_assembler->Push(EBP);
 		_assembler->Mov(EBP, ESP);
 
 		_assembler->Sub(ESP, 0xCC);
 
-		//if (node.GetScope()->GetKind() == Function) {
+		//if (node.GetScope()->GetKind() == JSFunction) {
 		//	FunctionScope * scope = (FunctionScope *)node.GetScope();
 		//	for (Symbol * local : *scope->GetLocals()) {
 		//		_assembler->Mov(EAX, (unsigned int)&Runtime::Undefined);
@@ -71,10 +78,11 @@ namespace r {
 
 //		_assembler->Emit(0xcc);
 	}
+
 	//TODO: pass scope
 	void CodeGenerator::EmitFunctionEpilogue(FunctionLikeDeclarationSyntax & node)
 	{
-		Handle<Object> undefinedValue = (Handle<Object>)_heap->GetUndefinedValue();
+		Handle<HeapObject> undefinedValue = (Handle<HeapObject>)_heap->GetUndefinedValue();
 		_assembler->Mov(EAX, (unsigned int)undefinedValue.GetLocation());
 
 		_assembler->Bind(_returnLabel);
@@ -89,13 +97,15 @@ namespace r {
 	}
 
 	
-	void CodeGenerator::VisitPrefixUnaryExpression(PrefixUnaryExpressionSyntax & node) {
+	void CodeGenerator::VisitPrefixUnaryExpression(PrefixUnaryExpressionSyntax & node)
+	{
 		NOT_IMPLEMENTED()
 	}
 
 
 
-	void CodeGenerator::VisitIterationStatement(IterationStatementSyntax & node) {
+	void CodeGenerator::VisitIterationStatement(IterationStatementSyntax & node) 
+	{
 		CodeForStatementPosition(node);
 
 		Label start, end;
@@ -118,11 +128,13 @@ namespace r {
 
 	}
 
-	void CodeGenerator::VisitParenthesizedExpression(ParenthesizedExpressionSyntax &node) {
+	void CodeGenerator::VisitParenthesizedExpression(ParenthesizedExpressionSyntax &node)
+	{
 		Visit(*node.GetExpression());
 	}
 
-	void CodeGenerator::VisitPostfixUnaryExpression(PostfixUnaryExpressionSyntax & node) {
+	void CodeGenerator::VisitPostfixUnaryExpression(PostfixUnaryExpressionSyntax & node) 
+	{
 		VisitForAccumulatorValue(*node.GetOperand());
 		//TODO: check if number
 
@@ -135,7 +147,8 @@ namespace r {
 		_assembler->Mov(ECX, 0x3FF00000);
 		_assembler->Pinsrd(XMM1, Operand(ECX), 1);
 
-		switch (node.GetOperator().Kind) {
+		switch (node.GetOperator().Kind) 
+		{
 			case MinusMinusToken:
 				_assembler->Subsd(XMM0, XMM1);
 				break;
@@ -150,7 +163,8 @@ namespace r {
 		_context->Plug(EAX);
 	}
 
-	void CodeGenerator::VisitBinaryExpression(BinaryExpressionSyntax &node) {
+	void CodeGenerator::VisitBinaryExpression(BinaryExpressionSyntax &node)
+	{
 
 		VisitForStackValue(*node.GetLeft());
 		VisitForStackValue(*node.GetRight());
@@ -170,7 +184,7 @@ namespace r {
 			_assembler->Subsd(XMM0, XMM1);
 			break;
 		case AsteriskToken:
-			NOT_IMPLEMENTED();
+			_assembler->Mulsd(XMM0, XMM1);
 			break;
 
 		case GreaterThanToken:
@@ -192,7 +206,7 @@ namespace r {
 		case MinusToken:
 		case AsteriskToken:
 			{
-				DynamicAllocate(EAX, Number::ValueOffset + sizeof(double));
+				DynamicAllocate(EAX, Number::Size);
 				_assembler->Movsd(Operand(EAX, Number::ValueOffset), XMM0);
 
 				_context->Plug(EAX);
@@ -267,30 +281,34 @@ namespace r {
 
 	void CodeGenerator::VisitNewExpression(NewExpressionSyntax & node) {
 		NOT_IMPLEMENTED()
+
+		//VisitForStackValue(*node.GetArguments());
+
+		//VisitForAccumulatorValue(*node.GetExpression());
+		//_assembler->Call(Operand(EAX));
+
 	}
 
 	void CodeGenerator::VisitCallExpression(CallExpressionSyntax & node) {
 
 
-
-
-
-		//Load(*node.GetExpresion());
-		
 		VisitForStackValue(*node.GetArguments());
 
-		if (node.GetExpression()->GetKind() == SyntaxKind::Identifier && ((IdentifierSyntax*)node.GetExpression())->GetSymbol()->GetDeclaration()->GetKind() == SyntaxKind::AmbientFunctionDeclaration) {
-			_assembler->Call((unsigned char *)&Runtime::DebugPrint);
-		}
-		else {
-			VisitForAccumulatorValue(*node.GetExpression());
-			_assembler->Call(Operand(EAX));
-		}
+
+
+		VisitForAccumulatorValue(*node.GetExpression());
+
+		// eax contains pointer to jsfuncion on heap
+
+		_assembler->Mov(EAX, Operand(EAX, JSFunction::EntryOffset));
+
+		_assembler->Call(Operand(EAX));
 
 
 
 		int argumentsSize = node.GetArguments()->GetArguments()->GetSize() * 4;
-		if (argumentsSize > 0) {
+		if (argumentsSize > 0) 
+		{
 			_assembler->Add(ESP, argumentsSize);
 		}
 
@@ -299,27 +317,29 @@ namespace r {
 	}
 
 
-	void CodeGenerator::VisitArgumentList(ArgumentListSyntax &node) {
-		for (ExpressionSyntax* child : *node.GetArguments()) {
+	void CodeGenerator::VisitArgumentList(ArgumentListSyntax &node) 
+	{
+		for (ExpressionSyntax* child : *node.GetArguments()) 
+		{
 			Visit(*child);
 		}
 	}
 
 
-	void CodeGenerator::VisitPropertyAccessExpression(PropertyAccessExpressionSyntax &node) {
+	void CodeGenerator::VisitPropertyAccessExpression(PropertyAccessExpressionSyntax &node) 
+	{
 		NOT_IMPLEMENTED()
 	}
 
-	void CodeGenerator::VisitLiteral(LiteralSyntax &node) {
 
-		if (node.GetText().Kind == NumericLiteral) {
+	void CodeGenerator::VisitLiteral(LiteralSyntax &node) 
+	{
+
+		if (node.GetText().Kind == NumericLiteral) 
+		{
 			const char *stringValue = node.GetText().Value;
 
-			double value = 0;
-
-			for (int i = 0; stringValue[i] != '\0'; ++i) {
-				value = value * 10 + stringValue[i] - '0';
-			}
+			double value = atod(stringValue);
 			
 			DynamicAllocate(EAX, Number::Size);
 
@@ -329,46 +349,72 @@ namespace r {
 			_context->Plug(EAX);
 
 		}
-		else if (node.GetText().Kind == BooleanLiteral) {
-			if (strcmp(node.GetText().Value, "true") == 0) {
+		else if (node.GetText().Kind == BooleanLiteral) 
+		{
+			if (strcmp(node.GetText().Value, "true") == 0) 
+			{
 				Handle<Boolean> value = (Handle<Boolean>)_heap->GetTrueValue();
 				_assembler->Mov(EAX, (unsigned int)value.GetLocation());
 				_context->Plug(EAX);
 			}
-			else {
+			else 
+			{
 				Handle<Boolean> value = (Handle<Boolean>)_heap->GetFalseValue();
 				_assembler->Mov(EAX, (unsigned int)value.GetLocation());
 				_context->Plug(EAX);
 			}
 		}
-		else {
+		else 
+		{
 			NOT_IMPLEMENTED();
 		}
 
 	}
 
 
-	void CodeGenerator::VisitFunctionExpression(FunctionExpressionSyntax &node) {
+	void CodeGenerator::VisitFunctionExpression(FunctionExpressionSyntax &node) 
+	{
 		CodeGenerator* codeGenerator = new CodeGenerator(_heap);
 		codeGenerator->MakeCode(node);
+
+		DynamicAllocate(Register::EAX, JSFunction::Size);
+		_assembler->Mov(Operand(EAX, JSFunction::EntryOffset), (int)codeGenerator->GetAssembler()->GetBuffer());
+
+		_context->Plug(EAX);
 	}
 
-	void CodeGenerator::VisitFunctionDeclaration(FunctionDeclarationSyntax &node) {
+	void CodeGenerator::VisitFunctionDeclaration(FunctionDeclarationSyntax &node) 
+	{
 		CodeGenerator* codeGenerator = new CodeGenerator(_heap);
-		codeGenerator->MakeCode(node);
+		FunctionInfo * functionInfo = codeGenerator->MakeCode(node);
+
+		//codeGenerator->GetAssembler()->GetBuffer();
+		
+	/*	Handle<JSFunction> function = _heap->AllocateFunction(functionInfo)
+*/
+
+		DynamicAllocate(Register::EAX, JSFunction::Size);
+		_assembler->Mov(Operand(EAX, JSFunction::EntryOffset), (int)codeGenerator->GetAssembler()->GetBuffer());
+
+		_assembler->Push(_heap->GetGlobalObject());
+		_assembler->
 	}
 
-	void CodeGenerator::VisitBlock(BlockSyntax &node) {
-		for (StatementSyntax * child : *node.GetStatements()) {
+	void CodeGenerator::VisitBlock(BlockSyntax &node) 
+	{
+		for (StatementSyntax * child : *node.GetStatements()) 
+		{
 			Visit(*child);
 		}
 	}
 
-	void CodeGenerator::VisitAssignmentExpression(AssignmentExpressionSyntax &node) {
+	void CodeGenerator::VisitAssignmentExpression(AssignmentExpressionSyntax &node) 
+	{
 		NOT_IMPLEMENTED()
 	}
 
-	int CodeGenerator::GetSlotOffset(VariableSymbol & symbol) {
+	int CodeGenerator::GetSlotOffset(VariableSymbol & symbol) 
+	{
 	
 		int offset = -symbol.GetSlot() * 4;
 
@@ -388,50 +434,74 @@ namespace r {
 		return offset;
 	}
 
-	void CodeGenerator::VisitIdentifier(IdentifierSyntax &node) {
+	void CodeGenerator::VisitIdentifier(IdentifierSyntax &node) 
+	{
 		Symbol * symbol = node.GetSymbol();
 
 		// Load variable
-		switch (symbol->GetLocation()) {
+		switch (symbol->GetLocation()) 
+		{
 			case SymbolLocation::Parameter:
 			case SymbolLocation::Local:
 			{
-				_assembler->Mov(EAX, Operand(EBP, GetSlotOffset(*(VariableSymbol*)symbol))); //TODO: use correct slot
+				_assembler->Mov(EAX, Operand(EBP, GetSlotOffset(*(VariableSymbol*)symbol)));
 				_context->Plug(EAX);
 			}
 			break;
+			case SymbolLocation::Global:
+			{
+				NOT_IMPLEMENTED();
+			}
+
+			case SymbolLocation::Ambient:
+			{
+				Handle<JSFunction> ambientFunction = (Handle<JSFunction>)_heap->GetRuntime_Log();
+				_assembler->Mov(EAX, (unsigned int)ambientFunction.GetLocation());
+				_context->Plug(EAX);
+			}
+			break;
+
+			default:
+				NOT_IMPLEMENTED();
+				break;
 		}
 	}
 
-	void CodeGenerator::VisitExpressionStatement(ExpressionStatementSyntax &node) {
+	void CodeGenerator::VisitExpressionStatement(ExpressionStatementSyntax &node) 
+	{
 		CodeForStatementPosition(node);
 		Visit(*node.GetExpression());
 	}
 
 
 
-	void CodeGenerator::VisitAmbientFunctionDeclaration(AmbientFunctionDeclarationSyntax &node) {
+	void CodeGenerator::VisitAmbientFunctionDeclaration(AmbientFunctionDeclarationSyntax &node) 
+	{
 		// Nothing to do
 	}
 
 
-	void CodeGenerator::VisitParameterList(ParameterListSyntax &node) {
+	void CodeGenerator::VisitParameterList(ParameterListSyntax &node)
+	{
 		// Nothing to do
 	}
 
 
-	void CodeGenerator::VisitParameterDeclaration(ParameterDeclarationSyntax &node) {
+	void CodeGenerator::VisitParameterDeclaration(ParameterDeclarationSyntax &node)
+	{
 		// Nothing to do
 	}
 
-	void CodeGenerator::VisitVariableStatement(VariableStatementSyntax &node) {
+	void CodeGenerator::VisitVariableStatement(VariableStatementSyntax &node)
+	{
 		CodeForStatementPosition(node);
 		Visit(*node.GetDeclaration());
 	}
 
 	void CodeGenerator::VisitVariableDeclaration(VariableDeclarationSyntax & node)
 	{
-		if (node.GetInitializer() != nullptr) {
+		if (node.GetInitializer() != nullptr) 
+		{
 			VisitForAccumulatorValue(*node.GetInitializer());
 			
 			Symbol * symbol = node.GetIdentifier()->GetSymbol();
@@ -449,40 +519,48 @@ namespace r {
 		_assembler->RecordPosition(position);
 	}
 
-	void CodeGenerator::VisitArrayLiteralExpression(ArrayLiteralExpressionSyntax &node) {
+	void CodeGenerator::VisitArrayLiteralExpression(ArrayLiteralExpressionSyntax &node) 
+	{
 		NOT_IMPLEMENTED()
 	}
 
-	void CodeGenerator::VisitReturnStatement(ReturnStatementSyntax &node) {
-		if (node.GetExpression() != nullptr) {
+	void CodeGenerator::VisitReturnStatement(ReturnStatementSyntax &node) 
+	{
+		if (node.GetExpression() != nullptr) 
+		{
 			VisitForAccumulatorValue(*node.GetExpression());
 		}
 		_assembler->Jmp(_returnLabel);
 	}
 
-	void CodeGenerator::VisitForStackValue(SyntaxNode & node) {
+	void CodeGenerator::VisitForStackValue(SyntaxNode & node) 
+	{
 		PushContext(new StackValueContext(this));
 		Visit(node);
 		PopContext();
 	}
 	
-	void CodeGenerator::VisitForEffect(SyntaxNode & node) {
+	void CodeGenerator::VisitForEffect(SyntaxNode & node) 
+	{
 		PushContext(new EffectContext(this));
 		Visit(node);
 		PopContext();
 	}
 
-	void CodeGenerator::VisitForAccumulatorValue(SyntaxNode & node) {
+	void CodeGenerator::VisitForAccumulatorValue(SyntaxNode & node) 
+	{
 		PushContext(new AccumulatorContext(this));
 		Visit(node);
 		PopContext();
 	}
 
-	void CodeGenerator::PushContext(ExpressionContext * context) {
+	void CodeGenerator::PushContext(ExpressionContext * context) 
+	{
 		_context = context;
 	}
 
-	void CodeGenerator::PopContext() {
+	void CodeGenerator::PopContext() 
+	{
 		_context = _context->GetOld();
 	}
 }

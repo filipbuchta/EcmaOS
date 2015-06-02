@@ -18,35 +18,60 @@ namespace r {
 		}
 	}
 
-	Object * Runtime::DebugPrint(Number * number)
+	HeapObject * Runtime::DebugPrint(Number * number)
 	{
-		int64 value = *(int64*)(number + Number::ValueOffset);
-
-		//int64 mantissa = value & 0xFFFFFFFFFFFFF;
-
-		int64 fraction = value & 0xFFFFFFFFFFFFF;
-		fraction |= 0x10000000000000;
-
-		const int exponentBias = 1023;
-
-		int64 exponent = ((value & (0x7FF0000000000000)) >> 52) - exponentBias;
-
-		bool sign = (value & 0x8000000000000000) != 0;
-			
+		double value = *reinterpret_cast<double*>(reinterpret_cast<char*>(number) + Number::ValueOffset);
 		List<char> * result = new List<char>();
 
-		if (sign) {
+
+		if (value < 0) {
 			result->Push('-');
+			value *= -1;
 		}
 
-		int64 temp;
-		if (52 - exponent > 0) {
-			temp = fraction >> int64(52 - exponent);
+
+		int64 temp = (int64)value;
+
+		int integerNumbers = 0;
+		{
+			while (temp > 0) {
+				temp /= 10;
+				integerNumbers++;
+			}
+
+			const char table[] = "0123456789";
+
+			int position = result->GetSize();
+
+			temp = (int64)(value * 100000000);
+
+			while (temp > 0) {
+				result->Insert(position, table[temp % 10]);
+				temp /= 10;
+			}
 		}
-		else {
-			temp = fraction << int64(exponent - 52);
+		
+
+		result->Insert(integerNumbers, '.');
+		if (integerNumbers == 0) {
+			result->Insert(0, '0');
 		}
-		PrintNumber(temp, result);
+		{
+			int position = result->GetSize() - 1;
+			while (true) {
+				if (result->Get(position) == '0') {
+					result->Pop();
+				}
+				else if (result->Get(position) != '.') {
+					break;
+				}
+				else {
+					result->Pop();
+					break;
+				}
+				position--;
+			}
+		}
 
 
 		result->Push('\0');

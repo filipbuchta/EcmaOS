@@ -31,7 +31,7 @@ void CompileAndVerify(const char * code, const char *expectedOutput)
 
 	Heap * heap = new Heap();
 	CodeGenerator * codeGenerator = new CodeGenerator(heap);
-	JSFunction * function = codeGenerator->MakeCode(*node);
+	FunctionInfo * function = codeGenerator->MakeCode(*node);
 
 	output.clear();
 

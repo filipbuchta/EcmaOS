@@ -19,6 +19,19 @@ namespace RuntimeTests
 		END_TEST_CLASS_ATTRIBUTE()
 	public:
 
+		TEST_METHOD(NumericLiteralTest)
+		{
+			PARSE_TREE("1.23");
+
+			N(FunctionDeclaration);
+			{
+				N(ExpressionStatement);
+				{
+					N(Literal); N(NumericLiteral);
+				}
+			}
+		}
+
 		TEST_METHOD(NullLiteralTest)
 		{
 			PARSE_TREE(" null ");
@@ -34,7 +47,7 @@ namespace RuntimeTests
 
 		TEST_METHOD(StringLiteralTest)
 		{
-			PARSE_TREE(" \"value\" ");
+			PARSE_TREE("\"value\"");
 
 			N(FunctionDeclaration);
 			{

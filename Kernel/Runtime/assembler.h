@@ -142,6 +142,7 @@ namespace r {
 
 		void Addsd(XMMRegister dst, XMMRegister src);
 		void Subsd(XMMRegister dst, XMMRegister src);
+		void Mulsd(XMMRegister dst, XMMRegister src);
 		void Cmpsd(SSECondition condition, XMMRegister dst, XMMRegister src);
 		void Cmp(Operand & operand, unsigned int immediate);
 
@@ -161,7 +162,7 @@ namespace r {
 
 		void Push(int value);
 
-		void Assembler::Call(Operand & address);
+		void Call(Operand & address);
 		void Call(unsigned char* address);
 
 		void Push(Register reg);

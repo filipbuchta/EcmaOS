@@ -18,11 +18,9 @@ namespace RuntimeTests
 			END_TEST_CLASS_ATTRIBUTE()
 	public:
 
-
-		TEST_METHOD(NewObjectTests)
+		TEST_METHOD(ObjectPropertyCreationTest)
 		{
-			CompileAndVerify("var obj = new Object(); obj.x = 123; log(obj.x)", "123");
+			CompileAndVerify("var obj = new Object(); obj.value = 123; log(obj.value); ", "123");
 		}
-
 	};
 }

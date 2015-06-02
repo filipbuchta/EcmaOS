@@ -15,7 +15,7 @@ namespace r {
 
 	class Symbol;
 	class Scope;
-	class JSFunction;
+	class FunctionInfo;
 
 
 	class SyntaxNode {
@@ -231,12 +231,12 @@ namespace r {
 		List<StatementSyntax*> *GetStatements() { return _statements; }
 		Scope * GetScope() { return _scope; }
 		void SetScope(Scope * value) { _scope = value; }
-		void SetFunction(JSFunction * value) { _function = value; }
-		JSFunction * GetFunction() { return _function; }
+		void SetFunction(FunctionInfo * value) { _function = value; }
+		FunctionInfo * GetFunction() { return _function; }
 	private:
 		List<StatementSyntax*>* _statements = new List<StatementSyntax*>();
 		Scope *_scope;
-		JSFunction *_function;
+		FunctionInfo *_function;
 	};
 
 	class FunctionDeclarationSyntax : public StatementSyntax, public FunctionLikeDeclarationSyntax {
