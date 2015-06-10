@@ -8,4 +8,7 @@
 #define NOT_IMPLEMENTED() \
 	FATAL("%s", "Not implemented");
 
+#define NOT_REACHABLE() \
+	FATAL("%s", "Not reachable");
+
 //#define ASSERT(condition)

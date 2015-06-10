@@ -15,7 +15,7 @@ namespace r {
 			switch (ch)
 			{
 			case '\0': {
-				return SyntaxToken(EndOfStreamToken, "\0");
+				return SyntaxToken(EndOfCodeToken, "\0");
 			}
 			case '[': {
 				Advance();
@@ -196,14 +196,11 @@ namespace r {
 
 
 					//TODO: use some sort of map
-					if (strcmp(identifier, "var") == 0) {
-						return SyntaxToken(VarKeyword, "var");
+					if (strcmp(identifier, "let") == 0) {
+						return SyntaxToken(LetKeyword, "let");
 					}
-					else if (strcmp(identifier, "function") == 0) {
-						return SyntaxToken(FunctionKeyword, "function");
-					}
-					else if (strcmp(identifier, "declare") == 0) {
-						return SyntaxToken(DeclareKeyword, "declare");
+					else if (strcmp(identifier, "constructor") == 0) {
+						return SyntaxToken(ConstructorKeyword, "constructor");
 					}
 					else if (strcmp(identifier, "if") == 0) {
 						return SyntaxToken(IfKeyword, "if");
@@ -228,6 +225,9 @@ namespace r {
 					}
 					else if (strcmp(identifier, "while") == 0) {
 						return SyntaxToken(WhileKeyword, "while");
+					}
+					else if (strcmp(identifier, "for") == 0) {
+						return SyntaxToken(ForKeyword, "for");
 					}
 					else if (strcmp(identifier, "return") == 0) {
 						return SyntaxToken(ReturnKeyword, "return");

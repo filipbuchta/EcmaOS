@@ -1,6 +1,6 @@
 #include "codegentests.h"
 
-#include "../../Runtime/assembler.h"
+#include "../../Runtime/codegen/assembler.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 

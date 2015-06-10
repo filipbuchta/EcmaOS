@@ -1,7 +1,7 @@
 #pragma once
 
-#include "list.h"
-#include "location.h"
+#include "../list.h"
+#include "../location.h"
 
 namespace r {
 	

@@ -8,7 +8,7 @@ namespace r {
 	class AstPrinter : public SyntaxNodeVisitor {
 
 	public:
-		void PrintTree(FunctionDeclarationSyntax &node);
+		void PrintTree(SourceCodeSyntax &node);
 
 
 #define DEF_VISIT(type)                         \

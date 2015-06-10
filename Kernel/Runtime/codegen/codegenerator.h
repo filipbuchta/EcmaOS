@@ -1,16 +1,30 @@
 #pragma once
 
-#include "syntax/syntaxnode.h"
-#include "syntax/syntaxnodevisitor.h"
+#include "../syntax/syntaxnode.h"
+#include "../syntax/syntaxnodevisitor.h"
 #include "assembler.h"
-#include "heap.h"
+#include "../heap.h"
 
 namespace r {
 
 	class ExpressionContext;
 
-	class FunctionInfo {
 
+	class ClassDescriptor {
+	public:
+	private:
+		List<MethodDescriptor*> * _methods;
+	};
+
+	class AssemblyDescriptor {
+	public:
+	private:
+		MethodDescriptor* _entryPoint;
+		List<ClassDescriptor*> * _classes;
+	};
+
+
+	class MethodDescriptor {
 	public:
 		void SetCode(unsigned char *value) { _code = value; }
 		unsigned char * GetCode() { return _code; }
@@ -20,10 +34,12 @@ namespace r {
 		void SetLineInfo(LineInfo * value) { _lineInfo = value; }
 
 	private:
+		char* _name;
 		unsigned char *_code;
 		int _codeSize;
 		LineInfo * _lineInfo;
 	};
+
 
 	class Code {
 	public:
@@ -31,23 +47,23 @@ namespace r {
 		int GetCodeStart() { return (int)_entryPoint->GetCode(); }
 		int GetCodeSize() { return _entryPoint->GetCodeSize(); }
 		const char * GetFilename() { return _filename; }
-		FunctionInfo * GetEntryPoint() { return _entryPoint; }
-		void SetEntryPoint(FunctionInfo * value) { _entryPoint = value; }
+		MethodDescriptor * GetEntryPoint() { return _entryPoint; }
+		void SetEntryPoint(MethodDescriptor * value) { _entryPoint = value; }
 		void SetSource(const char * value) { _source = value; }
 		void SetFilename(const char * value) { _filename = value; }
 	private:
 		const char * _filename;
 		const char * _source;
-		FunctionInfo * _entryPoint;
+		MethodDescriptor * _entryPoint;
 	};
 
 
 	class CodeGenerator : public SyntaxNodeVisitor {
 	public:
-		CodeGenerator(Heap * heap);
-		void EmitFunctionPrologue(FunctionLikeDeclarationSyntax & node);
-		void EmitFunctionEpilogue(FunctionLikeDeclarationSyntax & node);
-		FunctionInfo *MakeCode(FunctionLikeDeclarationSyntax &script);
+		CodeGenerator(Heap * heap, Assembler * assembler);
+		void EmitFunctionPrologue(MethodDeclarationSyntax & node);
+		void EmitFunctionEpilogue(MethodDeclarationSyntax & node);
+		MethodDescriptor* MakeCode(MethodDeclarationSyntax & node);
 
 		Assembler * GetAssembler() { return _assembler; }
 
@@ -78,7 +94,6 @@ namespace r {
 		Label _returnLabel;
 
 		ExpressionContext * _context;
-	int GetSlotOffset(VariableSymbol & symbol);
 	};
 
 

@@ -20,155 +20,40 @@ namespace RuntimeTests
 	public:
 
 		
-		TEST_METHOD(AmbientFunctionDeclarationTest)
+		TEST_METHOD(MethodCallTest)
 		{
-			PARSE_TREE("declare function log(value);");
+			PARSE_TREE("class A { bar(): void { } foo(): void { bar() } }");
 
-			N(FunctionDeclaration);
+			N(SourceCode);
 			{
-				N(AmbientFunctionDeclaration);
+				N(ClassDeclaration);
 				{
 					N(Identifier); N(IdentifierName);
-					N(ParameterList);
+					N(MethodDeclaration);
 					{
-						N(ParameterDeclaration);
-						{
-							N(Identifier); N(IdentifierName);
-						}
+						N(Identifier); N(IdentifierName);
+						N(ParameterList);
+						N(Block);
 					}
-				}
-			}
-		}
-
-
-		TEST_METHOD(FunctionExpressionCallTest)
-		{
-			PARSE_TREE("(function() {})()");
-
-			N(FunctionDeclaration);
-			{
-				N(ExpressionStatement);
-				{
-					N(CallExpression);
+					N(MethodDeclaration);
 					{
-						N(ParenthesizedExpression);
+						N(Identifier); N(IdentifierName);
+						N(ParameterList);
+						N(Block);
 						{
-							N(FunctionExpression);
+							N(ExpressionStatement);
 							{
-								N(Identifier);  N(IdentifierName);
-								N(ParameterList);
-							}
-							N(ArgumentList);
+								N(CallExpression);
+								{
+									N(Identifier); N(IdentifierName);
+									N(ArgumentList);
+								}
+							};
 						}
 					}
 				}
 			}
 		}
 
-		TEST_METHOD(CallTwoArgumentsxpressionTest)
-		{
-			PARSE_TREE("log(\"string\",2);");
-
-			N(FunctionDeclaration);
-			{
-				N(ExpressionStatement);
-				{
-					N(CallExpression);
-					{
-						N(Identifier); N(IdentifierName);
-						N(ArgumentList);
-						{
-							N(Literal); N(StringLiteral);
-							N(Literal); N(NumericLiteral);
-						}
-					}
-				}
-			}
-		}
-
-		TEST_METHOD(CallExpressionTest)
-		{
-			PARSE_TREE("log(\"string\");");
-
-			N(FunctionDeclaration);
-			{
-				N(ExpressionStatement);
-				{
-					N(CallExpression);
-					{
-						N(Identifier); N(IdentifierName);
-						N(ArgumentList);
-						{
-							N(Literal); N(StringLiteral);
-						}
-					}
-				}
-			}
-		}
-
-
-
-		TEST_METHOD(FunctionExpressionTest)
-		{
-			PARSE_TREE("(function() {})");
-
-			N(FunctionDeclaration);
-			{
-				N(ExpressionStatement);
-				{
-					N(ParenthesizedExpression);
-					{
-						N(FunctionExpression);
-						{
-							N(Identifier); N(IdentifierName);
-							N(ParameterList);
-						}
-					}
-				}
-			}
-		}
-
-		TEST_METHOD(FunctionExpressionInvocationTest)
-		{
-			PARSE_TREE("(function() {})()");
-			N(FunctionDeclaration);
-			{
-				N(ExpressionStatement);
-				{
-					N(CallExpression);
-					{
-						N(ParenthesizedExpression);
-						{
-							N(FunctionExpression);
-							{
-								N(Identifier); N(IdentifierName);
-								N(ParameterList);
-							}
-						}
-					}
-				}
-			}
-		}
-
-		TEST_METHOD(FunctionExpressionAssignmentTest)
-		{
-			PARSE_TREE("var foo = function () {}");
-
-			N(FunctionDeclaration);
-			{
-				N(VariableStatement);
-				{
-					N(VariableDeclaration);
-					{
-						N(Identifier); N(IdentifierName);
-						N(FunctionExpression);
-						{
-							N(Identifier); N(IdentifierName);
-							N(ParameterList);
-						}
-					}
-				}
-			}
-		}
 	};
 }

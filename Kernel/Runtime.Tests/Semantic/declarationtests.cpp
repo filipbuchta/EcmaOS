@@ -20,13 +20,24 @@ namespace RuntimeTests
 
 		TEST_METHOD(SemanticLocalVariableDeclarationTest)
 		{
-			PARSE_TREE("function foo() { var bar; }");
+			PARSE_TREE("class C { function F(x: int) { var y: int; } }");
 
-			GLOBAL("foo");
-			ENTER_SCOPE();
-			LOCALS(1);
-			PARAMS(0);
-			LOCAL("bar");
+			ENTER_SCOPE() // Global scope
+			{
+				GLOBAL("C");
+				ENTER_SCOPE(); // Method scope
+				{
+					PARAMS(1);
+					PARAM("x");
+					ENTER_SCOPE(); // Block scope
+					{
+						LOCALS(1);
+						LOCAL("y");
+					}
+					EXIT_SCOPE();
+				}
+				EXIT_SCOPE();
+			}
 			EXIT_SCOPE();
 		}
 

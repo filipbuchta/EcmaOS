@@ -2,6 +2,7 @@
 
 #include "CppUnitTest.h"
 #include "../../Runtime/scope.h"
+#include "../../Runtime/syntax/syntaxnode.h"
 #include "../Syntax/treeflattener.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -14,7 +15,7 @@ namespace Microsoft
 	{
 		namespace CppUnitTestFramework
 		{
-			template<> static std::wstring ToString<ScopeKind>(const ScopeKind& t) { RETURN_WIDE_STRING(t); }
+			template<> static std::wstring ToString<ScopeKind>(const ScopeKind& t) { RETURN_WIDE_STRING((int)t); }
 		}
 	}
 }
@@ -22,12 +23,12 @@ namespace Microsoft
 #define PARSE_TREE(expression) \
 	Binder* binder = new Binder(); \
 	Parser* parser = new Parser(new r::Scanner(expression), binder);   \
-	FunctionDeclarationSyntax *tree = parser->ParseProgram();   \
+	SourceCodeSyntax *tree = parser->ParseSourceCode();   \
 	TreeFlattener *flattener = new TreeFlattener(); \
-	flattener->VisitFunctionDeclaration(*tree); \
+	tree->Accept(*(SyntaxNodeVisitor*)flattener); \
 	List<SyntaxKind> *list = flattener->GetList(); \
 	SyntaxKind* current = list->begin(); \
-	Scope * currentScope = binder->GetGlobalScope(); \
+	Scope * currentScope = tree->GetScope(); \
 	Scope * lastScope = nullptr; \
 	List<Scope *>* scopeStack = new List<Scope *>(); scopeStack->Push(currentScope); \
 
@@ -42,9 +43,19 @@ namespace Microsoft
 	Assert::IsTrue(found); }
 
 #define LOCAL(name) \
-	{ Assert::AreEqual(ScopeKind::Function, currentScope->GetKind()); \
+	{ Assert::AreEqual(ScopeKind::Block, currentScope->GetKind()); \
 	bool found = false; \
-	for (Symbol* child : *((FunctionScope*)currentScope)->GetLocals()) { \
+	for (Symbol* child : *((BlockScope*)currentScope)->GetLocals()) { \
+		if (strcmp(child->GetName(), name) == 0) { \
+			found = true; break; \
+		} \
+	} \
+	Assert::IsTrue(found); }
+
+#define PARAM(name) \
+	{ Assert::AreEqual(ScopeKind::Method, currentScope->GetKind()); \
+	bool found = false; \
+	for (Symbol* child : *((MethodScope*)currentScope)->GetParameters()) { \
 		if (strcmp(child->GetName(), name) == 0) { \
 			found = true; break; \
 		} \
@@ -53,9 +64,9 @@ namespace Microsoft
 
 
 #define ENTER_SCOPE() \
-	{ 																									\
+	{ 																									       \
 		Scope * found = nullptr;																				\
-		List<Scope*>* __range = currentScope->GetInnerScopes();												\
+		List<Scope*>* __range = currentScope->GetInnerScopes();												    \
 		for (Scope ** __begin = __range->begin(), ** __end = __range->end(); __begin != __end; ++__begin)		\
 		{																										\
 			if (__begin == &lastScope)																			\
@@ -79,10 +90,10 @@ namespace Microsoft
 	currentScope = currentScope->GetOuterScope(); }
 
 #define LOCALS(num) \
-	Assert::AreEqual(ScopeKind::Function, currentScope->GetKind()); \
-	Assert::AreEqual(num, ((FunctionScope *)currentScope)->GetLocals()->GetSize());
+	Assert::AreEqual(ScopeKind::Method, currentScope->GetKind()); \
+	Assert::AreEqual(num, ((BlockScope *)currentScope)->GetLocals()->GetSize());
 
 #define PARAMS(num) \
-	Assert::AreEqual(ScopeKind::Function, currentScope->GetKind()); \
-	Assert::AreEqual(num, ((FunctionScope *)currentScope)->GetParameters()->GetSize());
+	Assert::AreEqual(ScopeKind::Method, currentScope->GetKind()); \
+	Assert::AreEqual(num, ((MethodScope *)currentScope)->GetParameters()->GetSize());
 

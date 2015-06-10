@@ -3,9 +3,8 @@
 #include <string>
 #include <sstream>
 
-#include "../../Kernel/Runtime/isolate.h"
 #include "../../Kernel/Runtime/compiler.h"
-#include "../../Kernel/Runtime/codegenerator.h"
+#include "../../Kernel/Runtime/codegen/codegenerator.h"
 #include "../../Kernel/Runtime/astprinter.h"
 
 #include "pe.h"
@@ -62,10 +61,7 @@ int main(int argc, char* argv[])
 		std::cout << argv[0] << std::endl;
 	}
 
-	Isolate *isolate = new Isolate();
-
-
-
+	
 	std::ifstream t("C:\\dbg\\test.js");
 	std::stringstream buffer;
 	buffer << t.rdbuf();
@@ -78,26 +74,15 @@ int main(int argc, char* argv[])
 
 
 
+	Compiler * compiler = new Compiler();
+	Code * code = compiler->Compile(source);
+
 	Scanner* scanner = new Scanner(source);
 	Binder *binder = new Binder();
 	Parser* parser = new Parser(scanner, binder);
 
-	FunctionDeclarationSyntax *node = parser->ParseProgram();
+	SourceCodeSyntax *node = parser->ParseSourceCode();
 
-
-	AstPrinter *treePrinter = new AstPrinter();
-	treePrinter->PrintTree(*node);
-
-	binder->BindProgram();
-	Heap * heap = new Heap();
-	CodeGenerator* codeGenerator = new CodeGenerator(heap);
-	FunctionInfo *entryPoint = codeGenerator->MakeCode(*node);
-
-
-	Code * code = new Code();
-	code->SetEntryPoint(entryPoint);
-	code->SetSource(source);
-	code->SetFilename("test.js");
 
 
 	//CreatePE(code);

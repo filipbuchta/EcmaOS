@@ -1,6 +1,6 @@
 
 #include "assembler.h"
-#include "checks.h"
+#include "../checks.h"
 
 namespace r {
 

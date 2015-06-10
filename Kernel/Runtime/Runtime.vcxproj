@@ -138,13 +138,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="assembler.cpp" />
+    <ClCompile Include="codegen\assembler.cpp" />
     <ClCompile Include="astprinter.cpp" />
     <ClCompile Include="binder.cpp" />
-    <ClCompile Include="codegenerator.cpp" />
+    <ClCompile Include="codegen\codegenerator.cpp" />
     <ClCompile Include="compiler.cpp" />
     <ClCompile Include="heap.cpp" />
-    <ClCompile Include="isolate.cpp" />
     <ClCompile Include="parser.cpp" />
     <ClCompile Include="runtime.cpp" />
     <ClCompile Include="scanner.cpp" />
@@ -156,17 +155,16 @@
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="assembler.h" />
+    <ClInclude Include="codegen\assembler.h" />
     <ClInclude Include="astprinter.h" />
     <ClInclude Include="binder.h" />
     <ClInclude Include="checks.h" />
-    <ClInclude Include="codegenerator.h" />
+    <ClInclude Include="codegen\codegenerator.h" />
     <ClInclude Include="compiler.h" />
     <ClInclude Include="global.h" />
     <ClInclude Include="heap.h" />
     <ClInclude Include="location.h" />
     <ClInclude Include="platform.h" />
-    <ClInclude Include="isolate.h" />
     <ClInclude Include="parser.h" />
     <ClInclude Include="runtime.h" />
     <ClInclude Include="scanner.h" />

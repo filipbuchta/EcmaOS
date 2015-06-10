@@ -4,13 +4,13 @@
 #include "list.h"
 
 
-extern "C" int __cdecl strcmp(const char * str1, const char * str2);
-
 namespace r {
 
-	enum ScopeKind {
-		Function,
+	enum class ScopeKind {
 		Global,
+		Class,
+		Method,
+		Block,
 	};
 
 
@@ -36,25 +36,31 @@ namespace r {
 	};
 
 
-	class FunctionScope : public Scope {
+	class MethodScope : public Scope {
 	public:
-		ScopeKind GetKind() { return Function; };
+		ScopeKind GetKind() { return ScopeKind::Method; };
 		Symbol * LookupSymbol(const char * name);
 		List<Symbol*> * GetParameters() { return _parameters; }
-		List<Symbol*> * GetLocals() { return _locals; }
 	private:
 		List<Symbol*> *_parameters = new List<Symbol*>();
+	};
+
+	class BlockScope : public Scope {
+	public:
+		ScopeKind GetKind() { return ScopeKind::Block; };
+		Symbol * LookupSymbol(const char * name);
+		List<Symbol*> * GetLocals() { return _locals; }
+	private:
 		List<Symbol*> *_locals = new List<Symbol*>();
 	};
 
 	class GlobalScope : public Scope {
 	public:
-		ScopeKind GetKind() { return Global; };
-		Symbol * LookupSymbol(const char * name);
 		List<Symbol*> * GetGlobals() { return _globals; }
-
+		ScopeKind GetKind() { return ScopeKind::Global; };
+		Symbol * LookupSymbol(const char * name);
 	private:
-		List<Symbol *> * _globals = new List<Symbol *>();
+		List<Symbol*> *_globals = new List<Symbol*>();
 	};
 
 }

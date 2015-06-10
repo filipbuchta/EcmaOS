@@ -15,7 +15,8 @@ namespace r {
 
 	class Symbol;
 	class Scope;
-	class FunctionInfo;
+	class MethodDescriptor;
+
 
 
 	class SyntaxNode {
@@ -28,6 +29,7 @@ namespace r {
 		Location _location;
 	};
 
+
 	class DeclarationSyntax : public SyntaxNode {
 	public:
 		virtual SyntaxKind GetKind() = 0;
@@ -39,6 +41,13 @@ namespace r {
 		IdentifierSyntax* _identifier;
 	};
 
+
+	class ClassElementSyntax : public SyntaxNode {
+	public:
+		virtual SyntaxKind GetKind() = 0;
+		virtual void Accept(SyntaxNodeVisitor &visitor) = 0;
+
+	};
 	class StatementSyntax : public SyntaxNode {
 	public:
 		virtual SyntaxKind GetKind() = 0;
@@ -82,6 +91,28 @@ namespace r {
 		virtual void Accept(SyntaxNodeVisitor &visitor) = 0;
 	};
 
+	class SourceCodeSyntax : public SyntaxNode {
+	public:
+		DECLARE_NODE_TYPE(SourceCode);
+
+		List<ClassDeclarationSyntax*> *GetClassDeclarations() { return _classDeclarations; }
+		void SetScope(GlobalScope * value) { _scope = value; }
+		GlobalScope * GetScope() { return _scope; }
+	private:
+		List<ClassDeclarationSyntax*> *_classDeclarations = new List<ClassDeclarationSyntax*>();
+		GlobalScope * _scope;
+	};
+
+	class ClassDeclarationSyntax : public SyntaxNode, public DeclarationSyntax {
+	public:
+		DECLARE_NODE_TYPE(ClassDeclaration);
+
+		List<ClassElementSyntax*> *GetMembers() { return _members; }
+	private:
+		List<ClassElementSyntax*> *_members = new List<ClassElementSyntax*>();
+	};
+
+
 	class ParenthesizedExpressionSyntax : public PrimaryExpressionSyntax {
 	public:
 		DECLARE_NODE_TYPE(ParenthesizedExpression);
@@ -97,7 +128,6 @@ namespace r {
 		DECLARE_NODE_TYPE(ThisExpression);
 	};
 
-
 	class IdentifierSyntax : public PrimaryExpressionSyntax {
 	public:
 		DECLARE_NODE_TYPE(Identifier);
@@ -112,26 +142,25 @@ namespace r {
 		Symbol *_symbol;
 	};
 
-	class VariableDeclarationSyntax : public DeclarationSyntax {
+	class LocalVariableDeclarationSyntax : public DeclarationSyntax {
 	public:
-		DECLARE_NODE_TYPE(VariableDeclaration);
+		DECLARE_NODE_TYPE(LocalVariableDeclaration);
 
 		void SetInitializer(ExpressionSyntax *value) { _initializer = value; };
 		ExpressionSyntax* GetInitializer() { return _initializer; };
-
 	private:
 		ExpressionSyntax *_initializer;
 	};
 
-	class VariableStatementSyntax : public StatementSyntax {
+	class LocalVariableStatementSyntax : public StatementSyntax {
 	public:
-		DECLARE_NODE_TYPE(VariableStatement);
+		DECLARE_NODE_TYPE(LocalVariableStatement);
 
-		void SetDeclaration(VariableDeclarationSyntax *value) { _declaration = value; };
-		VariableDeclarationSyntax* GetDeclaration() { return _declaration; };
+		void SetDeclaration(LocalVariableDeclarationSyntax *value) { _declaration = value; };
+		LocalVariableDeclarationSyntax* GetDeclaration() { return _declaration; };
 
 	private:
-		VariableDeclarationSyntax *_declaration;
+		LocalVariableDeclarationSyntax *_declaration;
 	};
 
 	class AssignmentExpressionSyntax : public ExpressionSyntax {
@@ -147,13 +176,14 @@ namespace r {
 		ExpressionSyntax *_right;
 	};
 
-
 	class BlockSyntax : public StatementSyntax {
 	public:
 		DECLARE_NODE_TYPE(Block);
-
+		void SetScope(BlockScope * value) { _scope = value; }
+		BlockScope * GetScope() { return _scope; }
 		List<StatementSyntax*> *GetStatements() { return _statements; }
 	private:
+		BlockScope * _scope;
 		List<StatementSyntax*>* _statements = new List<StatementSyntax*>();
 	};
 
@@ -198,59 +228,69 @@ namespace r {
 		ExpressionSyntax* _expression;
 	};
 
+
+	class TypeAnnotationSyntax : public SyntaxNode {
+	public:
+		DECLARE_NODE_TYPE(TypeAnnotation);
+		IdentifierSyntax* GetType() { return _type; }
+		void SetType(IdentifierSyntax* value) { _type = value; }
+	private:
+		IdentifierSyntax* _type;
+	};
+
 	class ParameterDeclarationSyntax : public DeclarationSyntax {
 	public:
 		DECLARE_NODE_TYPE(ParameterDeclaration);
 
+		void SetParameterType(TypeAnnotationSyntax* value) { _parameterType = value; }
+		TypeAnnotationSyntax* GetParameterType() { return _parameterType; }
+	private:
+		TypeAnnotationSyntax * _parameterType;
 	};
 
-	class SignatureDeclarationSyntax : public DeclarationSyntax {
+
+	class PropertyDeclarationSyntax : public ClassElementSyntax, public DeclarationSyntax {
 	public:
-		void SetParameters(ParameterListSyntax* value) { _parameters = value; }
+		DECLARE_NODE_TYPE(PropertyDeclaration);
+
+		void SetPropertyType(TypeAnnotationSyntax* value) { _propertyType = value; }
+		TypeAnnotationSyntax* GetPropertyType() { return _propertyType; }
+	private:
+		TypeAnnotationSyntax * _propertyType;
+	};
+
+	class ConstructorDeclarationSyntax : public ClassElementSyntax, public DeclarationSyntax {
+	public:
+		DECLARE_NODE_TYPE(ConstructorDeclaration);
+		BlockSyntax* GetBody() { return _body; }
+		void SetBody(BlockSyntax* value) { _body = value; }
 		ParameterListSyntax* GetParameters() { return _parameters; }
 	private:
+		BlockSyntax* _body;
 		ParameterListSyntax* _parameters;
 	};
 
-	class AmbientFunctionDeclarationSyntax : public StatementSyntax, public SignatureDeclarationSyntax {
+	class MethodDeclarationSyntax : public ClassElementSyntax, public DeclarationSyntax {
 	public:
-		DECLARE_NODE_TYPE(AmbientFunctionDeclaration);
-		Scope * GetScope() { return _scope; }
-		void SetScope(Scope * value) { _scope = value; }
+		DECLARE_NODE_TYPE(MethodDeclaration);
+		BlockSyntax* GetBody() { return _body; }
+		void SetBody(BlockSyntax* value) { _body = value; }
+		void SetParameters(ParameterListSyntax* value) { _parameters = value; }
+		ParameterListSyntax* GetParameters() { return _parameters; }
+		MethodScope * GetScope() { return _scope; }
+		void SetScope(MethodScope * value) { _scope = value; }
+		void SetMethodDescriptor(MethodDescriptor * value) { _methodDescriptor = value; }
+		MethodDescriptor * GetMethodDescriptor() { return _methodDescriptor; }
+		void SetReturnType(TypeAnnotationSyntax * value) { _returnType = value; }
+		TypeAnnotationSyntax * GetReturnType() { return _returnType; }
 	private:
-		Scope *_scope;
+		BlockSyntax* _body;
+		ParameterListSyntax* _parameters;
+		TypeAnnotationSyntax * _returnType;
+		MethodScope *_scope;
+		MethodDescriptor *_methodDescriptor;
 	};
 
-
-	class FunctionLikeDeclarationSyntax : public SignatureDeclarationSyntax {
-	public:
-		//        BlockSyntax* GetBody() { return _body; }
-		//    private:
-		//        BlockSyntax* _body;
-
-		List<StatementSyntax*> *GetStatements() { return _statements; }
-		Scope * GetScope() { return _scope; }
-		void SetScope(Scope * value) { _scope = value; }
-		void SetFunction(FunctionInfo * value) { _function = value; }
-		FunctionInfo * GetFunction() { return _function; }
-	private:
-		List<StatementSyntax*>* _statements = new List<StatementSyntax*>();
-		Scope *_scope;
-		FunctionInfo *_function;
-	};
-
-	class FunctionDeclarationSyntax : public StatementSyntax, public FunctionLikeDeclarationSyntax {
-	public:
-		DECLARE_NODE_TYPE(FunctionDeclaration);
-
-
-	};
-
-
-	class FunctionExpressionSyntax : public PrimaryExpressionSyntax, public FunctionLikeDeclarationSyntax {
-	public:
-		DECLARE_NODE_TYPE(FunctionExpression);
-	};
 
 	class PostfixUnaryExpressionSyntax : public PostfixExpressionSyntax
 	{
@@ -280,7 +320,7 @@ namespace r {
 		ExpressionSyntax *_expression;
 	};
 
-	class NewExpressionSyntax : public PrimaryExpressionSyntax /*LeftHandSideExpressionSyntax*/ {
+	class NewExpressionSyntax : public PrimaryExpressionSyntax {
 	public:
 		DECLARE_NODE_TYPE(NewExpression);
 

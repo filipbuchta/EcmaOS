@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CppUnitTest.h"
-#include "../../Runtime/assembler.h"
+#include "../../Runtime/codegen/assembler.h"
 
 
 class TestAssemblerHolder {

@@ -1,17 +1,17 @@
 #include "treeflattener.h"
 
-
-void TreeFlattener::VisitAmbientFunctionDeclaration(AmbientFunctionDeclarationSyntax &node) {
-	_list->Push(node.GetKind());
-	node.GetIdentifier()->Accept(*this);
-	node.GetParameters()->Accept(*this);
-}
-
 void TreeFlattener::VisitBinaryExpression(BinaryExpressionSyntax &node) {
 	_list->Push(node.GetKind());
 	node.GetLeft()->Accept(*this);
 	_list->Push(node.GetOperator().Kind);
 	node.GetRight()->Accept(*this);
+}
+
+
+void TreeFlattener::VisitPropertyDeclaration(PropertyDeclarationSyntax &node) {
+	_list->Push(node.GetKind());
+	node.GetIdentifier()->Accept(*this);
+	node.GetPropertyType()->Accept(*this);
 }
 
 void TreeFlattener::VisitExpressionStatement(ExpressionStatementSyntax &node) {
@@ -25,8 +25,28 @@ void TreeFlattener::VisitArrayLiteralExpression(ArrayLiteralExpressionSyntax &no
 		child->Accept(*this);
 	}
 }
+void TreeFlattener::VisitClassDeclaration(ClassDeclarationSyntax &node) {
+	_list->Push(node.GetKind());
+	node.GetIdentifier()->Accept(*this);
+	for (ClassElementSyntax* child : *node.GetMembers()) {
+		child->Accept(*this);
+	}
+}
 
-void TreeFlattener::VisitVariableDeclaration(VariableDeclarationSyntax &node) {
+
+void TreeFlattener::VisitSourceCode(SourceCodeSyntax &node) {
+	_list->Push(node.GetKind());
+	for (ClassDeclarationSyntax* child : *node.GetClassDeclarations()) {
+		child->Accept(*this);
+	}
+}
+
+void TreeFlattener::VisitTypeAnnotation(TypeAnnotationSyntax &node) {
+	_list->Push(node.GetKind());
+	node.GetType()->Accept(*this);
+}
+
+void TreeFlattener::VisitLocalVariableDeclaration(LocalVariableDeclarationSyntax &node) {
 	_list->Push(node.GetKind());
 	node.GetIdentifier()->Accept(*this);
 	if (node.GetInitializer() != nullptr) {
@@ -34,7 +54,7 @@ void TreeFlattener::VisitVariableDeclaration(VariableDeclarationSyntax &node) {
 	}
 }
 
-void TreeFlattener::VisitVariableStatement(VariableStatementSyntax &node) {
+void TreeFlattener::VisitLocalVariableStatement(LocalVariableStatementSyntax &node) {
 	_list->Push(node.GetKind());
 	node.GetDeclaration()->Accept(*this);
 }
@@ -74,28 +94,19 @@ void TreeFlattener::VisitThisExpression(ThisExpressionSyntax &node) {
 	_list->Push(node.GetKind());
 }
 
-void TreeFlattener::VisitFunctionDeclaration(FunctionDeclarationSyntax &node) {
-	_list->Push(node.GetKind());
-	if (node.GetIdentifier() != nullptr) {
-		node.GetIdentifier()->Accept(*this);
-	}
-	if (node.GetParameters() != nullptr) {
-		node.GetParameters()->Accept(*this);
-	}
-	for (StatementSyntax* child : *node.GetStatements()) {
-		child->Accept(*this);
-	}
-}
 
-void TreeFlattener::VisitFunctionExpression(FunctionExpressionSyntax &node) {
+void TreeFlattener::VisitConstructorDeclaration(ConstructorDeclarationSyntax &node) {
 	_list->Push(node.GetKind());
 	node.GetIdentifier()->Accept(*this);
-	
 	node.GetParameters()->Accept(*this);
-	
-	for (StatementSyntax* child : *node.GetStatements()) {
-		child->Accept(*this);
-	}
+	node.GetBody()->Accept(*this);
+}
+
+void TreeFlattener::VisitMethodDeclaration(MethodDeclarationSyntax &node) {
+	_list->Push(node.GetKind());
+	node.GetIdentifier()->Accept(*this);
+	node.GetParameters()->Accept(*this);
+	node.GetBody()->Accept(*this);
 }
 
 void TreeFlattener::VisitParameterDeclaration(ParameterDeclarationSyntax &node) {

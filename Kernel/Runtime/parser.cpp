@@ -11,99 +11,20 @@ namespace r {
 	{
 	}
 
-	FunctionDeclarationSyntax *Parser::ParseProgram() 
+	SourceCodeSyntax *Parser::ParseSourceCode() 
 	{
 
-		FunctionDeclarationSyntax *node = new FunctionDeclarationSyntax();
-		node->SetScope(_binder->GetGlobalScope());
-		_binder->EnterScope(node->GetScope());
+		SourceCodeSyntax *node = new SourceCodeSyntax();
+		GlobalScope* scope = new GlobalScope();
+		node->SetScope(scope);
 		NextToken();
 		// ParseSourceElements
-		while (!ParseOptional(EndOfStreamToken)) {
-			node->GetStatements()->Push(ParseStatement());
+		while (!ParseOptional(EndOfCodeToken)) {
+			node->GetClassDeclarations()->Push(ParseClassDeclaration());
 		}
-		_binder->ExitScope();
 		return node;
 	}
 
-	SyntaxToken Parser::NextToken() 
-	{
-		return _currentToken = _scanner->Next();
-	}
-
-	SyntaxToken Parser::ParseExpected(SyntaxKind kind) 
-	{
-		SyntaxToken token = _currentToken;
-		
-		if (_currentToken.Kind != kind) 
-		{
-			FATAL("Incorrect token %s, expected %s", SyntaxKindNames[_currentToken.Kind], SyntaxKindNames[kind]);		
-		}
-		else 
-		{
-			NextToken();
-		}
-
-		return token;
-	}
-
-	bool Parser::ParseOptional(SyntaxKind kind) 
-	{
-		if (_currentToken.Kind == kind) 
-		{
-			NextToken();
-			return true;
-		}
-		else 
-		{
-			return false;
-		}
-	}
-
-
-	int GetOperatorPrecedence(SyntaxKind kind) 
-	{
-		switch (kind) {
-		case ExclamationEqualsToken:
-		case EqualsEqualsToken:
-			return 1;
-		case LessThanToken:
-		case GreaterThanToken:
-			return 2;
-		case MinusToken:
-		case PlusToken:
-			return 3;
-		case AsteriskToken:
-		case SlashToken:
-			return 4;
-		default:
-			return -1;
-		}
-	}
-
-	bool IsLeftHandSideExpression(SyntaxKind kind) 
-	{
-		switch (kind) 
-		{
-			case ArrayLiteralExpression:
-			//case ObjectLiteralExpression:
-			//case RegularExpressionLiteral:
-			case FunctionExpression:
-			case PropertyAccessExpression:
-			case NewExpression:
-			case ThisExpression:
-			case CallExpression:
-			case Identifier:
-			case NumericLiteral:
-			case StringLiteral:
-			case Literal:
-			case BooleanLiteral:
-			case ParenthesizedExpression:
-				return true;
-			default:
-				return false;
-		}
-	}
 
 	IfStatementSyntax * Parser::ParseIfStatement() 
 	{
@@ -157,9 +78,9 @@ namespace r {
 	{
 		switch (_currentToken.Kind) 
 		{
-			case VarKeyword: 
+			case LetKeyword: 
 			{
-				return ParseVariableStatement();
+				return ParseLocalVariableStatement();
 			}
 			case IfKeyword: 
 			{
@@ -169,17 +90,9 @@ namespace r {
 			{
 				return ParseWhileStatement();
 			}
-			case FunctionKeyword: 
-			{
-				return ParseFunctionDeclaration();
-			}
 			case ReturnKeyword: 
 			{
 				return ParseReturnStatement();
-			}
-			case DeclareKeyword: 
-			{
-				return ParseAmbientDeclaration();
 			}
 			case OpenBraceToken: 
 			{
@@ -197,10 +110,18 @@ namespace r {
 		BlockSyntax * node = new BlockSyntax();
 		node->SetLocation(_scanner->GetLocation());
 		ParseExpected(OpenBraceToken);
+
+		BlockScope * scope = new BlockScope();
+		node->SetScope(scope);
+		_binder->EnterScope(scope);
+
 		while (!ParseOptional(CloseBraceToken)) 
 		{
 			node->GetStatements()->Push(ParseStatement());
 		}
+
+		_binder->ExitScope();
+
 		return node;
 	}
 
@@ -234,120 +155,110 @@ namespace r {
 		return node;
 	}
 
-
-	FunctionExpressionSyntax * Parser::ParseFunctionExpression() 
+	ClassDeclarationSyntax * Parser::ParseClassDeclaration() 
 	{
-		ParseExpected(FunctionKeyword);
-		FunctionExpressionSyntax * node = new FunctionExpressionSyntax();
-		if (_currentToken.Kind == IdentifierName) 
-		{
-			node->SetIdentifier(ParseIdentifier());
-		}
-		else 
-		{
-			IdentifierSyntax * emptyIdentifier = new IdentifierSyntax();
-			emptyIdentifier->SetName(SyntaxToken(SyntaxKind::IdentifierName, ""));
-			node->SetIdentifier(emptyIdentifier);
-		}
-
-		FunctionScope * scope = new FunctionScope();
-		node->SetScope(scope);
-		_binder->EnterScope(scope);
-
-		node->SetParameters(ParseParameterList());
-
+		ParseExpected(ClassKeyword);
+		ClassDeclarationSyntax * node = new ClassDeclarationSyntax();
+		node->SetIdentifier(ParseIdentifier());
+		//parse optional class heritage
 		ParseExpected(OpenBraceToken);
-		while (!ParseOptional(CloseBraceToken)) 
+
+		while (true)
 		{
-			node->GetStatements()->Push(ParseStatement());
+			ClassElementSyntax * node;
+			if (_currentToken.Kind == ConstructorKeyword) 
+			{
+				node = ParseConstructorDeclaration();
+			}
+			else 
+			{
+				IdentifierSyntax * identifier = ParseIdentifier();
+
+				if (_currentToken.Kind == OpenParenthesisToken) 
+				{
+					node = ParseMethodDeclaration(*identifier);
+				}
+				else 
+				{
+					node = ParsePropertyDeclaration(*identifier);
+				}
+			}
+			if (ParseOptional(CloseBraceToken)) {
+				break;
+			}
 		}
-		_binder->ExitScope();
-
-		_binder->BindDeclaration(*node);
-
-		ParseOptional(SemicolonToken);
 
 		return node;
 	}
 
-	FunctionDeclarationSyntax * Parser::ParseFunctionDeclaration() 
+
+	TypeAnnotationSyntax * Parser::ParseTypeAnnotation() 
 	{
-		ParseExpected(FunctionKeyword);
-		FunctionDeclarationSyntax * node = new FunctionDeclarationSyntax();
+		ParseExpected(ColonToken);
+
+		TypeAnnotationSyntax * node = new TypeAnnotationSyntax();
+		node->SetType(ParseIdentifier());
+
+		return node;
+	}
+
+
+	ConstructorDeclarationSyntax * Parser::ParseConstructorDeclaration() {
+		
+		ConstructorDeclarationSyntax * node = new ConstructorDeclarationSyntax();
+		node->SetIdentifier(ParseIdentifier());
+
+		ParseExpected(OpenBraceToken);
+
+		ParseExpected(CloseBraceToken);
+
+		return node;
+	}
+
+	PropertyDeclarationSyntax * Parser::ParsePropertyDeclaration(IdentifierSyntax & identifier) {
+		NOT_IMPLEMENTED();
+		return nullptr;
+	}
+
+	MethodDeclarationSyntax * Parser::ParseMethodDeclaration(IdentifierSyntax & identifier) 
+	{
+		MethodDeclarationSyntax * node = new MethodDeclarationSyntax();
 		//TODO: location
-		node->SetIdentifier(ParseIdentifier());
+		node->SetIdentifier(&identifier);
 
-		FunctionScope * scope = new FunctionScope();
+		MethodScope * scope = new MethodScope();
 		node->SetScope(scope);
 		_binder->EnterScope(scope);
 
 		node->SetParameters(ParseParameterList());
 
-		//TODO: parse block?
-		ParseExpected(OpenBraceToken);
-		while (!ParseOptional(CloseBraceToken)) 
-		{
-			node->GetStatements()->Push(ParseStatement());
-		}
+		node->SetReturnType(ParseTypeAnnotation());
+
+		node->SetBody(ParseBlock());
+
 		_binder->ExitScope();
 
 		_binder->BindDeclaration(*node);
 
-		ParseOptional(SemicolonToken);
-
 		return node;
 	}
 
-	AmbientFunctionDeclarationSyntax *Parser::ParseAmbientFunctionDeclaration() 
+
+	LocalVariableStatementSyntax *Parser::ParseLocalVariableStatement() 
 	{
-		ParseExpected(FunctionKeyword);
-		AmbientFunctionDeclarationSyntax * node = new AmbientFunctionDeclarationSyntax();
-		node->SetIdentifier(ParseIdentifier());
-
-		FunctionScope * scope = new FunctionScope();
-		node->SetScope(scope);
-		_binder->EnterScope(scope);
-
-		node->SetParameters(ParseParameterList());
-		_binder->ExitScope();
-
-		_binder->BindDeclaration(*node);
-
-		ParseOptional(SemicolonToken);
-
-		return node;
-	}
-
-	//TODO: return correct type
-	AmbientFunctionDeclarationSyntax *Parser::ParseAmbientDeclaration() 
-	{
-		ParseExpected(DeclareKeyword);
-
-		switch (_currentToken.Kind) {
-		case FunctionKeyword: {
-			return ParseAmbientFunctionDeclaration();
-		}
-							  break;
-		}
-
-	}
-
-
-	VariableStatementSyntax *Parser::ParseVariableStatement() 
-	{
-		VariableStatementSyntax *node = new VariableStatementSyntax();
+		LocalVariableStatementSyntax *node = new LocalVariableStatementSyntax();
 		node->SetLocation(_scanner->GetLocation());
-		node->SetDeclaration(ParseVariableDeclaration());
+		node->SetDeclaration(ParseLocalVariableDeclaration());
 		ParseOptional(SemicolonToken);
 		return node;
 	}
 
-	VariableDeclarationSyntax *Parser::ParseVariableDeclaration() 
+	LocalVariableDeclarationSyntax *Parser::ParseLocalVariableDeclaration()
 	{
-		ParseExpected(VarKeyword);
-		VariableDeclarationSyntax *node = new VariableDeclarationSyntax();
+		ParseExpected(LetKeyword);
+		LocalVariableDeclarationSyntax *node = new LocalVariableDeclarationSyntax();
 		node->SetIdentifier(ParseIdentifier());
-		if (ParseOptional(EqualsToken)) {
+		if (ParseOptional(SyntaxKind::EqualsToken)) {
 			node->SetInitializer(ParseInitializerExpression());
 		}
 
@@ -365,11 +276,11 @@ namespace r {
 	ExpressionSyntax *Parser::ParseAssignmentExpression() 
 	{
 		ExpressionSyntax *node = ParseBinaryExpression(*ParseUnaryExpression(), 0);
-		if (IsLeftHandSideExpression(node->GetKind()) && _currentToken.Kind == EqualsToken) 
+		if (IsLeftHandSideExpression(node->GetKind()) && _currentToken.Kind == SyntaxKind::EqualsToken) 
 		{
 			AssignmentExpressionSyntax *assignmentExpression = new AssignmentExpressionSyntax();
 			assignmentExpression->SetLeft(node);
-			ParseExpected(EqualsToken);
+			ParseExpected(SyntaxKind::EqualsToken);
 			assignmentExpression->SetRight(ParseAssignmentExpression());
 
 			node = assignmentExpression;
@@ -385,7 +296,6 @@ namespace r {
 
 		while (true) 
 		{
-
 			int precendence = GetOperatorPrecedence(_currentToken.Kind);
 
 			if (precendence != -1 && precendence > minPrecendence) 
@@ -536,10 +446,6 @@ namespace r {
 			{
 				return ParseThisExpression();
 			}
-			case FunctionKeyword:
-			{
-				return ParseFunctionExpression();
-			}
 			case NewKeyword:
 			{
 				return ParseNewExpression();
@@ -659,5 +565,81 @@ namespace r {
 		return node;
 	}
 
+
+	SyntaxToken Parser::NextToken()
+	{
+		return _currentToken = _scanner->Next();
+	}
+
+	SyntaxToken Parser::ParseExpected(SyntaxKind kind)
+	{
+		SyntaxToken token = _currentToken;
+
+		if (_currentToken.Kind != kind)
+		{
+			FATAL("Incorrect token %s, expected %s", SyntaxKindNames[_currentToken.Kind], SyntaxKindNames[kind]);
+		}
+		else
+		{
+			NextToken();
+		}
+
+		return token;
+	}
+
+	bool Parser::ParseOptional(SyntaxKind kind)
+	{
+		if (_currentToken.Kind == kind)
+		{
+			NextToken();
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+
+	int Parser::GetOperatorPrecedence(SyntaxKind kind)
+	{
+		switch (kind) {
+		case ExclamationEqualsToken:
+		case EqualsEqualsToken:
+			return 1;
+		case LessThanToken:
+		case GreaterThanToken:
+			return 2;
+		case MinusToken:
+		case PlusToken:
+			return 3;
+		case AsteriskToken:
+		case SlashToken:
+			return 4;
+		default:
+			return -1;
+		}
+	}
+
+	bool Parser::IsLeftHandSideExpression(SyntaxKind kind)
+	{
+		switch (kind)
+		{
+		case SyntaxKind::ArrayLiteralExpression:
+		case SyntaxKind::PropertyAccessExpression:
+		case SyntaxKind::NewExpression:
+		case SyntaxKind::ThisExpression:
+		case SyntaxKind::CallExpression:
+		case SyntaxKind::Identifier:
+		case SyntaxKind::NumericLiteral:
+		case SyntaxKind::StringLiteral:
+		case SyntaxKind::Literal:
+		case SyntaxKind::BooleanLiteral:
+		case SyntaxKind::ParenthesizedExpression:
+			return true;
+		default:
+			return false;
+		}
+	}
 
 }

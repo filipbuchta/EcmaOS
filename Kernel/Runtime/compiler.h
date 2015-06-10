@@ -2,10 +2,9 @@
 #define COMPILER_H_
 
 
-#include "isolate.h"
 #include "parser.h"
 #include "syntax/syntaxnode.h"
-#include "codegenerator.h"
+#include "codegen/codegenerator.h"
 
 
 namespace r {
@@ -17,7 +16,7 @@ namespace r {
 
 	class Compiler {
 	public:
-		static Code* Compile(Isolate *source, char const *string);
+		static Code* Compile(char const *string);
 		Compiler();
 	};
 

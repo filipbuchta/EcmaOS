@@ -1,5 +1,6 @@
 #include "codegentests.h"
 #include "../../Runtime/platform.h"
+#include "../../Runtime/compiler.h"
 #include <windows.h>
 
 
@@ -19,24 +20,20 @@ namespace r {
 	}
 }
 
-void CompileAndVerify(const char * code, const char *expectedOutput)
+void CompileAndVerify(const char * source, const char *expectedOutput)
 {
 	std::string generatedCode = "declare function log(value);";
-	generatedCode.append(code);
+	generatedCode.append(source);
 
-	Binder * binder = new Binder();
-	Parser* parser = new Parser(new Scanner(generatedCode.c_str()), binder);
-	FunctionDeclarationSyntax *node = parser->ParseProgram();
-	binder->BindProgram();
 
-	Heap * heap = new Heap();
-	CodeGenerator * codeGenerator = new CodeGenerator(heap);
-	FunctionInfo * function = codeGenerator->MakeCode(*node);
+	Compiler * compiler = new Compiler();
+	Code * code = compiler->Compile(generatedCode.c_str());
+
 
 	output.clear();
 
 	void(*entry) ();
-	entry = (void(*) ())codeGenerator->GetAssembler()->GetBuffer();
+	entry = (void(*) ())code->GetEntryPoint()->GetCode();
 
 	((void(*)())entry)();
 

@@ -19,19 +19,6 @@ namespace RuntimeTests
 			END_TEST_CLASS_ATTRIBUTE()
 	public:
 
-		TEST_METHOD(ConstructorTests)
-		{
-			PARSE_TREE("new foo();");
-
-			N(FunctionDeclaration);
-			{
-				N(ExpressionStatement);
-				{
-					N(NewExpression); N(Identifier); N(IdentifierName);
-					N(ArgumentList);
-				}
-			}
-		}
 
 
 

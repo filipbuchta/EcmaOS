@@ -1,6 +1,9 @@
 #include "utils.h"
 #include "list.h"
 
+extern "C" int __cdecl strcmp(const char * str1, const char * str2);
+
+
 int pow(int number, int power) {
 	int result = 1;
 	for (int i = 0; i < power; i++) {

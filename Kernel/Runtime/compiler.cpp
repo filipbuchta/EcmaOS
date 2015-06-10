@@ -1,15 +1,16 @@
 
 #include "compiler.h"
 #include "binder.h"
-#include "codegenerator.h"
+#include "codegen/codegenerator.h"
 #include "astprinter.h"
+#include "runtime.h"
 
 namespace r {
 
 	Compiler::Compiler() {
 	}
 
-	Code* Compiler::Compile(Isolate *isolate, char const *source) {
+	Code* Compiler::Compile(char const *source) {
 
 		Code * code = new Code();
 		code->SetSource(source);
@@ -19,17 +20,48 @@ namespace r {
 		Binder *binder = new Binder();
 		Parser* parser = new Parser(scanner, binder);
 
-		FunctionDeclarationSyntax *sourceFile = parser->ParseProgram();
+		SourceCodeSyntax *sourceCode = parser->ParseSourceCode();
+
+		for (int i = 0; i < sourceCode->GetClassDeclarations()->GetSize(); i++) {
+			ClassDeclarationSyntax * classDeclarationSyntax = sourceCode->GetClassDeclarations()->Get(i);
+			ClassDescriptor * classInfo = new ClassDescriptor();
+			for (int i = 0; i < sourceCode->GetClassDeclarations()->GetSize(); i++) {
+				ClassElementSyntax * classElementSyntax = classDeclarationSyntax->GetMembers()->Get(i);
+
+				if (classElementSyntax->GetKind() == SyntaxKind::MethodDeclaration) {
+
+				}
+			}
+		}
 
 
 		AstPrinter *treePrinter = new AstPrinter();
-		treePrinter->PrintTree(*sourceFile);
+		treePrinter->PrintTree(*sourceCode);
 
-		binder->BindProgram();
+		binder->BindSource(*sourceCode->GetScope());
 		Heap * heap = new Heap();
-		CodeGenerator* codeGenerator = new CodeGenerator(heap);
-		FunctionInfo *function = codeGenerator->MakeCode(*sourceFile);
-		code->SetEntryPoint(function);
+
+		unsigned char * buffer = Platform::AllocateMemory(1 << 16, true);
+		Assembler * assembler = new Assembler(buffer, 0x100);
+
+
+		CodeGenerator* codeGenerator = new CodeGenerator(heap, assembler);
+
+		for (int i = 0; i < sourceCode->GetClassDeclarations()->GetSize(); i++) {
+			ClassDeclarationSyntax * classDeclarationSyntax = sourceCode->GetClassDeclarations()->Get(i);
+			ClassDescriptor * classInfo = new ClassDescriptor();
+			for (int i = 0; i < sourceCode->GetClassDeclarations()->GetSize(); i++) {
+				ClassElementSyntax * classElementSyntax = classDeclarationSyntax->GetMembers()->Get(i);
+
+				if (classElementSyntax->GetKind() == SyntaxKind::MethodDeclaration) {
+					MethodDescriptor *function = codeGenerator->MakeCode(*(MethodDeclarationSyntax*)classElementSyntax);
+					//classInfo->
+					code->SetEntryPoint(function);
+				}
+			}
+		}
+
+
 
 		return code;
 	}

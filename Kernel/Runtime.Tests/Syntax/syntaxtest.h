@@ -19,13 +19,15 @@ namespace Microsoft
 	}
 }
 
+#define PARSE_TREE_C(expression) \
+	PARSE_TREE("  ".expression." ")
 
 #define PARSE_TREE(expression) \
 	Binder* binder = new Binder(); \
 	Parser* parser = new Parser(new r::Scanner(expression), binder);   \
-	FunctionDeclarationSyntax *tree = parser->ParseProgram();   \
+	SourceCodeSyntax *tree = parser->ParseSourceCode();   \
 	TreeFlattener *flattener = new TreeFlattener(); \
-	flattener->VisitFunctionDeclaration(*tree); \
+	tree->Accept(*(SyntaxNodeVisitor*)flattener); \
 	List<SyntaxKind> *list = flattener->GetList(); \
 	SyntaxKind* current = list->begin(); 
 

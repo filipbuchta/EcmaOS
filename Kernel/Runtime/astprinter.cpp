@@ -5,7 +5,7 @@
 
 namespace r {
 
-	void AstPrinter::PrintTree(FunctionDeclarationSyntax &node) {
+	void AstPrinter::PrintTree(SourceCodeSyntax &node) {
 		node.Accept(*this);
 	}
 
@@ -19,11 +19,38 @@ namespace r {
 		Print(string);
 	}
 
-	void AstPrinter::VisitAmbientFunctionDeclaration(AmbientFunctionDeclarationSyntax &node) {
-		PrintIndented("AmbientFunctionDeclaration\n");
+	void AstPrinter::VisitTypeAnnotation(TypeAnnotationSyntax &node) {
+		PrintIndented("TypeAnnotation\n");
+		_indent++;
+		node.GetType()->Accept(*this);
+		_indent--;
+	}
+
+
+	void AstPrinter::VisitPropertyDeclaration(PropertyDeclarationSyntax &node) {
+		PrintIndented("PropertyDeclaration\n");
 		_indent++;
 		node.GetIdentifier()->Accept(*this);
-		node.GetParameters()->Accept(*this);
+		node.GetPropertyType()->Accept(*this);
+		_indent--;
+	}
+
+
+	void AstPrinter::VisitClassDeclaration(ClassDeclarationSyntax &node) {
+		PrintIndented("ClassDeclaration\n");
+		_indent++;
+		for (ClassElementSyntax* child : *node.GetMembers()) {
+			child->Accept(*this);
+		};
+		_indent--;
+	}
+
+	void AstPrinter::VisitSourceCode(SourceCodeSyntax &node) {
+		PrintIndented("SourceCodeSyntax\n");
+		_indent++;
+		for (ClassDeclarationSyntax* child : *node.GetClassDeclarations()) {
+			child->Accept(*this);
+		};
 		_indent--;
 	}
 
@@ -45,30 +72,17 @@ namespace r {
 	}
 
 
-	void AstPrinter::VisitVariableDeclaration(VariableDeclarationSyntax &node) {
-		PrintIndented("VariableDeclaration\n");
+	void AstPrinter::VisitLocalVariableDeclaration(LocalVariableDeclarationSyntax &node) {
+		PrintIndented("LocalVariableDeclaration\n");
 		_indent++;
 		node.GetIdentifier()->Accept(*this);
 		_indent--;
 	}
 
-	void AstPrinter::VisitVariableStatement(VariableStatementSyntax &node) {
-		PrintIndented("VariableStatement\n");
+	void AstPrinter::VisitLocalVariableStatement(LocalVariableStatementSyntax &node) {
+		PrintIndented("LocalVariableStatement\n");
 		_indent++;
 		node.GetDeclaration()->Accept(*this);
-		_indent--;
-	}
-
-	void AstPrinter::VisitFunctionExpression(FunctionExpressionSyntax &node) {
-		PrintIndented("FunctionExpression\n");
-		_indent++;
-		if (node.GetIdentifier() != nullptr) {
-			node.GetIdentifier()->Accept(*this);
-		}
-		node.GetParameters()->Accept(*this);
-		for (StatementSyntax* child : *node.GetStatements()) {
-			child->Accept(*this);
-		}
 		_indent--;
 	}
 
@@ -95,18 +109,21 @@ namespace r {
 
 	}
 
-	void AstPrinter::VisitFunctionDeclaration(FunctionDeclarationSyntax &node) {
-		PrintIndented("FunctionDeclaration\n");
+	void AstPrinter::VisitConstructorDeclaration(ConstructorDeclarationSyntax &node) {
+		PrintIndented("ConstructorDeclarationSyntax\n");
 		_indent++;
-		if (node.GetIdentifier() != nullptr) { // program function does not have identifier
-			node.GetIdentifier()->Accept(*this);
-		}
-		if (node.GetParameters() != nullptr) {
-			node.GetParameters()->Accept(*this);
-		}
-		for (StatementSyntax* child : *node.GetStatements()) {
-			child->Accept(*this);
-		}
+		node.GetIdentifier()->Accept(*this);
+		node.GetParameters()->Accept(*this);
+		node.GetBody()->Accept(*this);
+		_indent--;
+	}
+
+	void AstPrinter::VisitMethodDeclaration(MethodDeclarationSyntax &node) {
+		PrintIndented("MethodDeclarationSyntax\n");
+		_indent++;
+		node.GetIdentifier()->Accept(*this);
+		node.GetParameters()->Accept(*this);
+		node.GetBody()->Accept(*this);
 		_indent--;
 	}
 

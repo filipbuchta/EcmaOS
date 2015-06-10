@@ -3,9 +3,16 @@
 namespace r {
 
 #define SYNTAX_KIND(DO) \
-	    DO(IdentifierName)\
-		DO(StringLiteral)\
-		DO(NumericLiteral)\
+		DO(IllegalToken) \
+		DO(PlusPlusToken)\
+		DO(OpenBracketToken)\
+		DO(CloseBracketToken)\
+		DO(ExclamationEqualsToken)\
+		DO(MinusMinusToken)\
+		DO(LessThanToken)\
+		DO(LessThanEqualsToken)\
+		DO(GreaterThanToken)\
+		DO(GreaterThanEqualsToken)\
 		DO(PlusToken)\
 		DO(SlashToken)\
 		DO(AsteriskToken)\
@@ -17,27 +24,35 @@ namespace r {
 		DO(CloseParenthesisToken)\
 		DO(CommaToken)\
 		DO(SemicolonToken)\
-		DO(EndOfStreamToken)\
+		DO(EndOfCodeToken)\
 		DO(OpenBraceToken)\
 		DO(CloseBraceToken)\
 		DO(ColonToken)\
-		DO(Identifier)\
+		DO(ConstructorKeyword)\
+		DO(WhileKeyword)\
+		DO(ForKeyword)\
 		DO(NumberKeyword)\
-		DO(VarKeyword)\
-		DO(FunctionKeyword)\
-		DO(DeclareKeyword)\
+		DO(StringKeyword)\
+		DO(BooleanKeyword)\
+		DO(LetKeyword)\
 		DO(NewKeyword)\
 		DO(InterfaceKeyword)\
+		DO(ClassKeyword)\
+		DO(ExtendsKeyword)\
+		DO(ImplementsKeyword)\
+		DO(ReturnKeyword)\
 		DO(IfKeyword)\
+		DO(ThisKeyword)\
 		DO(ElseKeyword)\
-		DO(AnyKeyword)\
-		DO(VariableDeclaration)\
-		DO(FunctionDeclaration)\
+		DO(LocalVariableDeclaration)\
+		DO(ClassDeclaration)\
+		DO(MethodDeclaration)\
+		DO(ConstructorDeclaration)\
+		DO(PropertyDeclaration)\
 		DO(InterfaceDeclaration)\
 		DO(ParenthesizedExpression)\
 		DO(MemberExpression)\
 		DO(NewExpression)\
-		DO(Literal)\
 		DO(BinaryExpression)\
 		DO(CallExpression)\
 		DO(AssignmentExpression)\
@@ -46,39 +61,31 @@ namespace r {
 		DO(LeftHandSideExpression) \
 		DO(PropertyAccessExpression) \
 		DO(PrimaryExpression) \
+		DO(ThisExpression)\
+		DO(PostfixUnaryExpression)\
+		DO(ArrayLiteralExpression)\
+		DO(PrefixUnaryExpression)\
 		DO(ExpressionStatement)\
-		DO(VariableStatement)\
+		DO(LocalVariableStatement)\
 		DO(Block)\
+		DO(IterationStatement)\
 		DO(IfStatement)\
 		DO(ParameterList)\
 		DO(ParameterDeclaration)\
 		DO(ArgumentList)\
 		DO(Argument)\
 		DO(PredefinedType)\
-		DO(AmbientFunctionDeclaration)\
 		DO(ReferenceType)\
-		DO(BooleanLiteral)\
-		DO(WhileKeyword)\
-		DO(IterationStatement)\
+		DO(Literal)\
 		DO(NullLiteral)\
-		DO(FunctionExpression)\
-		DO(ThisKeyword)\
-		DO(ThisExpression)\
-		DO(ExclamationEqualsToken)\
-		DO(MinusMinusToken)\
-		DO(LessThanToken)\
-		DO(LessThanEqualsToken)\
-		DO(GreaterThanToken)\
-		DO(GreaterThanEqualsToken)\
-		DO(PostfixUnaryExpression)\
-		DO(ArrayLiteralExpression)\
-		DO(OpenBracketToken)\
-		DO(CloseBracketToken)\
-		DO(PlusPlusToken)\
-		DO(PrefixUnaryExpression)\
+		DO(BooleanLiteral)\
+		DO(StringLiteral)\
+		DO(Identifier)\
+	    DO(IdentifierName)\
+	    DO(TypeAnnotation)\
+		DO(NumericLiteral)\
 		DO(ReturnStatement)\
-		DO(ReturnKeyword)\
-		DO(IllegalToken)
+		DO(SourceCode)
 
 
 #define MAKE_ENUM(VAR) VAR,

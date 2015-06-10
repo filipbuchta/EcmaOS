@@ -19,19 +19,7 @@ namespace RuntimeTests
 			END_TEST_CLASS_ATTRIBUTE()
 	public:
 
-		TEST_METHOD(WhileLoopTest)
-		{
-			PARSE_TREE("while (true) { }");
-
-			N(FunctionDeclaration);
-			{
-				N(IterationStatement);
-				{
-					N(Literal); N(BooleanLiteral); // true
-					N(Block); // { }
-				}
-			}
-		}
+	
 
 	};
 }

@@ -5,14 +5,15 @@ namespace r {
 #define AST_NODE_LIST(V)  \
     V(BinaryExpression) \
     V(ExpressionStatement) \
-    V(VariableDeclaration) \
+    V(LocalVariableDeclaration) \
+    V(ClassDeclaration) \
+    V(MethodDeclaration) \
+    V(PropertyDeclaration) \
     V(Literal) \
-    V(VariableStatement) \
-    V(FunctionDeclaration) \
+    V(LocalVariableStatement) \
     V(Block) \
     V(AssignmentExpression) \
     V(Identifier) \
-	V(AmbientFunctionDeclaration) \
     V(ParenthesizedExpression) \
     V(CallExpression) \
 	V(NewExpression) \
@@ -20,12 +21,14 @@ namespace r {
     V(ArgumentList) \
     V(IterationStatement) \
     V(ParameterList) \
-	V(FunctionExpression) \
 	V(ThisExpression) \
 	V(IfStatement)\
 	V(PostfixUnaryExpression)\
 	V(ArrayLiteralExpression)\
 	V(PrefixUnaryExpression)\
+	V(TypeAnnotation)\
+	V(ConstructorDeclaration)\
+	V(SourceCode)\
 	V(ReturnStatement)\
 	V(ParameterDeclaration) 
 

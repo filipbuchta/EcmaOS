@@ -20,33 +20,6 @@ namespace RuntimeTests
 	public:
 
 
-		TEST_METHOD(IfStatementTest)
-		{
-			PARSE_TREE("if (true) { }");
-
-			N(FunctionDeclaration);
-			{
-				N(IfStatement);
-				{
-					N(Literal); N(BooleanLiteral);
-					N(Block);
-				}
-			}
-		}
-
-		TEST_METHOD(IfElseStatementTest)
-		{
-			PARSE_TREE("if (true) { } else { }");
-
-			N(FunctionDeclaration);
-			{
-				N(IfStatement);
-				{
-					N(Literal); N(BooleanLiteral);
-					N(Block);
-					N(Block);
-				}
-			}
-		}
+	
 	};
 }

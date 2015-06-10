@@ -5,22 +5,20 @@ namespace r {
 	class DeclarationSyntax;
 	class Scope;
 
-	//enum SymbolKind {
-	//	Function,
-	//	Variable,
-	//	AmbientFunction,
-	//};
-
-	enum class SymbolLocation {
+	enum SymbolKind {
+		Class,
+		Property,
+		LocalVariable,
 		Parameter,
-		Local,
-		Global,
-		Ambient,
+		Method
 	};
 
 	class Symbol
 	{
 	public:
+
+		virtual SymbolKind GetKind() = 0;
+
 		const char * GetName() { return _name; }
 		void SetName(const char * value) { _name = value; }
 
@@ -29,27 +27,46 @@ namespace r {
 		DeclarationSyntax * GetDeclaration() { return _declaration; }
 		void SetDeclaration(DeclarationSyntax * value) { _declaration = value; }
 
-		SymbolLocation GetLocation() { return _symbolLocation; }
-		void SetLocation(SymbolLocation value) { _symbolLocation = value; }
 
-
-		int GetSlot() { return _slot; }
-		void SetSlot(int value) { _slot = value; }
 	private:
 		const char *_name;
 		DeclarationSyntax * _declaration;
 		Scope * _scope;
-		SymbolLocation _symbolLocation;
+	};
+
+
+	class ClassSymbol : public Symbol {
+	public:
+		SymbolKind GetKind() override { return SymbolKind::Class; }
+	};
+
+
+	class PropertySymbol : public Symbol {
+	public:
+		SymbolKind GetKind() override { return SymbolKind::Property; }
+	};
+
+	class LocalVariableSymbol : public Symbol {
+	public:
+		SymbolKind GetKind() override { return SymbolKind::LocalVariable; }
+		int GetSlot() { return _slot; }
+		void SetSlot(int value) { _slot = value; }
+	private:
 		int _slot;
 	};
 
-
-	class VariableSymbol : public Symbol {
-
+	class ParameterSymbol : public Symbol {
+	public:
+		SymbolKind GetKind() override { return SymbolKind::Parameter; }
+		int GetSlot() { return _slot; }
+		void SetSlot(int value) { _slot = value; }
+	private:
+		int _slot;
 	};
 
-	class FunctionSymbol : public Symbol {
-
+	class MethodSymbol : public Symbol {
+	public:
+		SymbolKind GetKind() override { return SymbolKind::Method; }
 	};
 
 }

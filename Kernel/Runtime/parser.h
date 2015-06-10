@@ -12,7 +12,7 @@ namespace r {
 	public:
 		Parser(Scanner *scanner, Binder *binder);
 
-		FunctionDeclarationSyntax *ParseProgram();
+		SourceCodeSyntax *ParseSourceCode();
 
 	private:
 		Scanner* _scanner;
@@ -22,6 +22,10 @@ namespace r {
 		SyntaxToken _currentToken = SyntaxToken(IllegalToken, "\0");
 
 		bool ParseOptional(SyntaxKind kind);
+
+		bool IsLeftHandSideExpression(SyntaxKind kind);
+
+		int GetOperatorPrecedence(SyntaxKind kind);
 
 		SyntaxToken ParseExpected(SyntaxKind kind);
 
@@ -33,21 +37,23 @@ namespace r {
 
 		ParameterListSyntax * ParseParameterList();
 
-		FunctionDeclarationSyntax * ParseFunctionDeclaration();
+		MethodDeclarationSyntax * ParseMethodDeclaration(IdentifierSyntax & identifier);
+
+		ConstructorDeclarationSyntax * ParseConstructorDeclaration();
+
+		PropertyDeclarationSyntax * ParsePropertyDeclaration(IdentifierSyntax & identifier);
 
 		IfStatementSyntax * ParseIfStatement();
 
-		AmbientFunctionDeclarationSyntax * ParseAmbientFunctionDeclaration();
+		ClassDeclarationSyntax * ParseClassDeclaration();
 
-		AmbientFunctionDeclarationSyntax * ParseAmbientDeclaration();
-
-		VariableStatementSyntax *ParseVariableStatement();
+		LocalVariableStatementSyntax *ParseLocalVariableStatement();
 
 		BlockSyntax *ParseBlock();
 
 		ExpressionStatementSyntax *ParseExpressionStatement();
 
-		VariableDeclarationSyntax *ParseVariableDeclaration();
+		LocalVariableDeclarationSyntax *ParseLocalVariableDeclaration();
 
 		ExpressionSyntax *ParseInitializerExpression();
 
@@ -75,22 +81,21 @@ namespace r {
 
 		LiteralSyntax * ParseLiteral();
 
+		TypeAnnotationSyntax * Parser::ParseTypeAnnotation();
+
 		NewExpressionSyntax * Parser::ParseNewExpression();
 
 		ThisExpressionSyntax * ParseThisExpression();
 
 		ArrayLiteralExpressionSyntax * ParseArrayLiteralExpression();
 
-		ReturnStatementSyntax * Parser::ParseReturnStatement();
-
+		ReturnStatementSyntax * ParseReturnStatement();
 
 		ExpressionSyntax * ParseBinaryExpression(ExpressionSyntax &left, int minPrecendence);
 
 		PrefixUnaryExpressionSyntax * ParsePrefixUnaryExpression();
 
 		MemberExpressionSyntax *ParseMemberExpressionRest(LeftHandSideExpressionSyntax &expression);
-
-		FunctionExpressionSyntax * Parser::ParseFunctionExpression();
 	};
 
 }
