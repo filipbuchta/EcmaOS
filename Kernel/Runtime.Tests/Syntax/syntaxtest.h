@@ -19,10 +19,18 @@ namespace Microsoft
 	}
 }
 
-#define PARSE_TREE_C(expression) \
-	PARSE_TREE("  ".expression." ")
+#define USING_EXPRESSION(expression) \
+	PARSE_TREE("class C { main(): void { ".expression." } } ") \
+	N(ClassDeclaration) \
+	N(Identifier); N(IdentifierName); \
+	N(MethodDeclaration); \
+	N(Identifier); N(IdentifierName); \
+	N(ParameterList); \
+	N(TypeAnnotation); \
+	N(Block);
 
-#define PARSE_TREE(expression) \
+
+#define USING_SOURCE(expression) \
 	Binder* binder = new Binder(); \
 	Parser* parser = new Parser(new r::Scanner(expression), binder);   \
 	SourceCodeSyntax *tree = parser->ParseSourceCode();   \

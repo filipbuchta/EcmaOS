@@ -18,7 +18,7 @@ namespace RuntimeTests
 
 		TEST_METHOD(AdditonTest)
 		{
-			CompileAndVerify("log(123 + 654);", "777");
+			CompileAndVerify("class C { static main(): void { Console.log(123 + 654); } }", "777");
 		}
 
 		TEST_METHOD(BigAdditonTest)

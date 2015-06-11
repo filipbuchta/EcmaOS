@@ -106,12 +106,14 @@ void TreeFlattener::VisitMethodDeclaration(MethodDeclarationSyntax &node) {
 	_list->Push(node.GetKind());
 	node.GetIdentifier()->Accept(*this);
 	node.GetParameters()->Accept(*this);
+	node.GetReturnType()->Accept(*this);
 	node.GetBody()->Accept(*this);
 }
 
 void TreeFlattener::VisitParameterDeclaration(ParameterDeclarationSyntax &node) {
 	_list->Push(node.GetKind());
 	node.GetIdentifier()->Accept(*this);
+	node.GetParameterType()->Accept(*this);
 }
 
 void TreeFlattener::VisitBlock(BlockSyntax &node) {

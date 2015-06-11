@@ -32,12 +32,14 @@ namespace r {
 		int GetCodeSize() { return _codeSize; }
 		LineInfo * GetLineInfo() { return _lineInfo; }
 		void SetLineInfo(LineInfo * value) { _lineInfo = value; }
-
+		void SetAmbient(bool value) { _ambient = value; }
+		bool GetAmbient() { return _ambient; }
 	private:
 		char* _name;
 		unsigned char *_code;
 		int _codeSize;
 		LineInfo * _lineInfo;
+		bool _ambient = false;
 	};
 
 

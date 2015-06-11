@@ -4,7 +4,7 @@
 
 namespace r {
 
-	r::SyntaxToken Scanner::Next()
+	SyntaxToken Scanner::Next()
 	{
 		while (true)
 		{
@@ -20,6 +20,10 @@ namespace r {
 			case '[': {
 				Advance();
 				return SyntaxToken(OpenBracketToken, "[");
+			}
+			case ':': {
+				Advance();
+				return SyntaxToken(ColonToken, "[");
 			}
 			case ',': {
 				Advance();
@@ -201,6 +205,15 @@ namespace r {
 					}
 					else if (strcmp(identifier, "constructor") == 0) {
 						return SyntaxToken(ConstructorKeyword, "constructor");
+					}
+					else if (strcmp(identifier, "class") == 0) {
+						return SyntaxToken(ClassKeyword, "class");
+					}
+					else if (strcmp(identifier, "declare") == 0) {
+						return SyntaxToken(DeclareKeyword, "declare");
+					}
+					else if (strcmp(identifier, "static") == 0) {
+						return SyntaxToken(StaticKeyword, "static");
 					}
 					else if (strcmp(identifier, "if") == 0) {
 						return SyntaxToken(IfKeyword, "if");

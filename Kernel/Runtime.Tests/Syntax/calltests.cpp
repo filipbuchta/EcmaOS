@@ -22,7 +22,7 @@ namespace RuntimeTests
 		
 		TEST_METHOD(MethodCallTest)
 		{
-			PARSE_TREE("class A { bar(): void { } foo(): void { bar() } }");
+			USING_SOURCE("class A { bar(): void { } foo(): void { bar() } }");
 
 			N(SourceCode);
 			{

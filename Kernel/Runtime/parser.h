@@ -37,11 +37,11 @@ namespace r {
 
 		ParameterListSyntax * ParseParameterList();
 
-		MethodDeclarationSyntax * ParseMethodDeclaration(IdentifierSyntax & identifier);
+		MethodDeclarationSyntax * ParseMethodDeclaration(IdentifierSyntax & identifier, List<SyntaxToken> * modifiers);
 
 		ConstructorDeclarationSyntax * ParseConstructorDeclaration();
 
-		PropertyDeclarationSyntax * ParsePropertyDeclaration(IdentifierSyntax & identifier);
+		PropertyDeclarationSyntax * ParsePropertyDeclaration(IdentifierSyntax & identifier, List<SyntaxToken> * modifiers);
 
 		IfStatementSyntax * ParseIfStatement();
 

@@ -148,7 +148,10 @@ namespace r {
 
 		void SetInitializer(ExpressionSyntax *value) { _initializer = value; };
 		ExpressionSyntax* GetInitializer() { return _initializer; };
+		void SetVariableType(TypeAnnotationSyntax* value) { _variableType = value; }
+		TypeAnnotationSyntax* GetVariableType() { return _variableType; }
 	private:
+		TypeAnnotationSyntax * _variableType;
 		ExpressionSyntax *_initializer;
 	};
 
@@ -270,6 +273,7 @@ namespace r {
 		ParameterListSyntax* _parameters;
 	};
 
+
 	class MethodDeclarationSyntax : public ClassElementSyntax, public DeclarationSyntax {
 	public:
 		DECLARE_NODE_TYPE(MethodDeclaration);
@@ -283,12 +287,15 @@ namespace r {
 		MethodDescriptor * GetMethodDescriptor() { return _methodDescriptor; }
 		void SetReturnType(TypeAnnotationSyntax * value) { _returnType = value; }
 		TypeAnnotationSyntax * GetReturnType() { return _returnType; }
+		List<SyntaxToken> * GetModifiers() { return _modifiers; }
+		void SetModifiers(List<SyntaxToken> * value) { _modifiers = value; }
 	private:
 		BlockSyntax* _body;
 		ParameterListSyntax* _parameters;
 		TypeAnnotationSyntax * _returnType;
 		MethodScope *_scope;
-		MethodDescriptor *_methodDescriptor;
+		MethodDescriptor * _methodDescriptor;
+		List<SyntaxToken> * _modifiers;
 	};
 
 

@@ -29,6 +29,8 @@ namespace r {
 		DO(CloseBraceToken)\
 		DO(ColonToken)\
 		DO(ConstructorKeyword)\
+		DO(StaticKeyword)\
+		DO(DeclareKeyword)\
 		DO(WhileKeyword)\
 		DO(ForKeyword)\
 		DO(NumberKeyword)\
@@ -67,9 +69,10 @@ namespace r {
 		DO(PrefixUnaryExpression)\
 		DO(ExpressionStatement)\
 		DO(LocalVariableStatement)\
-		DO(Block)\
 		DO(IterationStatement)\
+		DO(ReturnStatement)\
 		DO(IfStatement)\
+		DO(Block)\
 		DO(ParameterList)\
 		DO(ParameterDeclaration)\
 		DO(ArgumentList)\
@@ -84,7 +87,6 @@ namespace r {
 	    DO(IdentifierName)\
 	    DO(TypeAnnotation)\
 		DO(NumericLiteral)\
-		DO(ReturnStatement)\
 		DO(SourceCode)
 
 

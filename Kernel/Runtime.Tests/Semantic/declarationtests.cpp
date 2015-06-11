@@ -20,7 +20,7 @@ namespace RuntimeTests
 
 		TEST_METHOD(SemanticLocalVariableDeclarationTest)
 		{
-			PARSE_TREE("class C { function F(x: int) { var y: int; } }");
+			PARSE_TREE("class C { f(x: int): void { let y: int; } }");
 
 			ENTER_SCOPE() // Global scope
 			{
@@ -41,12 +41,7 @@ namespace RuntimeTests
 			EXIT_SCOPE();
 		}
 
-		TEST_METHOD(SemanticAmbientVariableDeclarationTest)
-		{
-			PARSE_TREE("declare function foo();");
 
-			GLOBAL("foo");
-		}
 
 
 	};

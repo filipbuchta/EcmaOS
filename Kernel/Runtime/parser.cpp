@@ -129,8 +129,8 @@ namespace r {
 	{
 		ParameterDeclarationSyntax * node = new ParameterDeclarationSyntax();
 		node->SetIdentifier(ParseIdentifier());
+		node->SetParameterType(ParseTypeAnnotation());
 		_binder->BindDeclaration(*node);
-		//((FunctionScope *)_binder->GetCurrentScope())->DeclareParameter(node);
 		return node;
 	}
 
@@ -165,24 +165,44 @@ namespace r {
 
 		while (true)
 		{
-			ClassElementSyntax * node;
+			ClassElementSyntax * child;
 			if (_currentToken.Kind == ConstructorKeyword) 
 			{
-				node = ParseConstructorDeclaration();
+				child = ParseConstructorDeclaration();
 			}
 			else 
 			{
+
+				List<SyntaxToken> * modifiers = new List<SyntaxToken>();
+				
+				while (true) {
+					if (_currentToken.Kind == SyntaxKind::DeclareKeyword) {
+						modifiers->Push(_currentToken);
+						NextToken();
+					}
+					else if (_currentToken.Kind == SyntaxKind::StaticKeyword) {
+						modifiers->Push(_currentToken);
+						NextToken();
+					}
+					else {
+						break;
+					}
+				}
+
 				IdentifierSyntax * identifier = ParseIdentifier();
+
 
 				if (_currentToken.Kind == OpenParenthesisToken) 
 				{
-					node = ParseMethodDeclaration(*identifier);
+					child = ParseMethodDeclaration(*identifier, modifiers);
 				}
 				else 
 				{
-					node = ParsePropertyDeclaration(*identifier);
+					child = ParsePropertyDeclaration(*identifier, modifiers);
 				}
 			}
+			node->GetMembers()->Push(child);
+
 			if (ParseOptional(CloseBraceToken)) {
 				break;
 			}
@@ -215,12 +235,12 @@ namespace r {
 		return node;
 	}
 
-	PropertyDeclarationSyntax * Parser::ParsePropertyDeclaration(IdentifierSyntax & identifier) {
+	PropertyDeclarationSyntax * Parser::ParsePropertyDeclaration(IdentifierSyntax & identifier, List<SyntaxToken> * modifiers) {
 		NOT_IMPLEMENTED();
 		return nullptr;
 	}
 
-	MethodDeclarationSyntax * Parser::ParseMethodDeclaration(IdentifierSyntax & identifier) 
+	MethodDeclarationSyntax * Parser::ParseMethodDeclaration(IdentifierSyntax & identifier, List<SyntaxToken> * modifiers) 
 	{
 		MethodDeclarationSyntax * node = new MethodDeclarationSyntax();
 		//TODO: location
@@ -231,11 +251,11 @@ namespace r {
 		_binder->EnterScope(scope);
 
 		node->SetParameters(ParseParameterList());
-
 		node->SetReturnType(ParseTypeAnnotation());
-
-		node->SetBody(ParseBlock());
-
+		if (!ParseOptional(SemicolonToken)) {
+			node->SetBody(ParseBlock());
+		}
+		node->SetModifiers(modifiers);
 		_binder->ExitScope();
 
 		_binder->BindDeclaration(*node);
@@ -249,7 +269,7 @@ namespace r {
 		LocalVariableStatementSyntax *node = new LocalVariableStatementSyntax();
 		node->SetLocation(_scanner->GetLocation());
 		node->SetDeclaration(ParseLocalVariableDeclaration());
-		ParseOptional(SemicolonToken);
+		ParseExpected(SemicolonToken);
 		return node;
 	}
 
@@ -258,6 +278,9 @@ namespace r {
 		ParseExpected(LetKeyword);
 		LocalVariableDeclarationSyntax *node = new LocalVariableDeclarationSyntax();
 		node->SetIdentifier(ParseIdentifier());
+		if (_currentToken.Kind == SyntaxKind::ColonToken) {
+			node->SetVariableType(ParseTypeAnnotation());
+		}
 		if (ParseOptional(SyntaxKind::EqualsToken)) {
 			node->SetInitializer(ParseInitializerExpression());
 		}

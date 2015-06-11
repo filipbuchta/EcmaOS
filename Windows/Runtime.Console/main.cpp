@@ -70,19 +70,20 @@ int main(int argc, char* argv[])
 	//const char * source = str.c_str();
 
 
-	const char * source = "declare function log(text); function test() { log(123); } test();";
+	const char * source = " \
+		class Console { \
+			declare static log(value: string): void;  \
+		} \
+		class C { \
+			static main(): void { \
+				Console.log(123 + 654); \
+			} \
+		}";
 
 
 
 	Compiler * compiler = new Compiler();
 	Code * code = compiler->Compile(source);
-
-	Scanner* scanner = new Scanner(source);
-	Binder *binder = new Binder();
-	Parser* parser = new Parser(scanner, binder);
-
-	SourceCodeSyntax *node = parser->ParseSourceCode();
-
 
 
 	//CreatePE(code);

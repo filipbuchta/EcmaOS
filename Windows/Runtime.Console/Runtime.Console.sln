@@ -1,13 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.22310.1
+VisualStudioVersion = 14.0.22823.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Runtime.Console", "Runtime.Console.vcxproj", "{9EA3EFCE-6C77-4B70-85C0-F587564D9967}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Runtime", "..\..\Kernel\Runtime\Runtime.vcxproj", "{1745240A-66BD-468D-9984-3245A7B7155A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Runtime.Tests", "..\..\Kernel\Runtime.Tests\Runtime.Tests.vcxproj", "{344C2269-F202-4B09-BBBE-382A7AF750F3}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Runtime.Tests", "..\..\Kernel\Runtime.Tests\Runtime.Tests.vcxproj", "{567D7425-8CF6-4781-9226-F278CE9506A8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +23,10 @@ Global
 		{1745240A-66BD-468D-9984-3245A7B7155A}.Debug|Win32.Build.0 = Debug|Win32
 		{1745240A-66BD-468D-9984-3245A7B7155A}.Release|Win32.ActiveCfg = Release|Win32
 		{1745240A-66BD-468D-9984-3245A7B7155A}.Release|Win32.Build.0 = Release|Win32
-		{344C2269-F202-4B09-BBBE-382A7AF750F3}.Debug|Win32.ActiveCfg = Debug|Win32
-		{344C2269-F202-4B09-BBBE-382A7AF750F3}.Debug|Win32.Build.0 = Debug|Win32
-		{344C2269-F202-4B09-BBBE-382A7AF750F3}.Release|Win32.ActiveCfg = Release|Win32
-		{344C2269-F202-4B09-BBBE-382A7AF750F3}.Release|Win32.Build.0 = Release|Win32
+		{567D7425-8CF6-4781-9226-F278CE9506A8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{567D7425-8CF6-4781-9226-F278CE9506A8}.Debug|Win32.Build.0 = Debug|Win32
+		{567D7425-8CF6-4781-9226-F278CE9506A8}.Release|Win32.ActiveCfg = Release|Win32
+		{567D7425-8CF6-4781-9226-F278CE9506A8}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -106,7 +106,6 @@ namespace r {
 		PrintIndented("Literal ");
 		Print(node.GetText().Value);
 		Print("\n");
-
 	}
 
 	void AstPrinter::VisitConstructorDeclaration(ConstructorDeclarationSyntax &node) {
@@ -119,11 +118,19 @@ namespace r {
 	}
 
 	void AstPrinter::VisitMethodDeclaration(MethodDeclarationSyntax &node) {
-		PrintIndented("MethodDeclarationSyntax\n");
+		PrintIndented("MethodDeclarationSyntax ");
 		_indent++;
+		for (SyntaxToken child : *node.GetModifiers()) {
+			Print(child.Value);
+			Print(" ");
+		}
+		Print("\n");
 		node.GetIdentifier()->Accept(*this);
 		node.GetParameters()->Accept(*this);
-		node.GetBody()->Accept(*this);
+		node.GetReturnType()->Accept(*this);
+		if (node.GetBody() != nullptr) {
+			node.GetBody()->Accept(*this);
+		}
 		_indent--;
 	}
 
@@ -140,6 +147,7 @@ namespace r {
 		PrintIndented("ParameterDeclaration\n");
 		_indent++;
 		node.GetIdentifier()->Accept(*this);
+		node.GetParameterType()->Accept(*this);
 		_indent--;
 	}
 

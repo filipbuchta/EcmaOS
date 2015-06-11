@@ -13,6 +13,18 @@ namespace r {
 
 	MethodDescriptor* CodeGenerator::MakeCode(MethodDeclarationSyntax & node)
 	{
+		MethodDescriptor *methodDescriptor = new MethodDescriptor();
+		node.SetMethodDescriptor(methodDescriptor);
+
+		for (SyntaxToken child : *node.GetModifiers()) {
+			if (child.Kind == SyntaxKind::DeclareKeyword) {
+				methodDescriptor->SetAmbient(true);
+			}
+		}
+
+		if (methodDescriptor->GetAmbient()) {
+			return methodDescriptor;
+		}
 
 		_assembler->StartLineRecording();
 
@@ -26,14 +38,11 @@ namespace r {
 
 
 
-		MethodDescriptor *methodDescriptor = new MethodDescriptor();
 
 		methodDescriptor->SetLineInfo(_assembler->EndLineRecording());
 
 		methodDescriptor->SetCode(_assembler->GetBuffer());
 		methodDescriptor->SetCodeSize(_assembler->GetBufferSize());
-
-		node.SetMethodDescriptor(methodDescriptor);
 
 
 		return methodDescriptor;
@@ -335,6 +344,8 @@ namespace r {
 
 	void CodeGenerator::VisitPropertyAccessExpression(PropertyAccessExpressionSyntax &node) 
 	{
+		VisitForStackValue(*node.GetExpresion());
+
 		NOT_IMPLEMENTED()
 	}
 

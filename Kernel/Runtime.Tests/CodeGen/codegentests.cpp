@@ -22,7 +22,7 @@ namespace r {
 
 void CompileAndVerify(const char * source, const char *expectedOutput)
 {
-	std::string generatedCode = "declare function log(value);";
+	std::string generatedCode = "class Console { declare static log(value: string): void; }";
 	generatedCode.append(source);
 
 

@@ -21,15 +21,17 @@ namespace RuntimeTests
 
 		TEST_METHOD(AdditionTest)
 		{
-			PARSE_TREE("class C { main(): void { 123 + 654 }");
+			USING_SOURCE("class C { static main(): void { 123 + 654 } }");
 
 			N(SourceCode);
 			{
 				N(ClassDeclaration);
 				{
+					N(Identifier); N(IdentifierName);
 					N(MethodDeclaration);
 					{
 						N(Identifier); N(IdentifierName);
+						N(ParameterList);
 						N(TypeAnnotation);
 						{
 							N(Identifier); N(IdentifierName);

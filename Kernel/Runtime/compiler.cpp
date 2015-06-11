@@ -25,8 +25,8 @@ namespace r {
 		for (int i = 0; i < sourceCode->GetClassDeclarations()->GetSize(); i++) {
 			ClassDeclarationSyntax * classDeclarationSyntax = sourceCode->GetClassDeclarations()->Get(i);
 			ClassDescriptor * classInfo = new ClassDescriptor();
-			for (int i = 0; i < sourceCode->GetClassDeclarations()->GetSize(); i++) {
-				ClassElementSyntax * classElementSyntax = classDeclarationSyntax->GetMembers()->Get(i);
+			for (int j = 0; j < classDeclarationSyntax->GetMembers()->GetSize(); j++) {
+				ClassElementSyntax * classElementSyntax = classDeclarationSyntax->GetMembers()->Get(j);
 
 				if (classElementSyntax->GetKind() == SyntaxKind::MethodDeclaration) {
 
@@ -50,10 +50,11 @@ namespace r {
 		for (int i = 0; i < sourceCode->GetClassDeclarations()->GetSize(); i++) {
 			ClassDeclarationSyntax * classDeclarationSyntax = sourceCode->GetClassDeclarations()->Get(i);
 			ClassDescriptor * classInfo = new ClassDescriptor();
-			for (int i = 0; i < sourceCode->GetClassDeclarations()->GetSize(); i++) {
-				ClassElementSyntax * classElementSyntax = classDeclarationSyntax->GetMembers()->Get(i);
+			for (int j = 0; j < classDeclarationSyntax->GetMembers()->GetSize(); j++) {
+				ClassElementSyntax * classElementSyntax = classDeclarationSyntax->GetMembers()->Get(j);
 
 				if (classElementSyntax->GetKind() == SyntaxKind::MethodDeclaration) {
+
 					MethodDescriptor *function = codeGenerator->MakeCode(*(MethodDeclarationSyntax*)classElementSyntax);
 					//classInfo->
 					code->SetEntryPoint(function);

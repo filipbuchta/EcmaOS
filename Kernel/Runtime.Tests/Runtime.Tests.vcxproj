@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{344C2269-F202-4B09-BBBE-382A7AF750F3}</ProjectGuid>
+    <ProjectGuid>{567D7425-8CF6-4781-9226-F278CE9506A8}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>RuntimeTests</RootNamespace>
   </PropertyGroup>
@@ -114,8 +114,8 @@
     <ClCompile Include="Syntax\conditiontests.cpp" />
     <ClCompile Include="Syntax\constructortests.cpp" />
     <ClCompile Include="Syntax\declarationtests.cpp" />
-    <ClCompile Include="Syntax\functiontests.cpp" />
     <ClCompile Include="Syntax\looptests.cpp" />
+    <ClCompile Include="Syntax\syntaxtest.cpp" />
     <ClCompile Include="Syntax\treeflattener.cpp" />
   </ItemGroup>
   <ItemGroup>
