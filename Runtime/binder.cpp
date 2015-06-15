@@ -56,7 +56,9 @@ namespace r {
 	}
 
 	void Binder::VisitReturnStatement(ReturnStatementSyntax & node) {
-		node.GetExpression()->Accept(*this);
+		if (node.GetExpression() != nullptr) {
+			node.GetExpression()->Accept(*this);
+		} //TODO: else void
 		//TODO: check if expression has same type as return type of function
 	}
 

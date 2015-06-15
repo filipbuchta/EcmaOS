@@ -258,7 +258,9 @@ namespace r {
 		PrintIndented("ReturnStatement\n");
 		Print("\n");
 		_indent++;
-		node.GetExpression()->Accept(*this);
+		if (node.GetExpression() != nullptr) {
+			node.GetExpression()->Accept(*this);
+		}
 		_indent--;
 	}
 }

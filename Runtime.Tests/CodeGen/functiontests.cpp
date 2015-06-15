@@ -36,7 +36,7 @@ namespace RuntimeTests
 
 		TEST_METHOD(FunctionPrematureReturnTest)
 		{
-			CompileAndVerify("function test() { return; log(123); } test();", "");
+			CompileAndVerify("class C { static main(): void { test(); } static test(): void { return; Console.log(123); } }", "");
 		}
 		TEST_METHOD(FunctionReturnNumberTest)
 		{
