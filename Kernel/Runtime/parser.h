@@ -10,13 +10,13 @@ namespace r {
 
 	class Parser {
 	public:
-		Parser(Scanner *scanner, Binder *binder);
+		Parser(Scanner *scanner);
 
 		SourceCodeSyntax *ParseSourceCode();
 
 	private:
 		Scanner* _scanner;
-		Binder* _binder;
+
 		SyntaxToken NextToken();
 
 		SyntaxToken _currentToken = SyntaxToken(IllegalToken, "\0");

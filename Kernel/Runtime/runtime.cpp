@@ -18,7 +18,7 @@ namespace r {
 		}
 	}
 
-	HeapObject * Runtime::DebugPrint(Number * number)
+	HeapObject * Runtime::Console_log(Number * number)
 	{
 		double value = *reinterpret_cast<double*>(reinterpret_cast<char*>(number) + Number::ValueOffset);
 		List<char> * result = new List<char>();

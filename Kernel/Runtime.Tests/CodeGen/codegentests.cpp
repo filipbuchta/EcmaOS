@@ -22,12 +22,12 @@ namespace r {
 
 void CompileAndVerify(const char * source, const char *expectedOutput)
 {
-	std::string generatedCode = "class Console { declare static log(value: string): void; }";
+	std::string generatedCode = "class Console { declare static log(value: string): void; } \n";
 	generatedCode.append(source);
 
 
 	Compiler * compiler = new Compiler();
-	Code * code = compiler->Compile(generatedCode.c_str());
+	AssemblySymbol * code = compiler->Compile(generatedCode.c_str());
 
 
 	output.clear();

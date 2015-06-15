@@ -15,7 +15,6 @@ namespace r {
 
 	class Symbol;
 	class Scope;
-	class MethodDescriptor;
 
 
 
@@ -58,6 +57,10 @@ namespace r {
 	public:
 		virtual SyntaxKind GetKind() = 0;
 		virtual void Accept(SyntaxNodeVisitor &visitor) = 0;
+		Symbol * GetExpressionSymbol() { return _expressionSymbol; }
+		void SetExpressionSymbol(Symbol*value) { _expressionSymbol = value; }
+	private:
+		Symbol * _expressionSymbol;
 	};
 
 
@@ -96,14 +99,11 @@ namespace r {
 		DECLARE_NODE_TYPE(SourceCode);
 
 		List<ClassDeclarationSyntax*> *GetClassDeclarations() { return _classDeclarations; }
-		void SetScope(GlobalScope * value) { _scope = value; }
-		GlobalScope * GetScope() { return _scope; }
 	private:
 		List<ClassDeclarationSyntax*> *_classDeclarations = new List<ClassDeclarationSyntax*>();
-		GlobalScope * _scope;
 	};
 
-	class ClassDeclarationSyntax : public SyntaxNode, public DeclarationSyntax {
+	class ClassDeclarationSyntax : public DeclarationSyntax {
 	public:
 		DECLARE_NODE_TYPE(ClassDeclaration);
 
@@ -182,11 +182,11 @@ namespace r {
 	class BlockSyntax : public StatementSyntax {
 	public:
 		DECLARE_NODE_TYPE(Block);
-		void SetScope(BlockScope * value) { _scope = value; }
-		BlockScope * GetScope() { return _scope; }
+		void SetScope(Scope * value) { _scope = value; }
+		Scope * GetScope() { return _scope; }
 		List<StatementSyntax*> *GetStatements() { return _statements; }
 	private:
-		BlockScope * _scope;
+		Scope * _scope;
 		List<StatementSyntax*>* _statements = new List<StatementSyntax*>();
 	};
 
@@ -237,8 +237,11 @@ namespace r {
 		DECLARE_NODE_TYPE(TypeAnnotation);
 		IdentifierSyntax* GetType() { return _type; }
 		void SetType(IdentifierSyntax* value) { _type = value; }
+		void SetTypeSymbol(TypeSymbol * value) { _typeSymbol = value; }
+		TypeSymbol * GetTypeSymbol() { return _typeSymbol; }
 	private:
 		IdentifierSyntax* _type;
+		TypeSymbol * _typeSymbol;
 	};
 
 	class ParameterDeclarationSyntax : public DeclarationSyntax {
@@ -281,10 +284,6 @@ namespace r {
 		void SetBody(BlockSyntax* value) { _body = value; }
 		void SetParameters(ParameterListSyntax* value) { _parameters = value; }
 		ParameterListSyntax* GetParameters() { return _parameters; }
-		MethodScope * GetScope() { return _scope; }
-		void SetScope(MethodScope * value) { _scope = value; }
-		void SetMethodDescriptor(MethodDescriptor * value) { _methodDescriptor = value; }
-		MethodDescriptor * GetMethodDescriptor() { return _methodDescriptor; }
 		void SetReturnType(TypeAnnotationSyntax * value) { _returnType = value; }
 		TypeAnnotationSyntax * GetReturnType() { return _returnType; }
 		List<SyntaxToken> * GetModifiers() { return _modifiers; }
@@ -293,8 +292,6 @@ namespace r {
 		BlockSyntax* _body;
 		ParameterListSyntax* _parameters;
 		TypeAnnotationSyntax * _returnType;
-		MethodScope *_scope;
-		MethodDescriptor * _methodDescriptor;
 		List<SyntaxToken> * _modifiers;
 	};
 
@@ -322,9 +319,12 @@ namespace r {
 
 		void SetExpression(ExpressionSyntax *value) { _expression = value; }
 		ExpressionSyntax *GetExpression() { return _expression; }
+		void SetMethod(MethodSymbol *value) { _method = value; }
+		MethodSymbol *GetMethod() { return _method; }
 	private:
 		ArgumentListSyntax *_arguments;
 		ExpressionSyntax *_expression;
+		MethodSymbol * _method;
 	};
 
 	class NewExpressionSyntax : public PrimaryExpressionSyntax {

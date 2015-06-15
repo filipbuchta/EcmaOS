@@ -36,11 +36,11 @@ private:
 
 class TextSection : public PESection {
 public:
-	TextSection(Code * code) : _code(code), PESection(".text", 0x60300020) { }
+	TextSection(AssemblySymbol * code) : _code(code), PESection(".text", 0x60300020) { }
 
 	void TextSection::WriteBody(Writer & w) override;
 private:
-	Code * _code;
+	AssemblySymbol * _code;
 };
 
 class PE {

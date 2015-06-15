@@ -20,7 +20,8 @@ namespace RuntimeTests
 
 		TEST_METHOD(ObjectPropertyCreationTest)
 		{
-			CompileAndVerify("var obj = new Object(); obj.value = 123; log(obj.value); ", "123");
+			// this syntax is no longer valid
+		//	CompileAndVerify("var obj = new Object(); obj.value = 123; log(obj.value); ", "123");
 		}
 	};
 }

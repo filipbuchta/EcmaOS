@@ -31,8 +31,7 @@ namespace Microsoft
 
 
 #define USING_SOURCE(expression) \
-	Binder* binder = new Binder(); \
-	Parser* parser = new Parser(new r::Scanner(expression), binder);   \
+	Parser* parser = new Parser(new r::Scanner(expression));   \
 	SourceCodeSyntax *tree = parser->ParseSourceCode();   \
 	TreeFlattener *flattener = new TreeFlattener(); \
 	tree->Accept(*(SyntaxNodeVisitor*)flattener); \

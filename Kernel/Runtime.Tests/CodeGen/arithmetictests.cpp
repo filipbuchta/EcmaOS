@@ -23,39 +23,39 @@ namespace RuntimeTests
 
 		TEST_METHOD(BigAdditonTest)
 		{
-			CompileAndVerify("log(4294967295 + 4294967295);", "8589934590");
+			CompileAndVerify("class C { static main(): void { Console.log(4294967295 + 4294967295); } }", "8589934590");
 		}
 
 		
 		TEST_METHOD(SubtractionTest)
 		{
-			CompileAndVerify("log(333 - 222);", "111");
+			CompileAndVerify("class C { static main(): void { Console.log(333 - 222); } }", "111");
 		}
 
 		TEST_METHOD(MultiplicationTest)
 		{
-			CompileAndVerify("log(11 * 11);", "121");
+			CompileAndVerify("class C { static main(): void { Console.log(11 * 11); } }", "121");
 		}
 
 
 		TEST_METHOD(WhileLoopTest)
 		{
-			CompileAndVerify("var x = 5; while (x > 0) { log(x); x--; } ", "54321");
+			CompileAndVerify("class C { static main(): void { let x = 5; while (x > 0) { Console.log(x); x--; } } }", "54321");
 		}
 
 		TEST_METHOD(ReverseWhileLoopTest)
 		{
-			CompileAndVerify("var x = 1; while (x < 6) { log(x); x++; } ", "12345");
+			CompileAndVerify("class C { static main(): void { let x = 1; while (x < 6) { Console.log(x); x++; } } }", "12345");
 		}
 
 		TEST_METHOD(IfTrueTest)
 		{
-			CompileAndVerify("if (true) { log(1); } ", "1");
+			CompileAndVerify("class C { static main(): void { if (true) { Console.log(1); } } }", "1");
 		}
 
 		TEST_METHOD(IfFalseTest)
 		{
-			CompileAndVerify("if (false) { } else { log(1); } ", "1");
+			CompileAndVerify("class C { static main(): void { if (false) { } else { Console.log(1); } } } ", "1");
 		}
 
 	};

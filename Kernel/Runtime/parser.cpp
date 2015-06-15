@@ -5,9 +5,8 @@
 namespace r {
 
 
-	Parser::Parser(Scanner *scanner, Binder *binder)
-		: _scanner(scanner),
-		_binder(binder)
+	Parser::Parser(Scanner *scanner)
+		: _scanner(scanner)
 	{
 	}
 
@@ -15,13 +14,13 @@ namespace r {
 	{
 
 		SourceCodeSyntax *node = new SourceCodeSyntax();
-		GlobalScope* scope = new GlobalScope();
-		node->SetScope(scope);
+		
 		NextToken();
 		// ParseSourceElements
 		while (!ParseOptional(EndOfCodeToken)) {
 			node->GetClassDeclarations()->Push(ParseClassDeclaration());
 		}
+
 		return node;
 	}
 
@@ -40,7 +39,6 @@ namespace r {
 			node->SetElseStatement(ParseStatement());
 		}
 		return node;
-
 	}
 
 	IterationStatementSyntax * Parser::ParseWhileStatement() 
@@ -111,16 +109,10 @@ namespace r {
 		node->SetLocation(_scanner->GetLocation());
 		ParseExpected(OpenBraceToken);
 
-		BlockScope * scope = new BlockScope();
-		node->SetScope(scope);
-		_binder->EnterScope(scope);
-
 		while (!ParseOptional(CloseBraceToken)) 
 		{
 			node->GetStatements()->Push(ParseStatement());
 		}
-
-		_binder->ExitScope();
 
 		return node;
 	}
@@ -130,7 +122,6 @@ namespace r {
 		ParameterDeclarationSyntax * node = new ParameterDeclarationSyntax();
 		node->SetIdentifier(ParseIdentifier());
 		node->SetParameterType(ParseTypeAnnotation());
-		_binder->BindDeclaration(*node);
 		return node;
 	}
 
@@ -160,6 +151,8 @@ namespace r {
 		ParseExpected(ClassKeyword);
 		ClassDeclarationSyntax * node = new ClassDeclarationSyntax();
 		node->SetIdentifier(ParseIdentifier());
+
+
 		//parse optional class heritage
 		ParseExpected(OpenBraceToken);
 
@@ -172,7 +165,6 @@ namespace r {
 			}
 			else 
 			{
-
 				List<SyntaxToken> * modifiers = new List<SyntaxToken>();
 				
 				while (true) {
@@ -246,9 +238,6 @@ namespace r {
 		//TODO: location
 		node->SetIdentifier(&identifier);
 
-		MethodScope * scope = new MethodScope();
-		node->SetScope(scope);
-		_binder->EnterScope(scope);
 
 		node->SetParameters(ParseParameterList());
 		node->SetReturnType(ParseTypeAnnotation());
@@ -256,9 +245,6 @@ namespace r {
 			node->SetBody(ParseBlock());
 		}
 		node->SetModifiers(modifiers);
-		_binder->ExitScope();
-
-		_binder->BindDeclaration(*node);
 
 		return node;
 	}
@@ -285,8 +271,7 @@ namespace r {
 			node->SetInitializer(ParseInitializerExpression());
 		}
 
-		_binder->BindDeclaration(*node);
-
+	
 		return node;
 	}
 
@@ -487,7 +472,6 @@ namespace r {
 			case IdentifierName:
 			{
 				IdentifierSyntax * identifier = ParseIdentifier();
-				_binder->GetCurrentScope()->GetUnresolvedSymbols()->Push(identifier);
 				return identifier;
 			}
 			default:
@@ -584,7 +568,6 @@ namespace r {
 	{
 		IdentifierSyntax *node = new IdentifierSyntax();
 		node->SetName(ParseExpected(SyntaxKind::IdentifierName));
-
 		return node;
 	}
 

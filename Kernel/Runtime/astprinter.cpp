@@ -76,6 +76,9 @@ namespace r {
 		PrintIndented("LocalVariableDeclaration\n");
 		_indent++;
 		node.GetIdentifier()->Accept(*this);
+		if (node.GetInitializer() != nullptr) {
+			node.GetInitializer()->Accept(*this);
+		}
 		_indent--;
 	}
 

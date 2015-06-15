@@ -27,7 +27,7 @@ int test(int x, int y, int z) {
 	return c;
 }
 
-void CreatePE(Code * code) {
+void CreatePE(AssemblySymbol * code) {
 
 	PE * pe = new PE();
 
@@ -71,19 +71,13 @@ int main(int argc, char* argv[])
 
 
 	const char * source = " \
-		class Console { \
-			declare static log(value: string): void;  \
-		} \
-		class C { \
-			static main(): void { \
-				Console.log(123 + 654); \
-			} \
-		}";
+		class Console { declare static log(value: string): void; } \n\
+		class C { static main(): void { test(1234); } static test(x: number): void { Console.log(x); } }";
 
 
 
 	Compiler * compiler = new Compiler();
-	Code * code = compiler->Compile(source);
+	AssemblySymbol * code = compiler->Compile(source);
 
 
 	//CreatePE(code);
@@ -91,7 +85,7 @@ int main(int argc, char* argv[])
 
 
 
-	int x = test(1,2,3);
+//	int x = test(1,2,3);
 
 	void(*entry) ();
 	entry = (void(*) ())code->GetEntryPoint()->GetCode();

@@ -5,52 +5,15 @@
 
 namespace r {
 
-	CodeGenerator::CodeGenerator(Heap * heap, Assembler * assembler) 
+	CodeGenerator::CodeGenerator(Heap * heap, Assembler * assembler, MethodSymbol * method)
+		: _heap(heap), _assembler(assembler), _method(method)
 	{
-		_assembler = assembler;
-		_heap = heap;
 	}
 
-	MethodDescriptor* CodeGenerator::MakeCode(MethodDeclarationSyntax & node)
-	{
-		MethodDescriptor *methodDescriptor = new MethodDescriptor();
-		node.SetMethodDescriptor(methodDescriptor);
-
-		for (SyntaxToken child : *node.GetModifiers()) {
-			if (child.Kind == SyntaxKind::DeclareKeyword) {
-				methodDescriptor->SetAmbient(true);
-			}
-		}
-
-		if (methodDescriptor->GetAmbient()) {
-			return methodDescriptor;
-		}
-
-		_assembler->StartLineRecording();
-
-		EmitFunctionPrologue(node);
-
-		PushContext(new EffectContext(this));
-		Visit(*node.GetBody());
-		PopContext();
-
-		EmitFunctionEpilogue(node);
-
-
-
-
-		methodDescriptor->SetLineInfo(_assembler->EndLineRecording());
-
-		methodDescriptor->SetCode(_assembler->GetBuffer());
-		methodDescriptor->SetCodeSize(_assembler->GetBufferSize());
-
-
-		return methodDescriptor;
-	}
 
 
 	//TODO: pass scope
-	void CodeGenerator::EmitFunctionPrologue(MethodDeclarationSyntax & node)
+	void CodeGenerator::EmitFunctionPrologue()
 	{
 
 		//TODO: use enter, leave instructions?
@@ -82,7 +45,7 @@ namespace r {
 	}
 
 	//TODO: pass scope
-	void CodeGenerator::EmitFunctionEpilogue(MethodDeclarationSyntax & node)
+	void CodeGenerator::EmitFunctionEpilogue()
 	{
 		Handle<HeapObject> undefinedValue = (Handle<HeapObject>)_heap->GetUndefinedValue();
 		_assembler->Mov(EAX, (unsigned int)undefinedValue.GetLocation());
@@ -310,22 +273,24 @@ namespace r {
 
 		VisitForStackValue(*node.GetArguments());
 
+		MethodSymbol * method = node.GetMethod();
+
+		if (method->GetIsStatic()) {
+			int slot = method->GetSlot();
+			TypeSymbol * type = method->GetDeclaringType();
+			MethodEntry * entry = type->GetMethodTable()->Get(slot);
+
+			_assembler->Call((unsigned char *)(entry->CodeStub));
+			//_assembler->Call((unsigned char *)(method->GetCode()));
+		}
+		else {	
+			NOT_IMPLEMENTED();
+		}
 
 
-		VisitForAccumulatorValue(*node.GetExpression());
-
-		// eax contains pointer to jsfuncion on heap
-
-		_assembler->Mov(EAX, Operand(EAX, JSFunction::EntryOffset));
-
-		_assembler->Call(Operand(EAX));
-
-
-
-		int argumentsSize = node.GetArguments()->GetArguments()->GetSize() * 4;
-		if (argumentsSize > 0) 
+		if (method->GetParameters()->GetSize() > 0)
 		{
-			_assembler->Add(ESP, argumentsSize);
+			_assembler->Add(ESP, method->GetParameters()->GetSize() * 4);
 		}
 
 
@@ -344,8 +309,10 @@ namespace r {
 
 	void CodeGenerator::VisitPropertyAccessExpression(PropertyAccessExpressionSyntax &node) 
 	{
+	
 		VisitForStackValue(*node.GetExpresion());
-
+	
+		
 		NOT_IMPLEMENTED()
 	}
 
@@ -391,7 +358,23 @@ namespace r {
 
 	void CodeGenerator::VisitMethodDeclaration(MethodDeclarationSyntax &node) 
 	{
-		NOT_IMPLEMENTED();
+		unsigned char * codeStart = _assembler->GetPC();
+		int initialSize = _assembler->GetBufferSize();
+
+		_assembler->StartLineRecording();
+
+		EmitFunctionPrologue();
+
+		VisitForEffect(*node.GetBody());
+
+		EmitFunctionEpilogue();
+
+
+		_method->SetLineInfo(_assembler->EndLineRecording());
+
+		_method->SetCode(codeStart);
+		_method->SetCodeSize(_assembler->GetBufferSize() - initialSize);
+
 	}
 
 	void CodeGenerator::VisitBlock(BlockSyntax &node) 
@@ -445,6 +428,32 @@ namespace r {
 		Visit(*node.GetDeclaration());
 	}
 
+	int CodeGenerator::GetSymbolOffset(Symbol & symbol) {
+		switch (symbol.GetKind())
+		{
+		case SymbolKind::Parameter:
+		{			
+			ParameterSymbol * parameter = (ParameterSymbol*)&symbol;
+
+			int offset = -parameter->GetSlot() * 4;
+			offset += (_method->GetParameters()->GetSize() + 1) * 4;
+			return offset;
+		}
+		break;
+		case SymbolKind::LocalVariable:
+		{
+			LocalVariableSymbol * localVariable = (LocalVariableSymbol*)&symbol;
+
+			int offset = -localVariable->GetSlot() * 4;
+			offset += -4;
+			return offset;
+		}
+		break;
+		default:
+			NOT_REACHABLE();
+		}
+	}
+
 	void CodeGenerator::VisitIdentifier(IdentifierSyntax &node)
 	{
 		Symbol * symbol = node.GetSymbol();
@@ -454,26 +463,25 @@ namespace r {
 		{
 		case SymbolKind::Parameter:
 		{
-			int offset = -((ParameterSymbol*)symbol)->GetSlot() * 4;
-			offset += -4;
-			_assembler->Mov(EAX, Operand(EBP, offset));
-			_context->Plug(EAX);
-		}
-		case SymbolKind::LocalVariable:
-		{
-			int offset = -((LocalVariableSymbol*)symbol)->GetSlot() * 4;
-			offset += (((MethodScope*)symbol->GetScope())->GetParameters()->GetSize() + 1) * 4;
+			int offset = GetSymbolOffset(*symbol);
 			_assembler->Mov(EAX, Operand(EBP, offset));
 			_context->Plug(EAX);
 		}
 		break;
-		//case SymbolLocation::Global:
-		//{
-		//	Handle<JSFunction> ambientFunction = (Handle<JSFunction>)_heap->GetRuntime_Log();
-		//	_assembler->Mov(EAX, (unsigned int)ambientFunction.GetLocation());
-		//	_context->Plug(EAX);
-		//}
-		//break;
+		case SymbolKind::LocalVariable:
+		{
+			LocalVariableSymbol * localVariableSymbol = (LocalVariableSymbol*)symbol;
+
+			int offset = GetSymbolOffset(*symbol);
+			_assembler->Mov(EAX, Operand(EBP, offset));
+			_context->Plug(EAX);
+		}
+		break;
+		case SymbolKind::Type:
+		{
+			NOT_IMPLEMENTED()
+		}
+		break;
 
 		default:
 			NOT_IMPLEMENTED();
@@ -490,25 +498,7 @@ namespace r {
 			Symbol * symbol = node.GetIdentifier()->GetSymbol();
 
 			// Store variable
-			int offset;
-			switch (symbol->GetKind())
-			{
-				case SymbolKind::Parameter:
-				{
-					int offset = -((ParameterSymbol*)symbol)->GetSlot() * 4;
-					offset += -4;
-				}
-				case SymbolKind::LocalVariable:
-				{
-					int offset = -((LocalVariableSymbol*)symbol)->GetSlot() * 4;
-					offset += (((MethodScope*)symbol->GetScope())->GetParameters()->GetSize() + 1) * 4;
-				}
-				default:
-				{
-					NOT_IMPLEMENTED();
-				}
-				break;
-			}
+			int offset = GetSymbolOffset(*symbol);
 			_assembler->Mov(Operand(EBP, offset), EAX); //TODO: use correct slot
 		}
 	}

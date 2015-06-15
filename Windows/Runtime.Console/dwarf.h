@@ -274,35 +274,35 @@ public:
 
 class DebugFrameSection : public PESection {
 public:
-	DebugFrameSection(Code * code) : PESection("/42", 0x42100040), _code(code) {
+	DebugFrameSection(AssemblySymbol * code) : PESection("/42", 0x42100040), _code(code) {
 
 	}
 
 	void PESection::WriteBody(Writer & w) override;
 private:
-	Code * _code;
+	AssemblySymbol * _code;
 };
 
 
 class DebugLineSection : public PESection {
 public:
 
-	DebugLineSection(Code * description) : PESection("/18", 0x42100040), _description(description) {
+	DebugLineSection(AssemblySymbol * description) : PESection("/18", 0x42100040), _description(description) {
 	}
 
 	void WriteExtendedOpcode(Writer & w, DWARF2ExtendedOpcode op, size_t operands_size);
 	void PESection::WriteBody(Writer & w) override;
 private:
-	Code * _description;
+	AssemblySymbol * _description;
 };
 
 class DebugInfoSection : public PESection {
 public:
-	DebugInfoSection(Code * description) : PESection("/30", 0x42100040), _description(description) {
+	DebugInfoSection(AssemblySymbol * description) : PESection("/30", 0x42100040), _description(description) {
 
 	}
 
 	void PESection::WriteBody(Writer & w) override;
 private:
-	Code * _description;
+	AssemblySymbol * _description;
 };

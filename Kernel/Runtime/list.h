@@ -13,8 +13,9 @@ public:
 
 	List<T>& operator=(const List<T>& copy);
 
+	void Set(int index, const T& value);
 	void Push(const T& value);
-		void Insert(int position, const T & value);
+	void Insert(int position, const T & value);
 	T Pop();
 
 	T* GetBuffer() { return _buffer; }
@@ -91,6 +92,11 @@ void List<T>::Push(const T& value) {
 
 	_buffer[_size] = value;
 	_size++;
+}
+
+template <class T>
+void List<T>::Set(int index, const T& value) {
+	_buffer[index] = value;
 }
 
 template <class T>

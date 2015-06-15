@@ -20,44 +20,44 @@ namespace RuntimeTests
 
 		TEST_METHOD(LargeNumericVariableTest)
 		{
-			CompileAndVerify("var a = 9007199254740992; log(a);", "9007199254740992");
+			CompileAndVerify("class C { static main(): void { let a = 9007199254740992; Console.log(a); } }", "9007199254740992");
 		}
 		TEST_METHOD(PrecissionLossTest)
 		{
-			CompileAndVerify("var a = 9007199254740993; log(a);", "9007199254740992");
+			CompileAndVerify("class C { static main(): void { let a = 9007199254740993; Console.log(a); } }", "9007199254740992");
 		}
 		
 
 		TEST_METHOD(NegativeNumber)
 		{
-			CompileAndVerify("var a = -1; log(a);", "-1");
+			CompileAndVerify("class C { static main(): void { let a = -1; Console.log(a); } }", "-1");
 		}
 
 		TEST_METHOD(LargeNegativeVariable)
 		{
-			CompileAndVerify("var a = -9007199254740992; log(a);", "-9007199254740992");
+			CompileAndVerify("class C { static main(): void { let a = -9007199254740992; Console.log(a); } }", "-9007199254740992");
 		}
 
 		TEST_METHOD(DecimalNumber)
 		{
-			CompileAndVerify("var a = 1.23; log(a);", "1.23");
+			CompileAndVerify("class C { static main(): void { let a = 1.23; Console.log(a); } }", "1.23");
 		}
 
 
 		TEST_METHOD(NumericVariableTest)
 		{
-			CompileAndVerify("var a = 123; log(a);", "123");
+			CompileAndVerify("class C { static main(): void { let a: number = 123; Console.log(a); } }", "123");
 		}
 
 		TEST_METHOD(TwoVariablesTest)
 		{
-			CompileAndVerify("var a = 456; var b = 123; log(b); log(a);", "123456");
+			CompileAndVerify("class C { static main(): void { let a: number = 456; let b: number = 123; Console.log(b); Console.log(a); } }", "123456");
 		}
 
 
 		TEST_METHOD(VariableAdditionTest)
 		{
-			CompileAndVerify("var a = 456; var b = 123; log(a + b);", "579");
+			CompileAndVerify("class C { static main(): void { let a = 456; let b = 123; Console.log(a + b); } }", "579");
 		}
 	};
 }

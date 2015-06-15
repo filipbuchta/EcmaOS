@@ -16,7 +16,7 @@ namespace r {
 
 	class Compiler {
 	public:
-		static Code* Compile(char const *string);
+		static AssemblySymbol* Compile(char const *string);
 		Compiler();
 	};
 

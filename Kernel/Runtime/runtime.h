@@ -11,7 +11,7 @@ namespace r {
 	class Runtime
 	{
 	public:
-		static HeapObject * Runtime::DebugPrint(Number * value);
+		static HeapObject * Runtime::Console_log(Number * value);
 	};
 
 

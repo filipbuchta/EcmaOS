@@ -33,12 +33,20 @@ namespace RuntimeTests
 					{
 						N(Identifier); N(IdentifierName);
 						N(ParameterList);
+						N(TypeAnnotation);
+						{
+							N(Identifier); N(IdentifierName);
+						}
 						N(Block);
 					}
 					N(MethodDeclaration);
 					{
 						N(Identifier); N(IdentifierName);
 						N(ParameterList);
+						N(TypeAnnotation);
+						{
+							N(Identifier); N(IdentifierName);
+						}
 						N(Block);
 						{
 							N(ExpressionStatement);

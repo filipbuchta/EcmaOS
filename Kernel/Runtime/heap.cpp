@@ -32,7 +32,7 @@ namespace r {
 		_runtime_log = (JSFunction *)Allocate(JSFunction::Size);
 		
 		unsigned int * address = reinterpret_cast<unsigned int*>(reinterpret_cast<char*>(_runtime_log) + JSFunction::EntryOffset);
-		unsigned int fun = (unsigned int)&Runtime::DebugPrint;
+		unsigned int fun = (unsigned int)&Runtime::Console_log;
 
 		*address = fun;
 

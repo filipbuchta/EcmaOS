@@ -19,19 +19,19 @@ namespace RuntimeTests
 	public:
 
 
-		TEST_METHOD(CallFunctionExpression)
+		TEST_METHOD(CallFatArrowFunction)
 		{
-			CompileAndVerify("(function() { log(123); })();", "123");
+			CompileAndVerify("class C { static main(): void { ((): void => { Console.log(123); })(); } }", "123");
 		}
 
 		TEST_METHOD(FunctionCallTest)
 		{
-			CompileAndVerify("function test() { log(123); } test();", "123");
+			CompileAndVerify("class C { static main(): void { test(); } static test(): void { Console.log(123); } }", "123");
 		}
 
 		TEST_METHOD(FunctionArgumentTest)
 		{
-			CompileAndVerify("function test(x) { log(x); } test(123);", "123");
+			CompileAndVerify("class C { static main(): void { test(123); } static test(x: number): void { Console.log(x); } }", "123");
 		}
 
 		TEST_METHOD(FunctionPrematureReturnTest)
@@ -40,12 +40,7 @@ namespace RuntimeTests
 		}
 		TEST_METHOD(FunctionReturnNumberTest)
 		{
-			CompileAndVerify("function test() { return 123; } log(test());", "123");
-		}
-
-		TEST_METHOD(FunctionReturnFunctionNumberTest)
-		{
-			CompileAndVerify("function test() { return function() { log(123); }; } test()();", "123");
+			CompileAndVerify("class C { static main(): void { Console.log(test()); } static test(): number { return 123; } }", "123");
 		}
 	};
 }
