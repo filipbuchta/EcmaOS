@@ -16,16 +16,15 @@ using namespace r;
 
 using namespace std;
 
-//
-int test(int x, int y, int z) {
-	int a = x;
-	int b = y;
-	int c = z;
+class Test {
 
-	return a;
-	return b;
-	return c;
-}
+public:
+	void test(int x) {
+		_x = x;
+	}
+private:
+	int _x;
+};
 
 void CreatePE(AssemblySymbol * code) {
 
@@ -70,9 +69,26 @@ int main(int argc, char* argv[])
 	//const char * source = str.c_str();
 
 
+
 	const char * source = " \
 		class Console { declare static log(value: string): void; } \n\
-		class C { static main(): void { test(1234); } static test(x: number): void { Console.log(x); } }";
+		class C { static main(): void { Console.log(factorial(6)); } \
+		static factorial(x: number): number { \
+			if (x == 0) return 1; return x * factorial(x - 1); \
+		} }";
+
+
+	source = "class Console { declare static log(value: string): void; } \n\
+				class C { static main(): void { let obj: Parent = new Child(); obj.f() } } \
+							  class Parent { f(): void { Console.log(1); } } \
+							  class Child extends Parent { f(): void { Console.log(2); } }";
+		
+		
+	source = "class Console { declare static log(value: string): void; } class C { constructor() { } static main(): void { let o = new C(); o.f(); } f(): void { Console.log(123); } }";
+
+	//Test * test = new Test();
+
+	//test->test(1);
 
 
 
@@ -81,11 +97,6 @@ int main(int argc, char* argv[])
 
 
 	//CreatePE(code);
-
-
-
-
-//	int x = test(1,2,3);
 
 	void(*entry) ();
 	entry = (void(*) ())code->GetEntryPoint()->GetCode();

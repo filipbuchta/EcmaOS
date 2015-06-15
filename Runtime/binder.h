@@ -18,10 +18,7 @@ namespace r {
 		AST_NODE_LIST(DEF_VISIT)
 #undef DEF_VISI
 
-
-		void ResolveVariables(Scope & scope);
-
-		void BindDeclaration(DeclarationSyntax & node);
+		
 
 		Scope * GetCurrentScope() { return _currentScope; }
 

@@ -25,7 +25,24 @@ namespace r {
 		//TODO: move this somewhere else, perhaps to some kind of AssemblyBuilder, TypeBuilder, MethodBuilder
 		AssemblySymbol * assembly = new AssemblySymbol();
 
-		
+		// This is here because there is no bound tree so we have to modify syntax tree
+		for (ClassDeclarationSyntax * classDeclarationSyntax : *sourceCode->GetClassDeclarations()) {
+			for (ClassElementSyntax * classElementSyntax : *classDeclarationSyntax->GetMembers()) {
+				bool hasInstanceConstructor = false;
+				if (classElementSyntax->GetKind() == SyntaxKind::ConstructorDeclaration) {
+					hasInstanceConstructor = true;
+				}
+				if (!hasInstanceConstructor) {
+					ConstructorDeclarationSyntax * constructor = new ConstructorDeclarationSyntax();
+					BlockSyntax * block = new BlockSyntax();
+					//TODO: add super call into block
+					constructor->SetBody(block);
+					constructor->SetParameterList(new ParameterListSyntax());
+					classDeclarationSyntax->GetMembers()->Push(constructor);
+				}
+			}
+		}
+
 		for (ClassDeclarationSyntax * classDeclarationSyntax : *sourceCode->GetClassDeclarations()) {
 			TypeSymbol * type = new TypeSymbol();
 			type->SetName(classDeclarationSyntax->GetIdentifier()->GetName().Value);
@@ -36,26 +53,18 @@ namespace r {
 			for (ClassElementSyntax * classElementSyntax : *classDeclarationSyntax->GetMembers()) {
 				
 				if (classElementSyntax->GetKind() == SyntaxKind::MethodDeclaration) {
-					MethodDeclarationSyntax * methodDeclarationSyntax = (MethodDeclarationSyntax *)classElementSyntax;
+					MethodDeclarationSyntax * declaration = (MethodDeclarationSyntax *)classElementSyntax;
 					
 					MethodSymbol * method = new MethodSymbol();
-					method->SetName(methodDeclarationSyntax->GetIdentifier()->GetName().Value);
-					method->SetDeclaration(methodDeclarationSyntax);
+					method->SetName(declaration->GetIdentifier()->GetName().Value);
+					method->SetDeclaration(declaration);
 					method->SetDeclaringType(type);
 					method->SetSlot(type->GetMethods()->GetSize());
 
-					TypeSymbol * returnType = nullptr;
-					for (TypeSymbol * type : *assembly->GetTypes()) {
-						if (strcmp(type->GetName(), methodDeclarationSyntax->GetReturnType()->GetType()->GetName().Value) == 0)
-						{
-							returnType = type;
-							break;
-						}
-					}
-
+					TypeSymbol * returnType = assembly->LookupType(declaration->GetReturnType()->GetType()->GetName().Value);
 					method->SetReturnType(returnType);
 
-					for (SyntaxToken child : *methodDeclarationSyntax->GetModifiers()) {
+					for (SyntaxToken child : *declaration->GetModifiers()) {
 						if (child.Kind == SyntaxKind::DeclareKeyword) {
 							method->SetIsAmbient(true);
 						}
@@ -64,30 +73,90 @@ namespace r {
 						}
 					}
 
-					if (strcmp(method->GetName(), "main") == 0) {
-						assembly->SetEntryPoint(method);
+					if (!method->GetIsStatic()) {
+						ParameterSymbol * thisParameter = new ParameterSymbol();
+						thisParameter->SetName("this");
+						thisParameter->SetSlot(0);
+						thisParameter->SetParameterType(type);
+
+						method->GetParameters()->Push(thisParameter);
 					}
 
-					for (ParameterDeclarationSyntax * child : *methodDeclarationSyntax->GetParameters()->GetParameters())
+					for (ParameterDeclarationSyntax * child : *declaration->GetParameterList()->GetParameters())
 					{
 						ParameterSymbol * parameter = new ParameterSymbol();
 						parameter->SetName(child->GetIdentifier()->GetName().Value);
 						parameter->SetDeclaration(child);
 						parameter->SetSlot(method->GetParameters()->GetSize());
+						parameter->SetParameterType(assembly->LookupType(child->GetParameterType()->GetType()->GetName().Value));
 
-						method->GetParameters()->Push(parameter);
-						
+						method->GetParameters()->Push(parameter);						
 					}
 
 					type->GetMethods()->Push(method);
 
 					MethodEntry * methodEntry = new MethodEntry();
 					type->GetMethodTable()->Push(methodEntry);
+
+
+					//TODO: do this as a last thing after all types are created
+					if (strcmp(method->GetName(), "main") == 0) {
+						assembly->SetEntryPoint(method);
+					}
+				}
+				else if (classElementSyntax->GetKind() == SyntaxKind::ConstructorDeclaration) {
+					ConstructorDeclarationSyntax * declaration = (ConstructorDeclarationSyntax *)classElementSyntax;
+
+					MethodSymbol * method = new MethodSymbol();
+					method->SetName("constructor");
+					method->SetDeclaration(declaration);
+					method->SetDeclaringType(type);
+					method->SetIsConstructor(true);
+					method->SetSlot(type->GetMethods()->GetSize());
+
+					method->SetReturnType(type); //TODO: should constructor method have return type?
+
+
+					ParameterSymbol * thisParameter = new ParameterSymbol();
+					thisParameter->SetName("this");
+					thisParameter->SetSlot(0);
+					thisParameter->SetParameterType(type);
+
+					method->GetParameters()->Push(thisParameter);
+
+
+					for (ParameterDeclarationSyntax * child : *declaration->GetParameterList()->GetParameters())
+					{
+						ParameterSymbol * parameter = new ParameterSymbol();
+						parameter->SetName(child->GetIdentifier()->GetName().Value);
+						parameter->SetDeclaration(child);
+						parameter->SetSlot(method->GetParameters()->GetSize());
+						parameter->SetParameterType(assembly->LookupType(child->GetParameterType()->GetType()->GetName().Value));
+
+						method->GetParameters()->Push(parameter);
+					}
+
+
+					type->GetMethods()->Push(method);
+
+					MethodEntry * methodEntry = new MethodEntry();
+					type->GetMethodTable()->Push(methodEntry);
+					
+				}
+				else if (classElementSyntax->GetKind() == SyntaxKind::PropertyDeclaration) {
+					PropertyDeclarationSyntax * declaration = (PropertyDeclarationSyntax  *)classElementSyntax;
+					PropertySymbol * property = new PropertySymbol();
+					property->SetName(declaration->GetIdentifier()->GetName().Value);
+					property->SetPropertyType(assembly->LookupType(declaration->GetPropertyType()->GetType()->GetName().Value));
+					
+					type->GetProperties()->Push(property);
 				}
 				else {
 					NOT_IMPLEMENTED();
 				}
+
 			}
+
 		}
 
 		for (TypeSymbol * type : *assembly->GetTypes()) {

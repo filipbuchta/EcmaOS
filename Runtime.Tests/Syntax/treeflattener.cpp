@@ -74,7 +74,7 @@ void TreeFlattener::VisitCallExpression(CallExpressionSyntax &node) {
 
 void TreeFlattener::VisitNewExpression(NewExpressionSyntax &node) {
 	_list->Push(node.GetKind());
-	node.GetExpression()->Accept(*this);
+	node.GetIdentifier()->Accept(*this);
 	node.GetArguments()->Accept(*this);
 }
 
@@ -97,15 +97,14 @@ void TreeFlattener::VisitThisExpression(ThisExpressionSyntax &node) {
 
 void TreeFlattener::VisitConstructorDeclaration(ConstructorDeclarationSyntax &node) {
 	_list->Push(node.GetKind());
-	node.GetIdentifier()->Accept(*this);
-	node.GetParameters()->Accept(*this);
+	node.GetParameterList()->Accept(*this);
 	node.GetBody()->Accept(*this);
 }
 
 void TreeFlattener::VisitMethodDeclaration(MethodDeclarationSyntax &node) {
 	_list->Push(node.GetKind());
 	node.GetIdentifier()->Accept(*this);
-	node.GetParameters()->Accept(*this);
+	node.GetParameterList()->Accept(*this);
 	node.GetReturnType()->Accept(*this);
 	node.GetBody()->Accept(*this);
 }

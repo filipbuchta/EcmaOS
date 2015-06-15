@@ -152,6 +152,9 @@ namespace r {
 		ClassDeclarationSyntax * node = new ClassDeclarationSyntax();
 		node->SetIdentifier(ParseIdentifier());
 
+		if (ParseOptional(ExtendsKeyword)) {
+			node->SetBaseType(ParseIdentifier());
+		}
 
 		//parse optional class heritage
 		ParseExpected(OpenBraceToken);
@@ -217,29 +220,33 @@ namespace r {
 
 	ConstructorDeclarationSyntax * Parser::ParseConstructorDeclaration() {
 		
+		ParseExpected(ConstructorKeyword);
+
 		ConstructorDeclarationSyntax * node = new ConstructorDeclarationSyntax();
-		node->SetIdentifier(ParseIdentifier());
 
-		ParseExpected(OpenBraceToken);
-
-		ParseExpected(CloseBraceToken);
+		node->SetParameterList(ParseParameterList());
+		node->SetBody(ParseBlock());
 
 		return node;
 	}
 
 	PropertyDeclarationSyntax * Parser::ParsePropertyDeclaration(IdentifierSyntax & identifier, List<SyntaxToken> * modifiers) {
-		NOT_IMPLEMENTED();
-		return nullptr;
+		PropertyDeclarationSyntax * node = new PropertyDeclarationSyntax();
+		node->SetIdentifier(&identifier);
+		node->SetPropertyType(ParseTypeAnnotation());
+		
+		ParseExpected(SyntaxKind::SemicolonToken);
+
+		return node;
 	}
 
 	MethodDeclarationSyntax * Parser::ParseMethodDeclaration(IdentifierSyntax & identifier, List<SyntaxToken> * modifiers) 
 	{
 		MethodDeclarationSyntax * node = new MethodDeclarationSyntax();
-		//TODO: location
 		node->SetIdentifier(&identifier);
 
 
-		node->SetParameters(ParseParameterList());
+		node->SetParameterList(ParseParameterList());
 		node->SetReturnType(ParseTypeAnnotation());
 		if (!ParseOptional(SemicolonToken)) {
 			node->SetBody(ParseBlock());
@@ -406,7 +413,7 @@ namespace r {
 	{
 		ParseExpected(NewKeyword);
 		NewExpressionSyntax * node = new NewExpressionSyntax();
-		node->SetExpression(ParseMemberExpression());
+		node->SetIdentifier(ParseIdentifier()); //TODO: ParseType()
 		if (_currentToken.Kind == OpenParenthesisToken) 
 		{
 			node->SetArguments(ParseArgumentList());

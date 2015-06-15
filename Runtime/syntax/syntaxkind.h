@@ -8,6 +8,7 @@ namespace r {
 		DO(OpenBracketToken)\
 		DO(CloseBracketToken)\
 		DO(ExclamationEqualsToken)\
+		DO(ExclamationToken)\
 		DO(MinusMinusToken)\
 		DO(LessThanToken)\
 		DO(LessThanEqualsToken)\

@@ -21,6 +21,40 @@ namespace RuntimeTests
 
 
 
+		TEST_METHOD(ConstructorTests)
+		{
+			USING_SOURCE("class C { constructor() { } main(): void { new C(); } }");
+
+			N(SourceCode);
+			{
+				N(ClassDeclaration);
+				{
+					N(Identifier); N(IdentifierName);
+					N(ConstructorDeclaration);
+					{
+						N(ParameterList);
+						N(Block);
+					}
+					N(MethodDeclaration);
+					{
+						N(Identifier); N(IdentifierName);
+						N(ParameterList);
+						N(TypeAnnotation);
+						{
+							N(Identifier); N(IdentifierName);
+						}
+						N(Block);
+						{
+							N(ExpressionStatement);
+							{
+								N(NewExpression); N(Identifier); N(IdentifierName);
+								N(ArgumentList);
+							}
+						}
+					}
+				}
+			}
+		}
 
 	};
 }

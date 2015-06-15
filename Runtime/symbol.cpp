@@ -21,6 +21,62 @@ namespace r {
 		booleanType->SetName("boolean");
 		GetTypes()->Push(booleanType);
 	}
+
+
+	ParameterSymbol * MethodSymbol::LookupParameter(const char * parameterName) {
+		for (ParameterSymbol * parameter : *GetParameters()) {
+			if (strcmp(parameter->GetName(), parameterName) == 0)
+			{
+				return parameter;
+			}
+		}
+		return nullptr;
+	}
+
+
+	MethodSymbol * TypeSymbol::LookupMethod(const char * methodName) {
+		for (MethodSymbol * method : *GetMethods()) {
+			if (strcmp(method->GetName(), methodName) == 0)
+			{
+				return method;
+			}
+		}
+		return nullptr;
+	}
+
+
+	PropertySymbol * TypeSymbol::LookupProperty(const char * propertyName) {
+		for (PropertySymbol * method : *GetProperties()) {
+			if (strcmp(method->GetName(), propertyName) == 0)
+			{
+				return method;
+			}
+		}
+		return nullptr;
+	}
+
+	Symbol * TypeSymbol::LookupMember(const char * memberName) {
+		Symbol * symbol = LookupProperty(memberName);
+		if (symbol == nullptr) {
+			return LookupMethod(memberName);
+		}
+		return symbol;
+	}
+
+
+	TypeSymbol * AssemblySymbol::LookupType(const char * typeName) {
+
+		for (TypeSymbol * type : *GetTypes()) {
+			if (strcmp(type->GetName(), typeName) == 0)
+			{
+				return type;
+			}
+		}
+
+		return nullptr;
+	}
+
+
 }
 
 

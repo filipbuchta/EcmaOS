@@ -108,7 +108,11 @@ namespace r {
 		DECLARE_NODE_TYPE(ClassDeclaration);
 
 		List<ClassElementSyntax*> *GetMembers() { return _members; }
+
+		IdentifierSyntax* GetBaseType() { return _baseType; }
+		void SetBaseType(IdentifierSyntax*value) { _baseType = value; }
 	private:
+		IdentifierSyntax * _baseType;
 		List<ClassElementSyntax*> *_members = new List<ClassElementSyntax*>();
 	};
 
@@ -248,8 +252,8 @@ namespace r {
 	public:
 		DECLARE_NODE_TYPE(ParameterDeclaration);
 
-		void SetParameterType(TypeAnnotationSyntax* value) { _parameterType = value; }
-		TypeAnnotationSyntax* GetParameterType() { return _parameterType; }
+		void SetParameterType(TypeAnnotationSyntax * value) { _parameterType = value; }
+		TypeAnnotationSyntax * GetParameterType() { return _parameterType; }
 	private:
 		TypeAnnotationSyntax * _parameterType;
 	};
@@ -259,8 +263,8 @@ namespace r {
 	public:
 		DECLARE_NODE_TYPE(PropertyDeclaration);
 
-		void SetPropertyType(TypeAnnotationSyntax* value) { _propertyType = value; }
-		TypeAnnotationSyntax* GetPropertyType() { return _propertyType; }
+		void SetPropertyType(TypeAnnotationSyntax * value) { _propertyType = value; }
+		TypeAnnotationSyntax * GetPropertyType() { return _propertyType; }
 	private:
 		TypeAnnotationSyntax * _propertyType;
 	};
@@ -269,11 +273,12 @@ namespace r {
 	public:
 		DECLARE_NODE_TYPE(ConstructorDeclaration);
 		BlockSyntax* GetBody() { return _body; }
-		void SetBody(BlockSyntax* value) { _body = value; }
-		ParameterListSyntax* GetParameters() { return _parameters; }
+		void SetBody(BlockSyntax * value) { _body = value; }
+		ParameterListSyntax * GetParameterList() { return _parameterList; }
+		void SetParameterList(ParameterListSyntax * value) { _parameterList = value; }
 	private:
-		BlockSyntax* _body;
-		ParameterListSyntax* _parameters;
+		BlockSyntax * _body;
+		ParameterListSyntax * _parameterList;
 	};
 
 
@@ -282,15 +287,15 @@ namespace r {
 		DECLARE_NODE_TYPE(MethodDeclaration);
 		BlockSyntax* GetBody() { return _body; }
 		void SetBody(BlockSyntax* value) { _body = value; }
-		void SetParameters(ParameterListSyntax* value) { _parameters = value; }
-		ParameterListSyntax* GetParameters() { return _parameters; }
+		void SetParameterList(ParameterListSyntax* value) { _parameterList = value; }
+		ParameterListSyntax* GetParameterList() { return _parameterList; }
 		void SetReturnType(TypeAnnotationSyntax * value) { _returnType = value; }
 		TypeAnnotationSyntax * GetReturnType() { return _returnType; }
 		List<SyntaxToken> * GetModifiers() { return _modifiers; }
 		void SetModifiers(List<SyntaxToken> * value) { _modifiers = value; }
 	private:
 		BlockSyntax* _body;
-		ParameterListSyntax* _parameters;
+		ParameterListSyntax* _parameterList;
 		TypeAnnotationSyntax * _returnType;
 		List<SyntaxToken> * _modifiers;
 	};
@@ -319,6 +324,7 @@ namespace r {
 
 		void SetExpression(ExpressionSyntax *value) { _expression = value; }
 		ExpressionSyntax *GetExpression() { return _expression; }
+
 		void SetMethod(MethodSymbol *value) { _method = value; }
 		MethodSymbol *GetMethod() { return _method; }
 	private:
@@ -334,11 +340,16 @@ namespace r {
 		void SetArguments(ArgumentListSyntax *value) { _arguments = value; }
 		ArgumentListSyntax *GetArguments() { return _arguments; }
 
-		void SetExpression(ExpressionSyntax *value) { _expression = value; }
-		ExpressionSyntax *GetExpression() { return _expression; }
+		void SetIdentifier(IdentifierSyntax *value) { _identifier = value; }
+		IdentifierSyntax *GetIdentifier() { return _identifier; }
+
+
+		void SetConstructor(MethodSymbol *value) { _constructor = value; }
+		MethodSymbol *GetConstructor() { return _constructor; }
 	private:
 		ArgumentListSyntax *_arguments;
-		ExpressionSyntax *_expression;
+		IdentifierSyntax *_identifier;
+		MethodSymbol * _constructor;
 	};
 
 	class IfStatementSyntax : public StatementSyntax {

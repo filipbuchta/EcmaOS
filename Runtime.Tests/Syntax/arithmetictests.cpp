@@ -54,36 +54,57 @@ namespace RuntimeTests
 		}
 
 
-		//TEST_METHOD(OperatorPrecedenceTest)
-		//{
-		//	PARSE_TREE("(1 + 2) * 3 - 4 / 2");
+		TEST_METHOD(OperatorPrecedenceTest)
+		{
+			USING_SOURCE("class C { static main(): void { (1 + 2) * 3 - 4 / 2 } }");
 
-
-		//	N(BinaryExpression);
-		//	{
-		//		N(BinaryExpression);
-		//		{
-		//			N(ParenthesizedExpression);
-		//			{
-		//				N(BinaryExpression);
-		//				{
-		//					N(Literal); N(NumericLiteral); // 1
-		//					N(PlusToken);
-		//					N(Literal); N(NumericLiteral); // 2
-		//				}
-		//			}
-		//			N(AsteriskToken);
-		//			N(Literal); N(NumericLiteral); // 3
-		//		}
-		//		N(MinusToken);
-		//		N(BinaryExpression);
-		//		{
-		//			N(Literal); N(NumericLiteral); // 4
-		//			N(SlashToken);
-		//			N(Literal); N(NumericLiteral); // 2
-		//		}
-		//	}
-		//}
+			N(SourceCode);
+			{
+				N(ClassDeclaration);
+				{
+					N(Identifier); N(IdentifierName);
+					N(MethodDeclaration);
+					{
+						N(Identifier); N(IdentifierName);
+						N(ParameterList);
+						N(TypeAnnotation);
+						{
+							N(Identifier); N(IdentifierName);
+						}
+						N(Block);
+						{
+							N(ExpressionStatement);
+							{
+								N(BinaryExpression);
+								{
+									N(BinaryExpression);
+									{
+										N(ParenthesizedExpression);
+										{
+											N(BinaryExpression);
+											{
+												N(Literal); N(NumericLiteral); // 1
+												N(PlusToken);
+												N(Literal); N(NumericLiteral); // 2
+											}
+										}
+										N(AsteriskToken);
+										N(Literal); N(NumericLiteral); // 3
+									}
+									N(MinusToken);
+									N(BinaryExpression);
+									{
+										N(Literal); N(NumericLiteral); // 4
+										N(SlashToken);
+										N(Literal); N(NumericLiteral); // 2
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
 	
 
 

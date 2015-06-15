@@ -18,7 +18,9 @@ namespace r {
 
 	class JSObject : public HeapObject
 	{
-		
+	public:
+		static const unsigned int TypeHandleOffset = HeapObject::HeaderOffset;
+		static const int Size = TypeHandleOffset + sizeof(unsigned int);
 	};
 
 	class JSFunction : public JSObject {

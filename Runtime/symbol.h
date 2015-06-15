@@ -14,6 +14,7 @@ namespace r {
 	class MethodSymbol;
 	class AssemblySymbol;
 	class LocalVariableSymbol;
+	class PropertySymbol;
 
 	enum SymbolKind {
 		Assembly,
@@ -48,9 +49,11 @@ namespace r {
 		SymbolKind GetKind() override { return SymbolKind::Parameter; }
 		int GetSlot() { return _slot; }
 		void SetSlot(int value) { _slot = value; }
+		TypeSymbol * GetParameterType() { return _parameterType; }
+		void SetParameterType(TypeSymbol * value) { _parameterType = value; }
 	private:
 		int _slot;
-		TypeSymbol * parameterType;
+		TypeSymbol * _parameterType;
 	};
 
 
@@ -69,6 +72,8 @@ namespace r {
 		bool GetIsAmbient() { return _isAmbient; }
 		void SetIsStatic(bool value) { _isStatic = value; }
 		bool GetIsStatic() { return _isStatic; }
+		void SetIsConstructor(bool value) { _isConstructor = value; }
+		bool GetIsConstructor() { return _isConstructor; }
 		List<ParameterSymbol*>* GetParameters() { return _parameters; }
 		List<LocalVariableSymbol*>* GetLocalVariables() { return _localVaribles; }
 		TypeSymbol * GetReturnType() { return _returnType; }
@@ -77,12 +82,14 @@ namespace r {
 		void SetDeclaringType(TypeSymbol * value) { _declaringType = value; };
 		int GetSlot() { return _slot; }
 		void SetSlot(int value) { _slot = value; };
+		ParameterSymbol * LookupParameter(const char * parameterName);
 	private:
 		unsigned char *_code;
 		int _codeSize;
 		LineInfo * _lineInfo;
 		bool _isAmbient = false;
 		bool _isStatic = false;
+		bool _isConstructor = false;
 		List<ParameterSymbol*>* _parameters = new List<ParameterSymbol*>();
 		List<LocalVariableSymbol*>* _localVaribles = new List<LocalVariableSymbol*>();
 		TypeSymbol * _returnType;
@@ -111,9 +118,17 @@ namespace r {
 	public:
 		SymbolKind GetKind() override { return SymbolKind::Type; }
 		List<MethodSymbol*> * GetMethods() { return _methods; }
+		List<PropertySymbol*> * GetProperties() { return _properties; }
 		List<MethodEntry*> * GetMethodTable() { return _methodTable; }
+		MethodSymbol * LookupMethod(const char * methodName);
+		PropertySymbol * LookupProperty(const char * propertyName);
+		Symbol * LookupMember(const char * memberName);
+
+		MethodEntry * MethodTable;
+
 	private:
 		List<MethodSymbol*> * _methods = new List<MethodSymbol*>();
+		List<PropertySymbol*> * _properties = new List<PropertySymbol*>();
 		List<MethodEntry*> * _methodTable = new List<MethodEntry*>();
 	};
 
@@ -121,8 +136,13 @@ namespace r {
 	class PropertySymbol : public Symbol {
 	public:
 		SymbolKind GetKind() override { return SymbolKind::Property; }
+		int GetSlot() { return _slot; }
+		void SetSlot(int value) { _slot = value; }
+		TypeSymbol * GetPropertyType() { return _propertyType; }
+		void SetPropertyType(TypeSymbol * value) { _propertyType = value; }
 	private:
-		TypeSymbol * propertyType;
+		int _slot;
+		TypeSymbol * _propertyType;
 	};
 
 	class LocalVariableSymbol : public Symbol {
@@ -154,6 +174,7 @@ namespace r {
 		void SetEntryPoint(MethodSymbol * value) { _entryPoint = value; }
 		void SetSource(const char * value) { _source = value; }
 		void SetFilename(const char * value) { _filename = value; }
+		TypeSymbol * LookupType(const char * typeName);
 	private:
 		const char * _filename;
 		const char * _source;

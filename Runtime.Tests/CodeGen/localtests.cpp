@@ -49,6 +49,12 @@ namespace RuntimeTests
 			CompileAndVerify("class C { static main(): void { let a: number = 123; Console.log(a); } }", "123");
 		}
 
+		TEST_METHOD(AssignmentTest)
+		{
+			CompileAndVerify("class C { static main(): void { let a: number; a = 123 Console.log(a); } }", "123");
+		}
+
+
 		TEST_METHOD(TwoVariablesTest)
 		{
 			CompileAndVerify("class C { static main(): void { let a: number = 456; let b: number = 123; Console.log(b); Console.log(a); } }", "123456");

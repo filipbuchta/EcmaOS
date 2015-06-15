@@ -114,8 +114,7 @@ namespace r {
 	void AstPrinter::VisitConstructorDeclaration(ConstructorDeclarationSyntax &node) {
 		PrintIndented("ConstructorDeclarationSyntax\n");
 		_indent++;
-		node.GetIdentifier()->Accept(*this);
-		node.GetParameters()->Accept(*this);
+		node.GetParameterList()->Accept(*this);
 		node.GetBody()->Accept(*this);
 		_indent--;
 	}
@@ -129,7 +128,7 @@ namespace r {
 		}
 		Print("\n");
 		node.GetIdentifier()->Accept(*this);
-		node.GetParameters()->Accept(*this);
+		node.GetParameterList()->Accept(*this);
 		node.GetReturnType()->Accept(*this);
 		if (node.GetBody() != nullptr) {
 			node.GetBody()->Accept(*this);
@@ -196,7 +195,7 @@ namespace r {
 	void AstPrinter::VisitNewExpression(NewExpressionSyntax & node) {
 		PrintIndented("NewExpression\n");
 		_indent++;
-		node.GetExpression()->Accept(*this);
+		node.GetIdentifier()->Accept(*this);
 		node.GetArguments()->Accept(*this);
 		_indent--;
 	}

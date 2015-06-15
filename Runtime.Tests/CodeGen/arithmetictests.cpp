@@ -37,7 +37,6 @@ namespace RuntimeTests
 			CompileAndVerify("class C { static main(): void { Console.log(11 * 11); } }", "121");
 		}
 
-
 		TEST_METHOD(WhileLoopTest)
 		{
 			CompileAndVerify("class C { static main(): void { let x = 5; while (x > 0) { Console.log(x); x--; } } }", "54321");

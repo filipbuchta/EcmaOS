@@ -99,14 +99,21 @@ namespace r {
 						return SyntaxToken(ExclamationEqualsToken, "!=");
 					}
 					default: {
-						Advance();
-						return SyntaxToken(IllegalToken, "\0");
+						return SyntaxToken(ExclamationToken, "!");
 					}
 				}
 			}
 			case '=': {
 				Advance();
-				return SyntaxToken(EqualsToken, "=");
+				switch (GetChar()) {
+					case '=': {
+						Advance();
+						return SyntaxToken(EqualsEqualsToken, "==");
+					}
+					default: {
+						return SyntaxToken(EqualsToken, "=");
+					}
+				}
 			}
 			case ';': {
 				Advance();
@@ -205,6 +212,9 @@ namespace r {
 					}
 					else if (strcmp(identifier, "constructor") == 0) {
 						return SyntaxToken(ConstructorKeyword, "constructor");
+					} 
+					else if (strcmp(identifier, "extends") == 0) {
+						return SyntaxToken(ExtendsKeyword, "extends");
 					}
 					else if (strcmp(identifier, "class") == 0) {
 						return SyntaxToken(ClassKeyword, "class");

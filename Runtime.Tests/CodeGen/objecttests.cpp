@@ -18,10 +18,28 @@ namespace RuntimeTests
 			END_TEST_CLASS_ATTRIBUTE()
 	public:
 
-		TEST_METHOD(ObjectPropertyCreationTest)
+		TEST_METHOD(OverridenMethodCallTest)
 		{
-			// this syntax is no longer valid
-		//	CompileAndVerify("var obj = new Object(); obj.value = 123; log(obj.value); ", "123");
+			CompileAndVerify("class C { static main(): void { let obj: Parent = new Child(); obj.f() } } \
+							  class Parent { f(): void { Console.log(1); } } \
+							  class Child extends Parent { f(): void { Console.log(2); } }", "2");
 		}
+
+		TEST_METHOD(DefaultConstructorTest)
+		{
+			CompileAndVerify("class C { static main(): void { new C(); } }", "");
+		}
+
+		TEST_METHOD(InstanceMethodCallTest)
+		{
+			CompileAndVerify("class C { constructor() { } static main(): void { let o = new C(); o.f(); } f(): void { Console.log(123); } }", "123");
+		}
+
+		TEST_METHOD(FieldTest)
+		{
+			CompileAndVerify("class C { field: number; constructor() { } static main(): void { let o = new C(); o.field = 123; Console.log(o.field); } }", "123");
+		}
+
+
 	};
 }
