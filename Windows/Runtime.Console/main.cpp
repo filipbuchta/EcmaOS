@@ -3,9 +3,9 @@
 #include <string>
 #include <sstream>
 
-#include "../../Kernel/Runtime/compiler.h"
-#include "../../Kernel/Runtime/codegen/codegenerator.h"
-#include "../../Kernel/Runtime/astprinter.h"
+#include "../../Runtime/compiler.h"
+#include "../../Runtime/codegen/codegenerator.h"
+#include "../../Runtime/astprinter.h"
 
 #include "pe.h"
 #include "dwarf.h"

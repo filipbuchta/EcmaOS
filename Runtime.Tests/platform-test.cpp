@@ -1,6 +1,6 @@
 
 #include "CppUnitTest.h"
-#include "../../Kernel/Runtime/platform.h"
+#include "../Runtime/platform.h"
 #include <iostream>
 #include <string> 
 #include <sstream> 

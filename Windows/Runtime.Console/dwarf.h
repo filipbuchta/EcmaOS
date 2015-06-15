@@ -1,8 +1,8 @@
 #pragma once
 
 #include "pe.h"
-#include "../../Kernel/Runtime/codegen/codegenerator.h"
-#include "../../Kernel/Runtime/global.h"
+#include "../../Runtime/codegen/codegenerator.h"
+#include "../../Runtime/global.h"
 
 using namespace r;
 

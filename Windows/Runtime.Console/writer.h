@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../Kernel/Runtime/global.h"
+#include "../../Runtime/global.h"
 
 typedef unsigned int DWORD;
 typedef unsigned short WORD;

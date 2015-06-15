@@ -72,7 +72,7 @@
     <ClCompile Include="platform-win32.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Kernel\Runtime\Runtime.vcxproj">
+    <ProjectReference Include="..\..\Runtime\Runtime.vcxproj">
       <Project>{1745240a-66bd-468d-9984-3245a7b7155a}</Project>
     </ProjectReference>
   </ItemGroup>

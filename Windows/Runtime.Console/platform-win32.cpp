@@ -1,5 +1,5 @@
 
-#include "../../Kernel/Runtime/platform.h"
+#include "../../Runtime/platform.h"
 
 #include <iostream>
 

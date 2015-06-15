@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../../Kernel/Runtime/list.h"
+#include "../../Runtime/list.h"
 #include "writer.h"
-#include "../../Kernel/Runtime/codegen/codegenerator.h"
+#include "../../Runtime/codegen/codegenerator.h"
 
 using namespace r;
 
