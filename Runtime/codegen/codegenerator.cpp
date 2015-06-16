@@ -277,18 +277,20 @@ namespace r {
 		VisitForStackValue(*node.GetArguments());
 
 		DynamicAllocate(EAX, size);
-		_assembler->Mov(Operand(EAX, JSObject::TypeHandleOffset), (unsigned int)&type);
+		_assembler->Mov(Operand(EAX, JSObject::TypeHandleOffset), reinterpret_cast<unsigned int>(type));
+
 		_assembler->Push(EAX);
+		_assembler->Push(EAX); // Push this
 		
 		int slot = constructor->GetSlot();
 
-		MethodEntry * entry = type->GetMethodTable()->Get(slot);
+		MethodEntry * entry = &type->MethodTable[slot];
 		_assembler->Call((unsigned char *)(entry->CodeStub));
 
 
 		_assembler->Add(ESP, constructor->GetParameters()->GetSize() * 4);
 
-
+		_assembler->Pop(EAX);
 		_context->Plug(EAX);
 	}
 
@@ -300,9 +302,9 @@ namespace r {
 
 		TypeSymbol * type = method->GetDeclaringType();
 
-		if (!method->GetIsStatic()) {
+		if (!method->IsStatic()) {
 			if (node.GetExpression()->GetKind() == Identifier) {
-				if (_method->GetIsStatic()) {
+				if (_method->IsStatic()) {
 					NOT_IMPLEMENTED();
 				}
 				ParameterSymbol * thisParameter = _method->LookupParameter("this");
@@ -326,17 +328,19 @@ namespace r {
 			//object->TypeHandle->MethodTable[slot]
 
 			int offset = offsetof(TypeSymbol, MethodTable);
-			//_assembler->Mov(EAX, Operand(EAX, JSObject::TypeHandleOffset));
+			_assembler->Mov(EAX, Operand(EAX, JSObject::TypeHandleOffset));
+			_assembler->Mov(EAX, Operand(EAX, offset));
 			int slot = method->GetSlot();
-			MethodEntry * entry = type->GetMethodTable()->Get(slot);
-			_assembler->Call((unsigned char *)(entry->CodeStub));
+			//MethodEntry * entry = &type->MethodTable[slot];
+			//_assembler->Call(entry->CodeStub);
+			_assembler->Call(Operand(EAX, slot * sizeof(MethodEntry)));
 
 		}
 		else {
 
 			int slot = method->GetSlot();
-			MethodEntry * entry = type->GetMethodTable()->Get(slot);
-			_assembler->Call((unsigned char *)(entry->CodeStub));
+			MethodEntry * entry = &type->MethodTable[slot];
+			_assembler->Call(entry->CodeStub);
 		}
 
 		if (method->GetParameters()->GetSize() > 0)

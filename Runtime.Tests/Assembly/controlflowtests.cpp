@@ -15,6 +15,14 @@ namespace RuntimeTests
 			END_TEST_CLASS_ATTRIBUTE()
 	public:
 
+		TEST_METHOD(CallTest)
+		{
+			{
+				A(Call(Operand(EAX, 4)));
+				B(0xFF, 0x50, 0x04);
+			}
+		}
+
 		TEST_METHOD(TestTests)
 		{
 			{

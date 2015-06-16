@@ -68,12 +68,14 @@ namespace r {
 		int GetCodeSize() { return _codeSize; }
 		LineInfo * GetLineInfo() { return _lineInfo; }
 		void SetLineInfo(LineInfo * value) { _lineInfo = value; }
-		void SetIsAmbient(bool value) { _isAmbient = value; }
-		bool GetIsAmbient() { return _isAmbient; }
-		void SetIsStatic(bool value) { _isStatic = value; }
-		bool GetIsStatic() { return _isStatic; }
-		void SetIsConstructor(bool value) { _isConstructor = value; }
-		bool GetIsConstructor() { return _isConstructor; }
+		void SetAmbient(bool value) { _isAmbient = value; }
+		bool IsAmbient() { return _isAmbient; }
+		void SetStatic(bool value) { _isStatic = value; }
+		bool IsStatic() { return _isStatic; }
+		void SetConstructor(bool value) { _isConstructor = value; }
+		bool IsConstructor() { return _isConstructor; }
+		void SetVirtual(bool value) { _isVirtual = value; }
+		bool IsVirtual() { return _isVirtual; }
 		List<ParameterSymbol*>* GetParameters() { return _parameters; }
 		List<LocalVariableSymbol*>* GetLocalVariables() { return _localVaribles; }
 		TypeSymbol * GetReturnType() { return _returnType; }
@@ -83,6 +85,8 @@ namespace r {
 		int GetSlot() { return _slot; }
 		void SetSlot(int value) { _slot = value; };
 		ParameterSymbol * LookupParameter(const char * parameterName);
+		MethodSymbol * GetBaseDefinition() { return _baseDefinition; }
+		void SetBaseDefinition(MethodSymbol * value) { _baseDefinition = value; }
 	private:
 		unsigned char *_code;
 		int _codeSize;
@@ -90,11 +94,13 @@ namespace r {
 		bool _isAmbient = false;
 		bool _isStatic = false;
 		bool _isConstructor = false;
+		bool _isVirtual = false;
 		List<ParameterSymbol*>* _parameters = new List<ParameterSymbol*>();
 		List<LocalVariableSymbol*>* _localVaribles = new List<LocalVariableSymbol*>();
 		TypeSymbol * _returnType;
 		TypeSymbol * _declaringType;
 		int _slot;
+		MethodSymbol * _baseDefinition;
 	};
 
 	class MethodEntry {
@@ -116,20 +122,22 @@ namespace r {
 
 	class TypeSymbol : public Symbol {
 	public:
+		MethodEntry * MethodTable;
+
 		SymbolKind GetKind() override { return SymbolKind::Type; }
 		List<MethodSymbol*> * GetMethods() { return _methods; }
 		List<PropertySymbol*> * GetProperties() { return _properties; }
-		List<MethodEntry*> * GetMethodTable() { return _methodTable; }
 		MethodSymbol * LookupMethod(const char * methodName);
 		PropertySymbol * LookupProperty(const char * propertyName);
 		Symbol * LookupMember(const char * memberName);
 
-		MethodEntry * MethodTable;
 
+		void SetBaseType(TypeSymbol *value) { _baseType = value; }
+		TypeSymbol * GetBaseType() { return _baseType; }
 	private:
 		List<MethodSymbol*> * _methods = new List<MethodSymbol*>();
 		List<PropertySymbol*> * _properties = new List<PropertySymbol*>();
-		List<MethodEntry*> * _methodTable = new List<MethodEntry*>();
+		TypeSymbol * _baseType;
 	};
 
 

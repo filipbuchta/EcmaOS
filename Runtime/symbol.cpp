@@ -41,6 +41,9 @@ namespace r {
 				return method;
 			}
 		}
+		if (GetBaseType() != nullptr) {
+			return GetBaseType()->LookupMethod(methodName);
+		}
 		return nullptr;
 	}
 
@@ -75,7 +78,6 @@ namespace r {
 
 		return nullptr;
 	}
-
 
 }
 

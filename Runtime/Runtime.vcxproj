@@ -138,6 +138,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="assemblybuilder.cpp" />
     <ClCompile Include="codegen\assembler.cpp" />
     <ClCompile Include="astprinter.cpp" />
     <ClCompile Include="binder.cpp" />
@@ -152,9 +153,11 @@
     <ClCompile Include="syntax\syntaxnode.cpp" />
     <ClCompile Include="syntax\syntaxnodevisitor.cpp" />
     <ClCompile Include="syntax\syntaxtoken.cpp" />
+    <ClCompile Include="typebuilder.cpp" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="assemblybuilder.h" />
     <ClInclude Include="codegen\assembler.h" />
     <ClInclude Include="astprinter.h" />
     <ClInclude Include="binder.h" />
@@ -175,6 +178,7 @@
     <ClInclude Include="syntax\syntaxnodevisitor.h" />
     <ClInclude Include="syntax\syntaxtoken.h" />
     <ClInclude Include="list.h" />
+    <ClInclude Include="typebuilder.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>

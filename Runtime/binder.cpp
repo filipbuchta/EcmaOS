@@ -80,7 +80,7 @@ namespace r {
 		}
 
 		//TODO: use constructor parameters for method resolution
-		MethodSymbol * constructor = type->LookupMethod("constructor");
+		MethodSymbol * constructor = type->LookupMethod(".ctor");
 		if (constructor == nullptr) {
 			NOT_IMPLEMENTED();
 		}

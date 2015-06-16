@@ -80,11 +80,16 @@ int main(int argc, char* argv[])
 
 	source = "class Console { declare static log(value: string): void; } \n\
 				class C { static main(): void { let obj: Parent = new Child(); obj.f() } } \
-							  class Parent { f(): void { Console.log(1); } } \
-							  class Child extends Parent { f(): void { Console.log(2); } }";
+				class Parent { f(): void { Console.log(1); } } \
+				class Child extends Parent { }";
 		
 		
-	source = "class Console { declare static log(value: string): void; } class C { constructor() { } static main(): void { let o = new C(); o.f(); } f(): void { Console.log(123); } }";
+	/*source = "class Console { declare static log(value: string): void; } \
+			  class C { \
+				 constructor() { } \
+				 static main(): void { let o = new C(); o.f(); } \
+				 f(): void { Console.log(123); } \
+			 }";*/
 
 	//Test * test = new Test();
 

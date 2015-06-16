@@ -269,9 +269,11 @@ namespace r {
 		TypeAnnotationSyntax * _propertyType;
 	};
 
-	class ConstructorDeclarationSyntax : public ClassElementSyntax, public DeclarationSyntax {
+	class MethodLikeDeclarationSyntax : public DeclarationSyntax {
 	public:
-		DECLARE_NODE_TYPE(ConstructorDeclaration);
+		virtual SyntaxKind GetKind() = 0;
+		virtual void Accept(SyntaxNodeVisitor &visitor) = 0;
+
 		BlockSyntax* GetBody() { return _body; }
 		void SetBody(BlockSyntax * value) { _body = value; }
 		ParameterListSyntax * GetParameterList() { return _parameterList; }
@@ -281,21 +283,21 @@ namespace r {
 		ParameterListSyntax * _parameterList;
 	};
 
+	class ConstructorDeclarationSyntax : public ClassElementSyntax, public MethodLikeDeclarationSyntax {
+	public:
+		DECLARE_NODE_TYPE(ConstructorDeclaration);
+	private:
+	};
 
-	class MethodDeclarationSyntax : public ClassElementSyntax, public DeclarationSyntax {
+
+	class MethodDeclarationSyntax : public ClassElementSyntax, public MethodLikeDeclarationSyntax {
 	public:
 		DECLARE_NODE_TYPE(MethodDeclaration);
-		BlockSyntax* GetBody() { return _body; }
-		void SetBody(BlockSyntax* value) { _body = value; }
-		void SetParameterList(ParameterListSyntax* value) { _parameterList = value; }
-		ParameterListSyntax* GetParameterList() { return _parameterList; }
 		void SetReturnType(TypeAnnotationSyntax * value) { _returnType = value; }
 		TypeAnnotationSyntax * GetReturnType() { return _returnType; }
 		List<SyntaxToken> * GetModifiers() { return _modifiers; }
 		void SetModifiers(List<SyntaxToken> * value) { _modifiers = value; }
 	private:
-		BlockSyntax* _body;
-		ParameterListSyntax* _parameterList;
 		TypeAnnotationSyntax * _returnType;
 		List<SyntaxToken> * _modifiers;
 	};

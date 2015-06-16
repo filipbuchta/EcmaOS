@@ -159,6 +159,10 @@ namespace r {
 		//parse optional class heritage
 		ParseExpected(OpenBraceToken);
 
+		if (ParseOptional(CloseBraceToken)) {
+			return node;
+		}
+
 		while (true)
 		{
 			ClassElementSyntax * child;
