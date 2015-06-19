@@ -9,11 +9,6 @@
 
 namespace r {
 
-
-	class Script {
-
-	};
-
 	class Compiler {
 	public:
 		static AssemblySymbol* Compile(char const *string);

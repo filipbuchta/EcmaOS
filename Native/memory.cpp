@@ -3,6 +3,10 @@
 
 unsigned char *heap = (unsigned char*)0x100000;
 
+void *__cdecl operator new[](size_t count) {
+	return malloc(count);
+}
+
 void *__cdecl operator new(size_t count){
 	return malloc(count);
 }

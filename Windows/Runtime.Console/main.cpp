@@ -54,57 +54,64 @@ void CreatePE(AssemblySymbol * code) {
 
 
 }
+
+
 int main(int argc, char* argv[])
 {
+
 	if (argc > 0) {
 		std::cout << argv[0] << std::endl;
 	}
 
 	
-	std::ifstream t("C:\\dbg\\test.js");
+	std::ifstream t("C:\\dbg\\test.ts");
 	std::stringstream buffer;
 	buffer << t.rdbuf();
 
 	std::string str = buffer.str();
-	//const char * source = str.c_str();
+	const char * code = str.c_str();
 
 
 
-	const char * source = " \
-		class Console { declare static log(value: string): void; } \n\
-		class C { static main(): void { Console.log(factorial(6)); } \
-		static factorial(x: number): number { \
-			if (x == 0) return 1; return x * factorial(x - 1); \
-		} }";
 
+	//	
+	/*const char * code =
+		"class Console {\n"
+		"    declare static log(value: string): void;\n"
+		"}\n\n"
+		"class Calculator {\n"
+		"   plus(x: number, y: number): void {\n"
+		"      return x + y;\n"
+		"   }\n"
+		"}\n\n"
+		"class C { \n"
+		"    static main() : void { \n"
+		"        let calculator = new Calculator();\n"
+		"        let result = calculator.plus(123, 654); \n"
+		"        Console.log(result);\n"
+		"    }\n"
+		"}\n";*/
 
-	source = "class Console { declare static log(value: string): void; } \n\
-				class C { static main(): void { let obj: Parent = new Child(); obj.f() } } \
-				class Parent { f(): void { Console.log(1); } } \
-				class Child extends Parent { }";
-		
-		
-	/*source = "class Console { declare static log(value: string): void; } \
-			  class C { \
-				 constructor() { } \
-				 static main(): void { let o = new C(); o.f(); } \
-				 f(): void { Console.log(123); } \
-			 }";*/
-
+	/*code = "class Console { declare static log(value: string): void; }"
+		"class C {  static main(): void { new C().test(123); } test(x: number): void { Console.log(x); } }";
+	code = "class Console { declare static log(value: string): void; }"
+		"class C { static main(): void { Console.log(123 + 654); } }";*/
 	//Test * test = new Test();
 
 	//test->test(1);
 
 
+	code = "class Console { declare static log(value: string): void; }"
+		   "class P extends C { field2: number; } class C { field1: number; static main(): void { let o = new P(); o.field1 = 123; o.field2 = 456; Console.log(o.field1); Console.log(o.field2); } }";
 
 	Compiler * compiler = new Compiler();
-	AssemblySymbol * code = compiler->Compile(source);
+	AssemblySymbol * assembly = compiler->Compile(code);
 
 
 	//CreatePE(code);
 
 	void(*entry) ();
-	entry = (void(*) ())code->GetEntryPoint()->GetCode();
+	entry = (void(*) ())assembly->GetEntryPoint()->GetCode();
 	entry();
 
 

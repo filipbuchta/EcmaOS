@@ -62,7 +62,7 @@ namespace r {
 		DO(PostfixExpression) \
 		DO(UnaryExpression) \
 		DO(LeftHandSideExpression) \
-		DO(PropertyAccessExpression) \
+		DO(MemberAccessExpression) \
 		DO(PrimaryExpression) \
 		DO(ThisExpression)\
 		DO(PostfixUnaryExpression)\

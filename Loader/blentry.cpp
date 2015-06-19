@@ -1,6 +1,10 @@
 
-#include "..\Kernel\Native\Kernel.h"
+#include "..\Native\Kernel.h"
 
+
+extern "C" {
+	int _fltused = 0;
+}
 
 extern "C" void blentry32() {
 	

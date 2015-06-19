@@ -17,7 +17,7 @@ namespace r {
     V(ParenthesizedExpression) \
     V(CallExpression) \
 	V(NewExpression) \
-    V(PropertyAccessExpression) \
+    V(MemberAccessExpression) \
     V(ArgumentList) \
     V(IterationStatement) \
     V(ParameterList) \

@@ -4,6 +4,7 @@
 #include "../syntax/syntaxnodevisitor.h"
 #include "assembler.h"
 #include "../heap.h"
+#include "../utils.h"
 
 namespace r {
 
@@ -12,7 +13,7 @@ namespace r {
 
 	class CodeGenerator : public SyntaxNodeVisitor {
 	public:
-		CodeGenerator::CodeGenerator(Heap * heap, Assembler * assembler, MethodSymbol * _method);
+		CodeGenerator::CodeGenerator(AssemblySymbol * assembly, Heap * heap, Assembler * assembler, MethodSymbol * method);
 		void EmitFunctionPrologue();
 		void EmitFunctionEpilogue();
 
@@ -35,12 +36,14 @@ namespace r {
 		void VisitForEffect(SyntaxNode & node);
 
 		int GetSymbolOffset(Symbol & symbol);
+		int GetPropertyOffset(PropertySymbol & property);
 
+		void EmitPropertyInitialization(Register object, TypeSymbol & type);
 
 		void PushContext(ExpressionContext * context);
 		void PopContext();
 
-		void DynamicAllocate(Register result, int size);
+		void DynamicAllocate(Register result, TypeSymbol & type);
 
 		Assembler *_assembler;
 		Heap * _heap;
@@ -49,6 +52,7 @@ namespace r {
 
 		ExpressionContext * _context;
 		MethodSymbol * _method;
+		AssemblySymbol * _assembly;
 	};
 
 
@@ -63,10 +67,16 @@ namespace r {
 		ExpressionContext * _old;
 	};
 
-	class AccumulatorContext : public ExpressionContext {
+	class RegisterContext : public ExpressionContext {
 	public:
-		AccumulatorContext(CodeGenerator * codeGenerator) : ExpressionContext(codeGenerator) { }
-		void Plug(Register reg) { _codeGenerator->GetAssembler()->Mov(EAX, reg); }
+		RegisterContext(CodeGenerator * codeGenerator, Register reg) : ExpressionContext(codeGenerator), _register(reg) {  }
+		void Plug(Register reg) {
+			if (reg != _register) {
+				_codeGenerator->GetAssembler()->Mov(_register, reg);
+			}
+		}
+	private:
+		Register _register;
 	};
 
 	class EffectContext : public ExpressionContext {

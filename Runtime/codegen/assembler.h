@@ -43,8 +43,9 @@ namespace r {
 		Equal = 0,
 		Less = 1,
 		LessEqual = 2,
-		NotLess = 5,
-		NotLessEqual = 6
+		NotEqual = 4,
+		GreaterEqual = 5,
+		Greater = 6
 	};
 
 	enum Register {
@@ -161,11 +162,12 @@ namespace r {
 		void Pop(Register reg);
 
 		void Push(int value);
+		void Push(Register reg);
+		void Push(Operand operand);
 
 		void Call(Operand & address);
 		void Call(unsigned char* address);
 
-		void Push(Register reg);
 
 		void EmitSSEOperand(XMMRegister dst, XMMRegister src);
 		void EmitArithmetic(int operation, Operand dst, unsigned int immediate);

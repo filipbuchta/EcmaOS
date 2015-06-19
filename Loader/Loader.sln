@@ -5,9 +5,9 @@ VisualStudioVersion = 14.0.22310.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Loader", "Loader.vcxproj", "{62F8E734-DDDB-4CAB-8BCC-B11EC5F90629}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Runtime", "..\Kernel\Runtime\Runtime.vcxproj", "{1745240A-66BD-468D-9984-3245A7B7155A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Runtime", "..\Runtime\Runtime.vcxproj", "{1745240A-66BD-468D-9984-3245A7B7155A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Native", "..\Kernel\Native\Native.vcxproj", "{DE607CF8-C5A7-4D7C-85AD-953B4EC861A2}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Native", "..\Native\Native.vcxproj", "{DE607CF8-C5A7-4D7C-85AD-953B4EC861A2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

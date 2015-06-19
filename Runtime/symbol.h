@@ -134,6 +134,7 @@ namespace r {
 
 		void SetBaseType(TypeSymbol *value) { _baseType = value; }
 		TypeSymbol * GetBaseType() { return _baseType; }
+		int GetSize();
 	private:
 		List<MethodSymbol*> * _methods = new List<MethodSymbol*>();
 		List<PropertySymbol*> * _properties = new List<PropertySymbol*>();

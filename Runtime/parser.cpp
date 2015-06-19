@@ -402,7 +402,7 @@ namespace r {
 
 			if (ParseOptional(DotToken)) 
 			{
-				PropertyAccessExpressionSyntax *node = new PropertyAccessExpressionSyntax();
+				MemberAccessExpressionSyntax *node = new MemberAccessExpressionSyntax();
 				node->SetExpression(lhs);
 				node->SetName(ParseIdentifier());
 				lhs = node;
@@ -643,7 +643,7 @@ namespace r {
 		switch (kind)
 		{
 		case SyntaxKind::ArrayLiteralExpression:
-		case SyntaxKind::PropertyAccessExpression:
+		case SyntaxKind::MemberAccessExpression:
 		case SyntaxKind::NewExpression:
 		case SyntaxKind::ThisExpression:
 		case SyntaxKind::CallExpression:

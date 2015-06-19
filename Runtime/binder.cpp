@@ -28,7 +28,8 @@ namespace r {
 	}
 
 	void Binder::VisitThisExpression(ThisExpressionSyntax & node) {
-		NOT_IMPLEMENTED();
+		//TODO: check if this is instance method
+		node.SetExpressionType(_method->GetDeclaringType());
 	}
 
 	void Binder::VisitExpressionStatement(ExpressionStatementSyntax & node) {
@@ -58,10 +59,13 @@ namespace r {
 
 	void Binder::VisitLiteral(LiteralSyntax & node) {
 		if (node.GetText().Kind == NumericLiteral) {
-			node.SetExpressionSymbol(_assembly->LookupType("number"));
+			node.SetExpressionType(_assembly->LookupType("number"));
 		}
 		else if (node.GetText().Kind == BooleanLiteral) {
-			node.SetExpressionSymbol(_assembly->LookupType("boolean"));
+			node.SetExpressionType(_assembly->LookupType("boolean"));
+		}
+		else if (node.GetText().Kind == NullLiteral) {
+
 		}
 		else {
 			NOT_IMPLEMENTED();
@@ -73,6 +77,7 @@ namespace r {
 	}
 
 	void Binder::VisitNewExpression(NewExpressionSyntax & node) {
+		node.GetArguments()->Accept(*this);
 
 		TypeSymbol * type = _assembly->LookupType(node.GetIdentifier()->GetName().Value);
 		if (type == nullptr) {
@@ -85,7 +90,7 @@ namespace r {
 			NOT_IMPLEMENTED();
 		}
 		node.SetConstructor(constructor);
-		node.SetExpressionSymbol(constructor->GetDeclaringType());
+		node.SetExpressionType(constructor->GetDeclaringType());
 	}
 
 	void Binder::VisitPropertyDeclaration(PropertyDeclarationSyntax & node) {
@@ -95,12 +100,12 @@ namespace r {
 
 	void Binder::VisitPrefixUnaryExpression(PrefixUnaryExpressionSyntax & node) {
 		node.GetOperand()->Accept(*this);
-		node.SetExpressionSymbol(node.GetOperand()->GetExpressionSymbol());
+		node.SetExpressionType(node.GetOperand()->GetExpressionType());
 	}
 
 	void Binder::VisitPostfixUnaryExpression(PostfixUnaryExpressionSyntax & node) {
 		node.GetOperand()->Accept(*this);
-		node.SetExpressionSymbol(node.GetOperand()->GetExpressionSymbol());
+		node.SetExpressionType(node.GetOperand()->GetExpressionType());
 	}
 
 	void Binder::VisitParenthesizedExpression(ParenthesizedExpressionSyntax & node) {
@@ -115,13 +120,41 @@ namespace r {
 		node.GetLeft()->Accept(*this);
 		node.GetRight()->Accept(*this);
 		//TODO: check if types are correct
-		node.SetExpressionSymbol(node.GetLeft()->GetExpressionSymbol());
+		TypeSymbol * leftType = node.GetLeft()->GetExpressionType();
+		TypeSymbol * rightType = node.GetRight()->GetExpressionType();
+		node.SetExpressionType(leftType);
 	}
 
 	void Binder::VisitBinaryExpression(BinaryExpressionSyntax & node) {
 		node.GetLeft()->Accept(*this);
 		node.GetRight()->Accept(*this);
 		//TODO: check if types are correct
+		TypeSymbol * leftType = node.GetLeft()->GetExpressionType();
+		TypeSymbol * rightType = node.GetRight()->GetExpressionType();
+		switch (node.GetOperator().Kind) {
+			case PlusToken:
+			case MinusToken:
+			case AsteriskToken:
+			case SlashToken:
+			{
+				TypeSymbol * numberType = _assembly->LookupType("number");
+				node.SetExpressionType(numberType);
+			}
+			break;
+			case LessThanEqualsToken:
+			case LessThanToken:
+			case GreaterThanEqualsToken:
+			case GreaterThanToken:
+			case EqualsEqualsToken:
+			case ExclamationEqualsToken:
+			{
+				TypeSymbol * booleanType = _assembly->LookupType("boolean");
+				node.SetExpressionType(booleanType);
+			}
+			break;
+			default:
+				NOT_IMPLEMENTED()
+		}
 	}
 
 	void Binder::VisitArgumentList(ArgumentListSyntax & node) {
@@ -147,6 +180,9 @@ namespace r {
 
 	void Binder::VisitCallExpression(CallExpressionSyntax & node) {
 		node.GetArguments()->Accept(*this);
+		node.GetExpression()->Accept(*this);
+
+
 		if (node.GetExpression()->GetKind() == Identifier) {
 			MethodSymbol * method = _method->GetDeclaringType()->LookupMethod(((IdentifierSyntax *)node.GetExpression())->GetName().Value);
 			
@@ -154,14 +190,23 @@ namespace r {
 				NOT_IMPLEMENTED();
 			}
 
-			node.GetExpression()->SetExpressionSymbol(method);
+			ThisExpressionSyntax * thisExpression = new ThisExpressionSyntax();
+			thisExpression->Accept(*this);
+			node.SetReceiver(thisExpression);
+
+			node.SetMethod(method);
 		}
-		else {
-			node.GetExpression()->Accept(*this);
+		else if (node.GetExpression()->GetKind() == MemberAccessExpression) {
+			MemberAccessExpressionSyntax * memberAccessExpression = (MemberAccessExpressionSyntax *)node.GetExpression();
+			TypeSymbol * type = memberAccessExpression->GetExpresion()->GetExpressionType();
+			MethodSymbol * method = type->LookupMethod(memberAccessExpression->GetName()->GetName().Value);
+
+			node.SetReceiver(memberAccessExpression->GetExpresion());
+			node.SetMethod(method);
 		}
 		//TODO: check if this is indeed method symbol
-		node.SetMethod((MethodSymbol*)node.GetExpression()->GetExpressionSymbol());
-		node.SetExpressionSymbol(node.GetMethod()->GetReturnType());
+		
+		node.SetExpressionType(node.GetMethod()->GetReturnType());
 	}
 
 
@@ -175,26 +220,26 @@ namespace r {
 	}
 
 
-	void Binder::VisitPropertyAccessExpression(PropertyAccessExpressionSyntax & node) {
+	void Binder::VisitMemberAccessExpression(MemberAccessExpressionSyntax & node) {
 
 		node.GetExpresion()->Accept(*this);
 
-		Symbol * expressionSymbol = node.GetExpresion()->GetExpressionSymbol();
-
-		if (expressionSymbol->GetKind() != SymbolKind::Type) {
-			NOT_IMPLEMENTED();
+		TypeSymbol * type = node.GetExpresion()->GetExpressionType();
+		if (type == nullptr) {
+			NOT_IMPLEMENTED()
 		}
 
-		TypeSymbol * targetType = (TypeSymbol*)expressionSymbol;
-
-		Symbol * member = targetType->LookupMember(node.GetName()->GetName().Value);
+		Symbol * member = type->LookupMember(node.GetName()->GetName().Value);
 
 		if (member == nullptr) {
 			NOT_IMPLEMENTED();
-			
 		}
-		
-		node.SetExpressionSymbol(member);
+
+		if (member->GetKind() == Property) {
+			node.SetExpressionType(((PropertySymbol *)member)->GetPropertyType());
+		} //TODO: else if method set methodgroup type
+
+		node.SetMember(member);
 	}
 
 
@@ -204,7 +249,9 @@ namespace r {
 		Symbol * symbol = _currentScope->LookupSymbol(node.GetName().Value);
 
 		if (symbol != nullptr) {
-			node.SetExpressionSymbol(((LocalVariableSymbol*)symbol)->GetVariableType());
+			LocalVariableSymbol * localVariable = (LocalVariableSymbol*)symbol;
+			symbol = localVariable;
+			node.SetExpressionType(localVariable->GetVariableType());
 		}
 
 		// Lookup parameter
@@ -213,20 +260,26 @@ namespace r {
 			symbol = parameter;
 
 			if (parameter != nullptr) {
-				node.SetExpressionSymbol(parameter->GetParameterType());
+				node.SetExpressionType(parameter->GetParameterType());
 			}
 		}
 
 		// Lookup member on current type
 		if (symbol == nullptr) {
 			symbol = _method->GetDeclaringType()->LookupMember(node.GetName().Value);
-			node.SetExpressionSymbol(symbol);
+
+			if (symbol != nullptr) {
+				if (symbol->GetKind() == Property) {
+					node.SetExpressionType(((PropertySymbol *)symbol)->GetPropertyType());
+				} //TODO: else set method group type
+			}
 		}
 
 		if (symbol == nullptr) {
 			// Lookup type symbols
 			symbol = _assembly->LookupType(node.GetName().Value);
-			node.SetExpressionSymbol(symbol);
+
+			node.SetExpressionType((TypeSymbol*)symbol);
 		}
 
 		if (symbol == nullptr) {
@@ -261,7 +314,7 @@ namespace r {
 			}
 			else {
 				//TODO: check if type symbol
-				localVariable->SetVariableType((TypeSymbol*)node.GetInitializer()->GetExpressionSymbol());
+				localVariable->SetVariableType((TypeSymbol*)node.GetInitializer()->GetExpressionType());
 			}
 		}
 		else if (localVariable->GetVariableType() == nullptr) {

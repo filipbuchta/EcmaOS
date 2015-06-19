@@ -217,8 +217,8 @@ namespace r {
 		_indent--;
 	}
 
-	void AstPrinter::VisitPropertyAccessExpression(PropertyAccessExpressionSyntax &node) {
-		PrintIndented("PropertyAccessExpression\n");
+	void AstPrinter::VisitMemberAccessExpression(MemberAccessExpressionSyntax &node) {
+		PrintIndented("MemberAccessExpression\n");
 		_indent++;
 		node.GetExpresion()->Accept(*this);
 		node.GetName()->Accept(*this);

@@ -80,7 +80,7 @@
     <ClCompile Include="blentry.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Kernel\Native\Native.vcxproj">
+    <ProjectReference Include="..\Native\Native.vcxproj">
       <Project>{de607cf8-c5a7-4d7c-85ad-953b4ec861a2}</Project>
     </ProjectReference>
   </ItemGroup>

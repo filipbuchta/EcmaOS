@@ -13,37 +13,10 @@ namespace r {
 
 	class HeapObject {
 	public:
-		static const int HeaderOffset = 0;
-	};
+		static const unsigned int TypeHandleOffset = 0;
+		static const unsigned int PropertyTableOffset = TypeHandleOffset + sizeof(unsigned int);
 
-	class JSObject : public HeapObject
-	{
-	public:
-		static const unsigned int TypeHandleOffset = HeapObject::HeaderOffset;
-		static const int Size = TypeHandleOffset + sizeof(unsigned int);
-	};
-
-	class JSFunction : public JSObject {
-	public:
-		static const int EntryOffset = HeapObject::HeaderOffset;
-		static const int Size = EntryOffset + sizeof(int);
-	};
-
-	class Number : public HeapObject {
-	public:
-		static const int ValueOffset = HeapObject::HeaderOffset;
-		static const int Size = ValueOffset + sizeof(double);
-
-	};
-
-	class String : HeapObject {
-
-	};
-
-	class Boolean : HeapObject {
-	public:
-		static const int ValueOffset = HeapObject::HeaderOffset;
-		static const int Size = ValueOffset + sizeof(bool);
+		static const unsigned int HeaderSize = sizeof(unsigned int); // TypeHandle
 	};
 
 	class Heap
@@ -51,24 +24,12 @@ namespace r {
 	public:
 		Heap::Heap();
 
-		JSFunction * GetRuntime_Log() { return _runtime_log; }
-
-		Boolean * GetTrueValue() { return _trueValue; }
-		Boolean * GetFalseValue() { return _falseValue; }
-		HeapObject * GetUndefinedValue() { return _undefinedValue; }
-
 		HeapObject * Heap::Allocate(int size);
 
-		void CreateInitialObjects();
-		unsigned int GetAllocationTop() { return (unsigned int)(&_allocationTop); }
+		unsigned int * GetAllocationTop() { return &_allocationTop; }
 
 	private:
-		Boolean * _trueValue;
-		Boolean * _falseValue;
-		HeapObject * _undefinedValue;
 		
-		JSFunction * _runtime_log;
-
 		unsigned int _allocationTop;
 		unsigned char * _space;
 	};

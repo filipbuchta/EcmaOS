@@ -18,25 +18,25 @@ namespace RuntimeTests
 			END_TEST_CLASS_ATTRIBUTE()
 	public:
 
-		TEST_METHOD(LargeNumericVariableTest)
+	/*	TEST_METHOD(LargeNumericVariableTest)
 		{
 			CompileAndVerify("class C { static main(): void { let a = 9007199254740992; Console.log(a); } }", "9007199254740992");
-		}
-		TEST_METHOD(PrecissionLossTest)
-		{
-			CompileAndVerify("class C { static main(): void { let a = 9007199254740993; Console.log(a); } }", "9007199254740992");
-		}
+		}*/
+		//TEST_METHOD(PrecissionLossTest)
+		//{
+		//	CompileAndVerify("class C { static main(): void { let a = 9007199254740993; Console.log(a); } }", "9007199254740992");
+		//}
 		
 
-		TEST_METHOD(NegativeNumber)
-		{
-			CompileAndVerify("class C { static main(): void { let a = -1; Console.log(a); } }", "-1");
-		}
+		//TEST_METHOD(NegativeNumber)
+		//{
+		//	CompileAndVerify("class C { static main(): void { let a = -1; Console.log(a); } }", "-1");
+		//}
 
-		TEST_METHOD(LargeNegativeVariable)
-		{
-			CompileAndVerify("class C { static main(): void { let a = -9007199254740992; Console.log(a); } }", "-9007199254740992");
-		}
+		//TEST_METHOD(LargeNegativeVariable)
+		//{
+		//	CompileAndVerify("class C { static main(): void { let a = -9007199254740992; Console.log(a); } }", "-9007199254740992");
+		//}
 
 		TEST_METHOD(DecimalNumber)
 		{

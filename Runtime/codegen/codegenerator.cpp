@@ -2,11 +2,12 @@
 
 #include "../checks.h"
 #include "../utils.h"
+#include "../runtime.h"
 
 namespace r {
 
-	CodeGenerator::CodeGenerator(Heap * heap, Assembler * assembler, MethodSymbol * method)
-		: _heap(heap), _assembler(assembler), _method(method)
+	CodeGenerator::CodeGenerator(AssemblySymbol * assembly, Heap * heap, Assembler * assembler, MethodSymbol * method)
+		: _assembly(assembly), _heap(heap), _assembler(assembler), _method(method)
 	{
 	}
 
@@ -21,21 +22,11 @@ namespace r {
 		_assembler->Push(EBP);
 		_assembler->Mov(EBP, ESP);
 
+		// Space for locals
+		//TODO: substract correct size
 		_assembler->Sub(ESP, 0xCC);
 
-		//if (node.GetScope()->GetKind() == JSFunction) {
-		//	FunctionScope * scope = (FunctionScope *)node.GetScope();
-		//	for (Symbol * local : *scope->GetLocals()) {
-		//		_assembler->Mov(EAX, (unsigned int)&Runtime::Undefined);
-		//		_assembler->Push(EAX);
-		//	}
-		//}
-		//else if (node.GetScope()->GetKind() == Global) {
-		//	// Nothing to do
-		//}
-		//else {
-		//	NOT_IMPLEMENTED()
-		//}
+		//TODO: set locals to correct values
 
 		_assembler->Push(EBX);
 		_assembler->Push(ESI);
@@ -44,21 +35,19 @@ namespace r {
 //		_assembler->Emit(0xcc);
 	}
 
-	//TODO: pass scope
 	void CodeGenerator::EmitFunctionEpilogue()
 	{
-		Handle<HeapObject> undefinedValue = (Handle<HeapObject>)_heap->GetUndefinedValue();
-		_assembler->Mov(EAX, (unsigned int)undefinedValue.GetLocation());
-
 		_assembler->Bind(_returnLabel);
 
 		_assembler->Pop(EDI);
 		_assembler->Pop(ESI);
 		_assembler->Pop(EBX);
+
+		// Restore original stack pointer
 		_assembler->Mov(ESP, EBP);
 		_assembler->Pop(EBP);
+	
 		_assembler->Ret();
-
 	}
 
 	void CodeGenerator::VisitSourceCode(SourceCodeSyntax & node)
@@ -93,8 +82,7 @@ namespace r {
 
 		VisitForAccumulatorValue(*node.GetExpression());
 
-		Handle<Boolean> trueValue = (Handle<Boolean>)_heap->GetTrueValue();
-		_assembler->Cmp(Operand(EAX), (unsigned int)trueValue.GetLocation());
+		_assembler->Cmp(Operand(EAX), 1);
 
 		_assembler->Jne(end);
 
@@ -117,7 +105,9 @@ namespace r {
 		VisitForAccumulatorValue(*node.GetOperand());
 		//TODO: check if number
 
-		_assembler->Movsd(XMM0, Operand(EAX, Number::ValueOffset));
+		TypeSymbol * numberType = node.GetExpressionType();
+
+		_assembler->Movsd(XMM0, Operand(EAX, GetPropertyOffset(*numberType->LookupProperty("_value"))));
 		
 
 		// Store value 1 to xmm1
@@ -138,7 +128,7 @@ namespace r {
 				NOT_IMPLEMENTED()
 		}
 
-		_assembler->Movsd(Operand(EAX, Number::ValueOffset), XMM0);
+		_assembler->Movsd(Operand(EAX, GetPropertyOffset(*numberType->LookupProperty("_value"))), XMM0);
 		_context->Plug(EAX);
 	}
 
@@ -151,115 +141,190 @@ namespace r {
 		_assembler->Pop(EAX);
 		_assembler->Pop(EDX);
 
-		_assembler->Movsd(XMM1, Operand(EAX, Number::ValueOffset));
-		_assembler->Movsd(XMM0, Operand(EDX, Number::ValueOffset));
-
-		switch (node.GetOperator().Kind)
-		{
-		case PlusToken:
-			_assembler->Addsd(XMM0, XMM1); 
-			break;
-		case MinusToken:
-			_assembler->Subsd(XMM0, XMM1);
-			break;
-		case AsteriskToken:
-			_assembler->Mulsd(XMM0, XMM1);
-			break;
-
-		case EqualsEqualsToken:
-			_assembler->Cmpsd(SSECondition::Equal, XMM0, XMM1);
-			break;
-		case GreaterThanToken:
-			_assembler->Cmpsd(SSECondition::NotLessEqual, XMM0, XMM1);
-			break;
-		case LessThanToken:
-			_assembler->Cmpsd(SSECondition::Less, XMM0, XMM1);
-			break;
-
-		default:
-			NOT_IMPLEMENTED();
-			break;
-		}
-
-
-		switch (node.GetOperator().Kind)
-		{
-		case PlusToken:
-		case MinusToken:
-		case AsteriskToken:
+		TypeSymbol * type = node.GetLeft()->GetExpressionType();
+		//TODO: this does not work for number == null
+		if (strcmp(type->GetName(), "number") == 0) {
+			_assembler->Movsd(XMM1, Operand(EAX, GetPropertyOffset(*type->LookupProperty("_value"))));
+			_assembler->Movsd(XMM0, Operand(EDX, GetPropertyOffset(*type->LookupProperty("_value"))));
+		
+			switch (node.GetOperator().Kind)
 			{
-				DynamicAllocate(EAX, Number::Size);
-				_assembler->Movsd(Operand(EAX, Number::ValueOffset), XMM0);
+				case PlusToken:
+					_assembler->Addsd(XMM0, XMM1); 
+					break;
+				case MinusToken:
+					_assembler->Subsd(XMM0, XMM1);
+					break;
+				case AsteriskToken:
+					_assembler->Mulsd(XMM0, XMM1);
+					break;
+				case ExclamationEqualsToken:
+					_assembler->Cmpsd(SSECondition::NotEqual, XMM0, XMM1);
+					break;
+				case EqualsEqualsToken:
+					_assembler->Cmpsd(SSECondition::Equal, XMM0, XMM1);
+					break;
+				case GreaterThanToken:
+					_assembler->Cmpsd(SSECondition::Greater, XMM0, XMM1);
+					break;
+				case LessThanToken:
+					_assembler->Cmpsd(SSECondition::Less, XMM0, XMM1);
+					break;
 
-				_context->Plug(EAX);
+				default:
+					NOT_IMPLEMENTED();
+					break;
 			}
-			break;
 
-		case GreaterThanToken:
-		case LessThanToken:
-		case EqualsEqualsToken:
+
+			switch (node.GetOperator().Kind)
 			{
-				_assembler->Movd(Operand(EAX), XMM0);
+				case PlusToken:
+				case MinusToken:
+				case AsteriskToken:
+					{	
+						TypeSymbol * numberType = _assembly->LookupType("number");
+						DynamicAllocate(EAX, *numberType);
+						_assembler->Movsd(Operand(EAX, GetPropertyOffset(*numberType->LookupProperty("_value"))), XMM0);
 
-				Handle<Boolean> trueValue = (Handle<Boolean>)_heap->GetTrueValue();
-				Handle<Boolean> falseValue = (Handle<Boolean>)_heap->GetFalseValue();
+						_context->Plug(EAX);
+					}
+					break;
 
-				_assembler->Cmp(Operand(EAX), 0xFFFFFFFF);
+				case GreaterThanToken:
+				case LessThanToken:
+				case EqualsEqualsToken:
+				case ExclamationEqualsToken:
+					{
+						_assembler->Movd(Operand(EAX), XMM0);
 
-				Label falseLabel;
-				Label endLabel;
+						_assembler->Cmp(Operand(EAX), 0xFFFFFFFF);
 
-				_assembler->Jne(falseLabel);
-				_assembler->Mov(EAX, (unsigned int)trueValue.GetLocation());
-				_assembler->Jmp(endLabel);
-				_assembler->Bind(falseLabel);
-				_assembler->Mov(EAX, (unsigned int)falseValue.GetLocation());
-				_assembler->Bind(endLabel);
+						Label falseLabel;
+						Label endLabel;
 
-				_context->Plug(EAX);
+						_assembler->Jne(falseLabel);
+						_assembler->Mov(EAX, 1);
+						_assembler->Jmp(endLabel);
+						_assembler->Bind(falseLabel);
+						_assembler->Mov(EAX, 0);
+						_assembler->Bind(endLabel);
 
+						_context->Plug(EAX);
+
+					}
+					break;
+
+				default:
+					NOT_IMPLEMENTED();
+					break;
 			}
-			break;
 
-		default:
-			NOT_IMPLEMENTED();
-			break;
 		}
+		else 
+		{
+			_assembler->Cmp(EDX, EAX);
 
+			Label falseLabel;
+			Label endLabel;
+
+
+			switch (node.GetOperator().Kind)
+			{
+				case EqualsEqualsToken:
+				{
+					_assembler->Jne(falseLabel);
+				}
+				break;
+				case ExclamationEqualsToken:
+				{
+					_assembler->Je(falseLabel);
+				}
+				break;
+				default:
+					NOT_IMPLEMENTED();
+					break;
+			}
+
+			_assembler->Mov(EAX, 1);
+			_assembler->Jmp(endLabel);
+			_assembler->Bind(falseLabel);
+			_assembler->Mov(EAX, 0);
+			_assembler->Bind(endLabel);
+
+			_context->Plug(EAX);
+		}
 		
 	}
+	
 
+	void CodeGenerator::EmitPropertyInitialization(Register destination, TypeSymbol & type) {
+		if (type.GetBaseType() != nullptr) {
+			EmitPropertyInitialization(destination, *type.GetBaseType());
+		}
 
-	void CodeGenerator::DynamicAllocate(Register result, int size) {
-		unsigned int top = _heap->GetAllocationTop();
-		_assembler->Mov(result, top);
-		_assembler->Add(Operand(result, 0), size);
-		_assembler->Mov(result, Operand(result, 0));
+		for (PropertySymbol * property : * type.GetProperties()) {
+			_assembler->Mov(Operand(destination, HeapObject::PropertyTableOffset + property->GetSlot() * 4), 0); //TODO: emit correct default value
+		}
+	}
+
+	void CodeGenerator::DynamicAllocate(Register result, TypeSymbol & type) {
+
+	/*	_assembler->Push((unsigned int)type);
+		_assembler->Push((unsigned int)_heap);
+		_assembler->Call((unsigned char *)&Runtime::Allocate);
+*/
+		int size = HeapObject::HeaderSize + type.GetSize();
+
+	
+		unsigned int * top = _heap->GetAllocationTop();
+		_assembler->Mov(result, (unsigned int)top);      // mov eax, &allocationTop
+		_assembler->Push(Operand(EAX, 0));				 // push [eax]
+		_assembler->Add(Operand(result, 0), size);       // add [eax], size            ; reserve heap space
+		_assembler->Pop(result);						 // pop eax             ; set eax to point to new object
+
+		_assembler->Mov(Operand(result, HeapObject::TypeHandleOffset), (unsigned int)(&type));
+
+		EmitPropertyInitialization(result, type);
+		
+		//TODO: inicialize properties to default values
 	}
 
 
 	void CodeGenerator::VisitIfStatement(IfStatementSyntax &node) {
 		CodeForStatementPosition(node);
 
+		if (strcmp(node.GetExpression()->GetExpressionType()->GetName(), "boolean") != 0) {
+			NOT_IMPLEMENTED()
+		}
+
 		VisitForAccumulatorValue(*node.GetExpression());
-		//TODO: convert to boolean
 
-		Handle<Boolean> trueValue = (Handle<Boolean>)_heap->GetTrueValue();
+		_assembler->Cmp(Operand(EAX), 1);
 
-		_assembler->Cmp(Operand(EAX), (unsigned int)trueValue.GetLocation());
-
+		Label endLabel;
 		Label elseLabel;
 		_assembler->Jne(elseLabel);
 	
 		Visit(*node.GetThenStatement());
-
+		_assembler->Jmp(endLabel);
 		_assembler->Bind(elseLabel);
 		if (node.GetElseStatement() != nullptr) {
 			Visit(*node.GetElseStatement());
 		}
+		_assembler->Bind(endLabel);
 	}
+
 	void CodeGenerator::VisitThisExpression(ThisExpressionSyntax &node) {
-		NOT_IMPLEMENTED()
+		if (_method->IsStatic()) {
+			NOT_IMPLEMENTED()
+		}
+
+		ParameterSymbol * thisParameter = _method->LookupParameter("this");
+
+		int offset = GetSymbolOffset(*thisParameter);
+		_assembler->Mov(EAX, Operand(EBP, offset));
+		_context->Plug(EAX);
 	}
 
 	void CodeGenerator::VisitNewExpression(NewExpressionSyntax & node) {
@@ -268,20 +333,17 @@ namespace r {
 		TypeSymbol * type = constructor->GetDeclaringType();
 
 		
-		int size = JSObject::Size;
-		//TODO: add size of all fields
-		//size += 
+	
 
+		for (int i = node.GetArguments()->GetArguments()->GetSize() - 1; i >= 0; i--) {
+			VisitForStackValue(*node.GetArguments()->GetArguments()->Get(i));
+		}
 
-
-		VisitForStackValue(*node.GetArguments());
-
-		DynamicAllocate(EAX, size);
-		_assembler->Mov(Operand(EAX, JSObject::TypeHandleOffset), reinterpret_cast<unsigned int>(type));
+		DynamicAllocate(EAX, *type);
 
 		_assembler->Push(EAX);
 		_assembler->Push(EAX); // Push this
-		
+
 		int slot = constructor->GetSlot();
 
 		MethodEntry * entry = &type->MethodTable[slot];
@@ -296,48 +358,31 @@ namespace r {
 
 	void CodeGenerator::VisitCallExpression(CallExpressionSyntax & node) {
 
-		VisitForStackValue(*node.GetArguments());
-
 		MethodSymbol * method = node.GetMethod();
 
 		TypeSymbol * type = method->GetDeclaringType();
 
-		if (!method->IsStatic()) {
-			if (node.GetExpression()->GetKind() == Identifier) {
-				if (_method->IsStatic()) {
-					NOT_IMPLEMENTED();
-				}
-				ParameterSymbol * thisParameter = _method->LookupParameter("this");
+		for (int i = node.GetArguments()->GetArguments()->GetSize() - 1; i >= 0; i--) {
+			VisitForStackValue(*node.GetArguments()->GetArguments()->Get(i));
+		}
 
-				int offset = GetSymbolOffset(*thisParameter);
-				_assembler->Mov(EAX, Operand(EBP, offset));
-			}
-			else if (node.GetExpression()->GetKind() == PropertyAccessExpression) {
-				PropertyAccessExpressionSyntax * propertyAccessExpression = (PropertyAccessExpressionSyntax *)node.GetExpression();
-				VisitForAccumulatorValue(*propertyAccessExpression->GetExpresion());
-			}
-			else {
-				NOT_REACHABLE();
-			}
-			
+		if (!method->IsStatic()) {
+			VisitForAccumulatorValue(*node.GetReceiver());
+
 			_assembler->Push(EAX); // push this parameter
 
-
-			//TODO: for non static calls lookup from method table in memory
 			
 			//object->TypeHandle->MethodTable[slot]
 
 			int offset = offsetof(TypeSymbol, MethodTable);
-			_assembler->Mov(EAX, Operand(EAX, JSObject::TypeHandleOffset));
+			_assembler->Mov(EAX, Operand(EAX, HeapObject::TypeHandleOffset));
 			_assembler->Mov(EAX, Operand(EAX, offset));
 			int slot = method->GetSlot();
-			//MethodEntry * entry = &type->MethodTable[slot];
-			//_assembler->Call(entry->CodeStub);
+
 			_assembler->Call(Operand(EAX, slot * sizeof(MethodEntry)));
 
 		}
 		else {
-
 			int slot = method->GetSlot();
 			MethodEntry * entry = &type->MethodTable[slot];
 			_assembler->Call(entry->CodeStub);
@@ -348,7 +393,7 @@ namespace r {
 			_assembler->Add(ESP, method->GetParameters()->GetSize() * 4);
 		}
 
-
+		// eax stores return value
 		_context->Plug(EAX);
 	}
 
@@ -371,11 +416,15 @@ namespace r {
 			const char *stringValue = node.GetText().Value;
 
 			double value = atod(stringValue);
-			
-			DynamicAllocate(EAX, Number::Size);
 
-			_assembler->Mov(Operand(EAX, Number::ValueOffset), *(int *)&value);
-			_assembler->Mov(Operand(EAX, Number::ValueOffset + 4), *(((int *)&value) + 1));
+			TypeSymbol * numberType = (TypeSymbol*)node.GetExpressionType();
+
+			DynamicAllocate(EAX, *numberType);
+
+			int valueOffset = GetPropertyOffset(*numberType->LookupProperty("_value"));
+
+			_assembler->Mov(Operand(EAX, valueOffset), *(int *)&value);
+			_assembler->Mov(Operand(EAX, valueOffset + 4), *(((int *)&value) + 1));
 
 			_context->Plug(EAX);
 
@@ -384,16 +433,18 @@ namespace r {
 		{
 			if (strcmp(node.GetText().Value, "true") == 0) 
 			{
-				Handle<Boolean> value = (Handle<Boolean>)_heap->GetTrueValue();
-				_assembler->Mov(EAX, (unsigned int)value.GetLocation());
+				_assembler->Mov(EAX, 1);
 				_context->Plug(EAX);
 			}
 			else 
 			{
-				Handle<Boolean> value = (Handle<Boolean>)_heap->GetFalseValue();
-				_assembler->Mov(EAX, (unsigned int)value.GetLocation());
+				_assembler->Mov(EAX, 0);
 				_context->Plug(EAX);
 			}
+		}
+		else if (node.GetText().Kind == NullLiteral) {
+			_assembler->Mov(EAX, 0);
+			_context->Plug(EAX);
 		}
 		else 
 		{
@@ -461,25 +512,30 @@ namespace r {
 
 	void CodeGenerator::VisitTypeAnnotation(TypeAnnotationSyntax &node)
 	{
-		NOT_IMPLEMENTED();
+		NOT_REACHABLE()
 	}
 
 
 	void CodeGenerator::VisitParameterList(ParameterListSyntax &node)
 	{
-		// Nothing to do
+		NOT_REACHABLE()
 	}
 
 
 	void CodeGenerator::VisitParameterDeclaration(ParameterDeclarationSyntax &node)
 	{
-		// Nothing to do
+		NOT_REACHABLE()
 	}
 
 	void CodeGenerator::VisitLocalVariableStatement(LocalVariableStatementSyntax &node)
 	{
 		CodeForStatementPosition(node);
 		Visit(*node.GetDeclaration());
+	}
+
+	int CodeGenerator::GetPropertyOffset(PropertySymbol & property) {
+		int offset = property.GetSlot();
+		return HeapObject::PropertyTableOffset + offset;
 	}
 
 	int CodeGenerator::GetSymbolOffset(Symbol & symbol) {
@@ -489,8 +545,7 @@ namespace r {
 		{			
 			ParameterSymbol * parameter = (ParameterSymbol*)&symbol;
 
-			int offset = -parameter->GetSlot() * 4;
-			offset += (_method->GetParameters()->GetSize() + 1) * 4;
+			int offset = 4 + (parameter->GetSlot() + 1) * 4;
 			return offset;
 		}
 		break;
@@ -498,8 +553,7 @@ namespace r {
 		{
 			LocalVariableSymbol * localVariable = (LocalVariableSymbol*)&symbol;
 
-			int offset = -localVariable->GetSlot() * 4;
-			offset += -4;
+			int offset = -(localVariable->GetSlot() + 1) * 4;
 			return offset;
 		}
 		break;
@@ -508,13 +562,13 @@ namespace r {
 		}
 	}
 
-	void CodeGenerator::VisitPropertyAccessExpression(PropertyAccessExpressionSyntax &node)
+	void CodeGenerator::VisitMemberAccessExpression(MemberAccessExpressionSyntax &node)
 	{
 		VisitForAccumulatorValue(*node.GetExpresion());
 		
-		PropertySymbol * property = (PropertySymbol*)node.GetExpressionSymbol();
+		PropertySymbol * property = (PropertySymbol*)node.GetMember();
 
-		_assembler->Mov(ECX, Operand(EAX, property->GetSlot() * 4));
+		_assembler->Mov(ECX, Operand(EAX, HeapObject::PropertyTableOffset + property->GetSlot() * 4));
 		_context->Plug(ECX);
 	}
 
@@ -551,7 +605,7 @@ namespace r {
 			int offset = GetSymbolOffset(*thisParameter);
 			_assembler->Mov(ECX, Operand(EBP, offset));
 
-			_assembler->Mov(EAX, Operand(ECX, property->GetSlot() * 4));
+			_assembler->Mov(EAX, Operand(ECX, HeapObject::PropertyTableOffset + property->GetSlot() * 4));
 			_context->Plug(EAX);
 		}
 		break;
@@ -589,22 +643,22 @@ namespace r {
 				int offset = GetSymbolOffset(*thisParameter);
 				_assembler->Mov(ECX, Operand(EBP, offset));
 
-				_assembler->Mov(Operand(ECX, property->GetSlot() * 4), EAX);
+				_assembler->Mov(Operand(ECX, HeapObject::PropertyTableOffset + property->GetSlot() * 4), EAX);
 
 			}
 			else {
 				NOT_REACHABLE()
 			}
 		}
-		else if (node.GetLeft()->GetKind() == PropertyAccessExpression) {
-			PropertyAccessExpressionSyntax * propertyAccessExpression = (PropertyAccessExpressionSyntax *)node.GetLeft();
-			PropertySymbol * property = (PropertySymbol *)propertyAccessExpression->GetExpressionSymbol();
+		else if (node.GetLeft()->GetKind() == MemberAccessExpression) {
+			MemberAccessExpressionSyntax * memberAccessExpression = (MemberAccessExpressionSyntax *)node.GetLeft();
+			PropertySymbol * property = (PropertySymbol *)memberAccessExpression->GetMember();
 
-			VisitForStackValue(*propertyAccessExpression->GetExpresion());
+			VisitForStackValue(*memberAccessExpression->GetExpresion());
 			VisitForAccumulatorValue(*node.GetRight());
 
 			_assembler->Pop(ECX);
-			_assembler->Mov(Operand(ECX, property->GetSlot() * 4), EAX);
+			_assembler->Mov(Operand(ECX, HeapObject::PropertyTableOffset + property->GetSlot() * 4), EAX);
 		}
 		else {
 			NOT_REACHABLE()
@@ -664,7 +718,7 @@ namespace r {
 
 	void CodeGenerator::VisitForAccumulatorValue(SyntaxNode & node) 
 	{
-		PushContext(new AccumulatorContext(this));
+		PushContext(new RegisterContext(this, EAX));
 		Visit(node);
 		PopContext();
 	}

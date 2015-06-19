@@ -1,6 +1,6 @@
 #pragma once
 
-
+void *__cdecl operator new[](size_t count);
 void *__cdecl operator new(size_t count);
 void __cdecl operator delete(void *);
 

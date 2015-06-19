@@ -38,7 +38,7 @@ namespace r {
 		else {
 			NOT_REACHABLE();
 		}
-
+		
 		if (!method->IsStatic() && !method->IsConstructor()) {
 			method->SetVirtual(true);
 		}
@@ -81,12 +81,27 @@ namespace r {
 		return count;
 	}
 
-	void AssemblyBuilder::GenerateMethodTable(TypeSymbol & type) {
-
+	int AssemblyBuilder::GetPropertyCount(TypeSymbol & type) {
+		int count;
 		if (type.GetBaseType() != nullptr) {
-			if (type.GetBaseType()->MethodTable == nullptr) {
-				GenerateMethodTable(*type.GetBaseType());
-			}
+			count = GetPropertyCount(*type.GetBaseType());
+		}
+		else {
+			count = 0;
+		}
+		for (PropertySymbol * property : *type.GetProperties()) {
+			count++;
+		}
+
+		return count;
+	}
+
+	void AssemblyBuilder::GenerateMethodTable(TypeSymbol & type) {
+		if (type.MethodTable != nullptr) {
+			return;
+		}
+		if (type.GetBaseType() != nullptr) {
+			GenerateMethodTable(*type.GetBaseType());
 		}
 		int methodCount = GetMethodCount(type);
 		type.MethodTable = new MethodEntry[methodCount];
@@ -94,43 +109,80 @@ namespace r {
 			type.MethodTable[i] = *new MethodEntry();
 		}
 
-		// virtual methods
-		int slot = 0;
+
 		{
-			
-			for (MethodSymbol * method : *type.GetMethods()) {
-				if (method->IsVirtual() && method->GetBaseDefinition() != nullptr) {
-					method->SetSlot(method->GetBaseDefinition()->GetSlot());
-					type.MethodTable[method->GetSlot()].SetAddress(type.GetBaseType()->MethodTable[method->GetSlot()].CodeStub);
-					slot++;
-				}
+			int slot = 0;
+			if (type.GetBaseType() != nullptr) {
+				slot += GetPropertyCount(*type.GetBaseType());
 			}
-		}
-		// newslot methods
-		{
-			for (MethodSymbol * method : *type.GetMethods()) {
-				if (method->IsVirtual() && method->GetBaseDefinition() == nullptr) {
-					method->SetSlot(slot);
-					slot++;
-				}
-			}
-		}
-		// final methods
-		{
-			for (MethodSymbol * method : *type.GetMethods()) {
-				if (!method->IsVirtual()) {
-					method->SetSlot(slot);
-					slot++;
-				}
+			for (PropertySymbol * property : *type.GetProperties()) {
+				property->SetSlot(slot);
+				slot++;
 			}
 		}
 
+		{
+			// virtual methods
+			int slot = 0;
+			{
+				for (MethodSymbol * method : *type.GetMethods()) {
+					if (method->IsVirtual() && method->GetBaseDefinition() != nullptr) {
+						method->SetSlot(method->GetBaseDefinition()->GetSlot());
+						type.MethodTable[method->GetSlot()].SetAddress(type.GetBaseType()->MethodTable[method->GetSlot()].CodeStub);
+						slot++;
+					}
+				}
+			}
+			// newslot methods
+			{
+				for (MethodSymbol * method : *type.GetMethods()) {
+					if (method->IsVirtual() && method->GetBaseDefinition() == nullptr) {
+						method->SetSlot(slot);
+						slot++;
+					}
+				}
+			}
+			// final methods
+			{
+				for (MethodSymbol * method : *type.GetMethods()) {
+					if (!method->IsVirtual()) {
+						method->SetSlot(slot);
+						slot++;
+					}
+				}
+			}
+		}
 	}
 
 	AssemblySymbol * AssemblyBuilder::Build(SourceCodeSyntax & sourceCode)
 	{
 
 		AssemblySymbol * assembly = _assembly = new AssemblySymbol();
+
+		{
+			TypeSymbol * stringType = new TypeSymbol();
+			stringType->SetName("string");
+			assembly->GetTypes()->Push(stringType);
+
+			TypeSymbol * voidType = new TypeSymbol();
+			voidType->SetName("void");
+			assembly->GetTypes()->Push(voidType);
+
+			TypeSymbol * numberType = new TypeSymbol();
+			numberType->SetName("number");
+			PropertySymbol * internalNumberProperty = new PropertySymbol();
+			internalNumberProperty->SetName("_value");
+			internalNumberProperty->SetSlot(0);
+			internalNumberProperty->SetPropertyType(numberType);
+			numberType->GetProperties()->Push(internalNumberProperty);
+			assembly->GetTypes()->Push(numberType);
+
+
+			TypeSymbol * booleanType = new TypeSymbol();
+			booleanType->SetName("boolean");
+			assembly->GetTypes()->Push(booleanType);
+		}
+
 
 		//TODO: move this somewhere else, perhaps to some kind of TypeBuilder, MethodBuilder
 
@@ -152,7 +204,7 @@ namespace r {
 			}
 		}
 
-
+		
 		for (ClassDeclarationSyntax * classDeclarationSyntax : *sourceCode.GetClassDeclarations()) {
 
 			TypeSymbol * type = new TypeSymbol();
@@ -191,6 +243,7 @@ namespace r {
 					property->SetName(declaration->GetIdentifier()->GetName().Value);
 					property->SetPropertyType(assembly->LookupType(declaration->GetPropertyType()->GetType()->GetName().Value));
 
+
 					type->GetProperties()->Push(property);
 				}
 				else {
@@ -200,7 +253,7 @@ namespace r {
 			}
 
 		}
-
+		
 		// Bind base types
 		for (TypeSymbol * type : *assembly->GetTypes()) {
 			if (type->GetDeclaration() != nullptr) {
@@ -220,13 +273,16 @@ namespace r {
 				}
 			}
 		}
-
+	
 		// Create method table and set method slots
 
 		for (TypeSymbol * type : *assembly->GetTypes()) {
+			if (strcmp(type->GetName(), "number") == 0) { //TODO: number has internal 8 byte slot this method would rewrite it to 4 bytes
+				continue;
+			}
 			GenerateMethodTable(*type);
 		}
-
+		
 
 		// Bind method body
 		for (TypeSymbol * type : *assembly->GetTypes()) {
@@ -254,14 +310,14 @@ namespace r {
 					method->SetCode((unsigned char*)(&Runtime::Console_log));
 				}
 				else {
-					CodeGenerator* codeGenerator = new CodeGenerator(heap, assembler, method);
+					CodeGenerator* codeGenerator = new CodeGenerator(assembly, heap, assembler, method);
 					method->GetDeclaration()->Accept(*codeGenerator);
 				}
+			
 				MethodEntry * methodEntry = &type->MethodTable[method->GetSlot()];
 				methodEntry->SetAddress(method->GetCode());
 			}
 		}
-
 
 
 		return assembly;

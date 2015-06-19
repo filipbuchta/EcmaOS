@@ -57,10 +57,10 @@ namespace r {
 	public:
 		virtual SyntaxKind GetKind() = 0;
 		virtual void Accept(SyntaxNodeVisitor &visitor) = 0;
-		Symbol * GetExpressionSymbol() { return _expressionSymbol; }
-		void SetExpressionSymbol(Symbol*value) { _expressionSymbol = value; }
+		TypeSymbol * GetExpressionType() { return _expressionType; }
+		void SetExpressionType(TypeSymbol * value) { _expressionType = value; }
 	private:
-		Symbol * _expressionSymbol;
+		TypeSymbol * _expressionType;
 	};
 
 
@@ -194,18 +194,22 @@ namespace r {
 		List<StatementSyntax*>* _statements = new List<StatementSyntax*>();
 	};
 
-	class PropertyAccessExpressionSyntax : public MemberExpressionSyntax {
+	class MemberAccessExpressionSyntax : public MemberExpressionSyntax {
 	public:
-		DECLARE_NODE_TYPE(PropertyAccessExpression);
+		DECLARE_NODE_TYPE(MemberAccessExpression);
 
 		void SetExpression(ExpressionSyntax *value) { _expression = value; }
 		ExpressionSyntax *GetExpresion() { return _expression; }
 
 		void SetName(IdentifierSyntax *value) { _name = value; }
 		IdentifierSyntax *GetName() { return _name; }
+
+		void SetMember(Symbol *value) { _member = value; }
+		Symbol *GetMember() { return _member; }
 	private:
 		ExpressionSyntax *_expression;
 		IdentifierSyntax *_name;
+		Symbol *_member;
 	};
 
 	class ParameterListSyntax : public SyntaxNode {
@@ -329,10 +333,14 @@ namespace r {
 
 		void SetMethod(MethodSymbol *value) { _method = value; }
 		MethodSymbol *GetMethod() { return _method; }
+
+		void SetReceiver(ExpressionSyntax *value) { _receiver = value; }
+		ExpressionSyntax *GetReceiver() { return _receiver; }
 	private:
 		ArgumentListSyntax *_arguments;
 		ExpressionSyntax *_expression;
 		MethodSymbol * _method;
+		ExpressionSyntax * _receiver;
 	};
 
 	class NewExpressionSyntax : public PrimaryExpressionSyntax {

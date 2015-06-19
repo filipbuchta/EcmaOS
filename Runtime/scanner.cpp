@@ -60,13 +60,13 @@ namespace r {
 			case '+': {
 				Advance();
 				switch (GetChar()) {
-				case '+': {
-					Advance();
-					return SyntaxToken(PlusPlusToken, "++");
-				}
-				default: {
-					return SyntaxToken(PlusToken, "+");
-				}
+					case '+': {
+						Advance();
+						return SyntaxToken(PlusPlusToken, "++");
+					}
+					default: {
+						return SyntaxToken(PlusToken, "+");
+					}
 				}
 
 			}
@@ -88,8 +88,18 @@ namespace r {
 				return SyntaxToken(AsteriskToken, "*");
 			}
 			case '/': {
-				Advance();
-				return SyntaxToken(SlashToken, "/");
+				switch (GetChar()) {
+					case '/': {
+						while (!IsEndOfStream() && '\n' != GetChar()) {
+							Advance();
+						}
+						continue;
+					}
+					default: {
+						Advance();
+						return SyntaxToken(SlashToken, "/");
+					}
+				}
 			}
 			case '!': {
 				Advance();
@@ -180,7 +190,7 @@ namespace r {
 
 				char * value = new char[cb->GetSize()];
 				memcpy(value, cb->GetBuffer(), cb->GetSize());
-
+				
 				//delete cb;
 
 				return SyntaxToken(NumericLiteral, value);

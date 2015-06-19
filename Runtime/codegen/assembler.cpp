@@ -331,6 +331,15 @@ namespace r {
 		_pc += sizeof(int);
 	}
 
+	void Assembler::Push(Register reg) {
+		Emit(0x50 + reg);
+	}
+
+	void Assembler::Push(Operand src) {
+		Emit(0xFF);
+		EmitOperand(ESI, src);
+	}
+
 	void Assembler::Call(Operand & address) {
 		Emit(0xFF);
 		EmitOperand(EDX, address);
@@ -342,11 +351,6 @@ namespace r {
 		*((int *)_pc) = (int)(address - (_pc + sizeof(int)));
 		_pc += sizeof(int);
 	}
-
-	void Assembler::Push(Register reg) {
-		Emit(0x50 + reg);
-	}
-
 
 	void Assembler::StartLineRecording() {
 		_lineInfo = new LineInfo();

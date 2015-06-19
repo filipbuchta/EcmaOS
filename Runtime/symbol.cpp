@@ -3,23 +3,22 @@
 namespace r {
 	AssemblySymbol::AssemblySymbol() {
 
-		//TODO: if there is ever an AssemblyBuilder move it there
-		TypeSymbol * stringClass = new TypeSymbol();
-		stringClass->SetName("string");
-		GetTypes()->Push(stringClass);
+	}
 
-		TypeSymbol * voidClass = new TypeSymbol();
-		voidClass->SetName("void");
-		GetTypes()->Push(voidClass);
-
-		TypeSymbol * numberClass = new TypeSymbol();
-		numberClass->SetName("number");
-		GetTypes()->Push(numberClass);
-
-
-		TypeSymbol * booleanType = new TypeSymbol();
-		booleanType->SetName("boolean");
-		GetTypes()->Push(booleanType);
+	int TypeSymbol::GetSize() {
+		int size = 0;
+		if (strcmp(GetName(), "number") == 0) {
+			size = 8;
+		} else {
+			for (PropertySymbol * property : *GetProperties()) {
+				TypeSymbol * propertyType = property->GetPropertyType();
+				size += 4;
+			}
+		}
+		if (GetBaseType() != nullptr) {
+			size += GetBaseType()->GetSize();
+		}
+		return size;
 	}
 
 
@@ -54,6 +53,9 @@ namespace r {
 			{
 				return method;
 			}
+		}
+		if (GetBaseType() != nullptr) {
+			return GetBaseType()->LookupProperty(propertyName);
 		}
 		return nullptr;
 	}

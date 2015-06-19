@@ -157,7 +157,7 @@ void TreeFlattener::VisitArgumentList(ArgumentListSyntax &node) {
 	}
 }
 
-void TreeFlattener::VisitPropertyAccessExpression(PropertyAccessExpressionSyntax &node) {
+void TreeFlattener::VisitMemberAccessExpression(MemberAccessExpressionSyntax &node) {
 	_list->Push(node.GetKind());
 	node.GetExpresion()->Accept(*this);
 	node.GetName()->Accept(*this);	

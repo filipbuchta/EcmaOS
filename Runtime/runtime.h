@@ -3,6 +3,7 @@
 
 #include "platform.h"
 #include "heap.h"
+#include "symbol.h"
 
 
 namespace r {
@@ -10,8 +11,9 @@ namespace r {
 
 	class Runtime
 	{
-	public:
-		static HeapObject * Runtime::Console_log(Number * value);
+	public:		
+		//static * Runtime::Allocate(Heap * heap, TypeSymbol * type);
+		static void Runtime::Console_log(HeapObject * value);
 	};
 
 

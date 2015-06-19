@@ -16,6 +16,8 @@ namespace r {
 	}
 
 	void Platform::Fatal(const char* file, int line, const char* format, ...) {
-		Print("Fatal error");
+	
+		Print(format);
+		_asm { hlt }
 	}
 }

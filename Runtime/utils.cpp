@@ -1,5 +1,7 @@
 #include "utils.h"
 #include "list.h"
+#include "runtime.h"
+#include "checks.h"
 
 
 
@@ -20,7 +22,69 @@ int pow(int number, int power) {
 //	return length;
 //}
 
+const char * dtoa(double value) {
+
+	List<char> * result = new List<char>();
+
+	if (value < 0) {
+		result->Push('-');
+		value *= -1;
+	}
+
+	int32_t temp = (int32_t)value;
+
+	int integerNumbers = 0;
+	{
+		while (temp > 0) {
+			temp /= 10;
+			integerNumbers++;
+		}
+
+		const char table[] = "0123456789";
+
+		int position = result->GetSize();
+
+		temp = (int32_t)(value * 1000000);
+
+		while (temp > 0) {
+			result->Insert(position, table[temp % 10]);
+			temp /= 10;
+		}
+	}
+
+
+	result->Insert(integerNumbers, '.');
+	if (integerNumbers == 0) {
+		result->Insert(0, '0');
+	}
+	{
+		int position = result->GetSize() - 1;
+		while (true) {
+			if (result->Get(position) == '0') {
+				result->Pop();
+			}
+			else if (result->Get(position) != '.') {
+				break;
+			}
+			else {
+				result->Pop();
+				break;
+			}
+			position--;
+		}
+	}
+
+
+	result->Push('\0');
+
+	char * str = new char[result->GetSize()];
+	memcpy(str, result->GetBuffer(), result->GetSize());
+	return str;
+	//return "123\0";
+}
+
 double atod(const char * ch) {
+
 	double result = 0;
 	while (*ch >= '0' && *ch <= '9') {
 		result = (result*10.0) + (*ch - '0');
@@ -41,33 +105,6 @@ double atod(const char * ch) {
 		}
 		result += f / pow;
 	}
+
 	return result;
-}
-
-char * dtoa(double n) {
-
-	int sign = ((unsigned long)n) >> 63;
-	int exponent = (((unsigned long)n) & 0x7FF0000000000000) >> 52;
-	int fraction = ((unsigned long)n) & 0xFFFFFFFFFFFFF;
-	
-
-	if (n == 0.0) {
-		return "0";
-	} else {
-
-		List<char> *cb = new List<char>();
-
-		if (n < 0) {
-			cb->Push('-');
-		}
-
-		cb->Push('\0');
-
-		char * value = new char[cb->GetSize()];
-		memcpy(value, cb->GetBuffer(), cb->GetSize());
-
-		//delete cb;
-
-		return value;
-	}
 }
