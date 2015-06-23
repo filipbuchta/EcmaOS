@@ -58,11 +58,17 @@ namespace r {
 	}
 
 	void Binder::VisitLiteral(LiteralSyntax & node) {
-		if (node.GetText().Kind == NumericLiteral) {
-			node.SetExpressionType(_assembly->LookupType("number"));
+		if (node.GetText().Kind == IntegerLiteral) {
+			node.SetExpressionType(_assembly->LookupType("int32", 0));
 		}
 		else if (node.GetText().Kind == BooleanLiteral) {
-			node.SetExpressionType(_assembly->LookupType("boolean"));
+			node.SetExpressionType(_assembly->LookupType("boolean", 0));
+		}
+		else if (node.GetText().Kind == StringLiteral) {
+			node.SetExpressionType(_assembly->LookupType("string", 0));
+		}
+		else if (node.GetText().Kind == CharacterLiteral) {
+			node.SetExpressionType(_assembly->LookupType("char", 0));
 		}
 		else if (node.GetText().Kind == NullLiteral) {
 
@@ -76,22 +82,6 @@ namespace r {
 		node.GetDeclaration()->Accept(*this);
 	}
 
-	void Binder::VisitNewExpression(NewExpressionSyntax & node) {
-		node.GetArguments()->Accept(*this);
-
-		TypeSymbol * type = _assembly->LookupType(node.GetIdentifier()->GetName().Value);
-		if (type == nullptr) {
-			NOT_IMPLEMENTED();
-		}
-
-		//TODO: use constructor parameters for method resolution
-		MethodSymbol * constructor = type->LookupMethod(".ctor");
-		if (constructor == nullptr) {
-			NOT_IMPLEMENTED();
-		}
-		node.SetConstructor(constructor);
-		node.SetExpressionType(constructor->GetDeclaringType());
-	}
 
 	void Binder::VisitPropertyDeclaration(PropertyDeclarationSyntax & node) {
 		NOT_IMPLEMENTED();
@@ -112,8 +102,18 @@ namespace r {
 		NOT_IMPLEMENTED();
 	}
 
-	void Binder::VisitArrayLiteralExpression(ArrayLiteralExpressionSyntax & node) {
-		NOT_IMPLEMENTED();
+	void Binder::VisitArrayCreationExpression(ArrayCreationExpressionSyntax & node) {
+		TypeSymbol * type = _assembly->LookupType(node.GetIdentifier()->GetName().Value, 0);
+		ArrayTypeSymbol * arrayType = _assembly->MakeArrayType(type, 1);
+
+		PropertySymbol * length = new PropertySymbol();
+		length->SetName("length");
+		length->SetPropertyType(_assembly->LookupType("int32", 0));
+		length->SetSlot(0);
+		length->SetDeclaringType(arrayType);
+		arrayType->GetProperties()->Push(length);
+		node.SetExpressionType(arrayType);
+		node.GetRankSpecifier()->Accept(*this);
 	}
 
 	void Binder::VisitAssignmentExpression(AssignmentExpressionSyntax & node) {	
@@ -136,8 +136,9 @@ namespace r {
 			case MinusToken:
 			case AsteriskToken:
 			case SlashToken:
+			case PercentToken:
 			{
-				TypeSymbol * numberType = _assembly->LookupType("number");
+				TypeSymbol * numberType = _assembly->LookupType("int32", 0);
 				node.SetExpressionType(numberType);
 			}
 			break;
@@ -148,7 +149,7 @@ namespace r {
 			case EqualsEqualsToken:
 			case ExclamationEqualsToken:
 			{
-				TypeSymbol * booleanType = _assembly->LookupType("boolean");
+				TypeSymbol * booleanType = _assembly->LookupType("boolean", 0);
 				node.SetExpressionType(booleanType);
 			}
 			break;
@@ -168,7 +169,7 @@ namespace r {
 
 	void Binder::VisitTypeAnnotation(TypeAnnotationSyntax & node) {
 		
-		TypeSymbol * symbol = _assembly->LookupType(node.GetType()->GetName().Value);
+		TypeSymbol * symbol = _assembly->LookupType(node.GetType()->GetName().Value, node.GetRank());
 	
 		if (symbol != nullptr) {
 			node.SetTypeSymbol(symbol);
@@ -178,13 +179,67 @@ namespace r {
 		}
 	}
 
+	MethodSymbol * Binder::ResolveMethod(TypeSymbol & type, const char * methodName, ArgumentListSyntax & arguments) {
+		for (MethodSymbol * method : * type.GetMethods()) {
+			if (strcmp(method->GetName(), methodName) != 0) {
+				continue;
+			}
+			int parametersStart = 0;
+			if (!method->IsStatic()) { //TODO: add HasImplicitThisParameter property
+				parametersStart = 1;
+			}
+			if (method->GetParameters()->GetSize() - parametersStart != arguments.GetArguments()->GetSize()) {
+				continue;
+			}
+
+			bool argumentMatch = true;
+			for (int i = 0; i < arguments.GetArguments()->GetSize(); i++) {
+				ParameterSymbol * parameter = method->GetParameters()->Get(parametersStart + i);
+				TypeSymbol * argumentType = arguments.GetArguments()->Get(i)->GetExpressionType();
+				if (argumentType != parameter->GetParameterType()) {
+					argumentMatch = false;
+				}
+			}
+
+			if (argumentMatch == false) {
+				continue;
+			}
+
+			return method;
+		}
+
+		if (type.GetBaseType() != nullptr) {
+			return ResolveMethod(*type.GetBaseType(), methodName, arguments);
+		}
+
+		return nullptr;
+	}
+
+
+	void Binder::VisitNewExpression(NewExpressionSyntax & node) {
+		node.GetArguments()->Accept(*this);
+
+		TypeSymbol * type = _assembly->LookupType(node.GetIdentifier()->GetName().Value, 0);
+		if (type == nullptr) {
+			NOT_IMPLEMENTED();
+		}
+
+		//TODO: use constructor parameters for method resolution
+		MethodSymbol * constructor = ResolveMethod(*type, ".ctor", *node.GetArguments());
+		if (constructor == nullptr) {
+			NOT_IMPLEMENTED();
+		}
+		node.SetConstructor(constructor);
+		node.SetExpressionType(constructor->GetDeclaringType());
+	}
+
 	void Binder::VisitCallExpression(CallExpressionSyntax & node) {
 		node.GetArguments()->Accept(*this);
 		node.GetExpression()->Accept(*this);
 
 
 		if (node.GetExpression()->GetKind() == Identifier) {
-			MethodSymbol * method = _method->GetDeclaringType()->LookupMethod(((IdentifierSyntax *)node.GetExpression())->GetName().Value);
+			MethodSymbol * method = ResolveMethod(*_method->GetDeclaringType(), ((IdentifierSyntax *)node.GetExpression())->GetName().Value, *node.GetArguments());
 			
 			if (method == nullptr) {
 				NOT_IMPLEMENTED();
@@ -199,8 +254,10 @@ namespace r {
 		else if (node.GetExpression()->GetKind() == MemberAccessExpression) {
 			MemberAccessExpressionSyntax * memberAccessExpression = (MemberAccessExpressionSyntax *)node.GetExpression();
 			TypeSymbol * type = memberAccessExpression->GetExpresion()->GetExpressionType();
-			MethodSymbol * method = type->LookupMethod(memberAccessExpression->GetName()->GetName().Value);
-
+			MethodSymbol * method = ResolveMethod(*type, memberAccessExpression->GetName()->GetName().Value, *node.GetArguments());
+			if (method == nullptr) {
+				NOT_IMPLEMENTED();
+			}
 			node.SetReceiver(memberAccessExpression->GetExpresion());
 			node.SetMethod(method);
 		}
@@ -219,6 +276,20 @@ namespace r {
 		EndScope();
 	}
 
+	void Binder::VisitIndexedAccessExpression(IndexedAccessExpressionSyntax &node)
+	{
+		node.GetExpresion()->Accept(*this);
+		node.GetIndex()->Accept(*this);
+
+		ArrayTypeSymbol * type = (ArrayTypeSymbol *)node.GetExpresion()->GetExpressionType();
+		//TODO: check if array type
+
+		if (type == nullptr) {
+			NOT_IMPLEMENTED()
+		}
+
+		node.SetExpressionType(type->GetElementType());
+	}
 
 	void Binder::VisitMemberAccessExpression(MemberAccessExpressionSyntax & node) {
 
@@ -235,7 +306,7 @@ namespace r {
 			NOT_IMPLEMENTED();
 		}
 
-		if (member->GetKind() == Property) {
+		if (member->GetKind() == SymbolKind::Property) {
 			node.SetExpressionType(((PropertySymbol *)member)->GetPropertyType());
 		} //TODO: else if method set methodgroup type
 
@@ -269,7 +340,7 @@ namespace r {
 			symbol = _method->GetDeclaringType()->LookupMember(node.GetName().Value);
 
 			if (symbol != nullptr) {
-				if (symbol->GetKind() == Property) {
+				if (symbol->GetKind() == SymbolKind::Property) {
 					node.SetExpressionType(((PropertySymbol *)symbol)->GetPropertyType());
 				} //TODO: else set method group type
 			}
@@ -277,7 +348,7 @@ namespace r {
 
 		if (symbol == nullptr) {
 			// Lookup type symbols
-			symbol = _assembly->LookupType(node.GetName().Value);
+			symbol = _assembly->LookupType(node.GetName().Value, 0);
 
 			node.SetExpressionType((TypeSymbol*)symbol);
 		}

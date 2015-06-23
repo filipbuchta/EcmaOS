@@ -43,25 +43,24 @@ namespace RuntimeTests
 			CompileAndVerify("class C { static main(): void { let a = 1.23; Console.log(a); } }", "1.23");
 		}
 
-
 		TEST_METHOD(NumericVariableTest)
 		{
-			CompileAndVerify("class C { static main(): void { let a: number = 123; Console.log(a); } }", "123");
+			CompileAndVerify("class C { static main(): void { let a: int32 = 123; Console.log(a); } }", "123");
 		}
 
-		TEST_METHOD(AssignmentTest)
+		TEST_METHOD(Assignment)
 		{
-			CompileAndVerify("class C { static main(): void { let a: number; a = 123 Console.log(a); } }", "123");
+			CompileAndVerify("class C { static main(): void { let a: int32; a = 123; Console.log(a); } }", "123");
 		}
 
 
-		TEST_METHOD(TwoVariablesTest)
+		TEST_METHOD(TwoVariables)
 		{
-			CompileAndVerify("class C { static main(): void { let a: number = 456; let b: number = 123; Console.log(b); Console.log(a); } }", "123456");
+			CompileAndVerify("class C { static main(): void { let a: int32 = 456; let b: int32 = 123; Console.log(b); Console.log(a); } }", "123456");
 		}
 
 
-		TEST_METHOD(VariableAdditionTest)
+		TEST_METHOD(VariableAddition)
 		{
 			CompileAndVerify("class C { static main(): void { let a = 456; let b = 123; Console.log(a + b); } }", "579");
 		}

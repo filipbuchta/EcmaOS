@@ -22,6 +22,32 @@ int pow(int number, int power) {
 //	return length;
 //}
 
+const char * itoa(int value) {
+	List<char> * result = new List<char>();
+
+	if (value < 0) {
+		value *= -1;
+	}
+
+	int32_t temp = (int32_t)value;
+
+	const char table[] = "0123456789";
+
+	while (temp > 0) {
+		result->Insert(0, table[temp % 10]);
+		temp /= 10;
+	}
+
+	if (value < 0) {
+		result->Insert(0, '-');
+	}
+	result->Push('\0');
+
+	char * str = new char[result->GetSize()];
+	memcpy(str, result->GetBuffer(), result->GetSize());
+	return str;
+}
+
 const char * dtoa(double value) {
 
 	List<char> * result = new List<char>();

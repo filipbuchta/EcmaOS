@@ -7,6 +7,7 @@
 #include "..\Runtime\compiler.h"
 #include "..\Runtime\checks.h"
 #include "..\Runtime\astprinter.h"
+#include "..\Runtime\utils.h"
 
 using namespace r;
 
@@ -27,11 +28,51 @@ struct idt_ptr_struct
 };
 __pragma(pack(pop))
 
+
+void log(const char * text) {
+	for (int i = 0; (text)[i] != '\0'; i++) {
+
+		char c = text[i];
+		_asm {
+			mov al, c
+				out 0xe9, al
+		}
+
+	}
+}
+
+
+#define outportb(port, value) _asm { mov al, value } _asm { out port, al }
+
+
 //TODO: should this be naked function?
-void Kernel::InterruptHandler() {
-	Platform::Print("INTERRUPT\n");
+__declspec(naked) void Kernel::InterruptHandler() {
+	__asm {
+
+
+		
+	}
+	
+	
+	//log("INTERRUPT\0");
+
+	outportb(0x20, 0x20);
+
+	_asm {
+		/*mov eax, irq_handler
+		call eax*/
+		
+	
+		//add esp, 8
+		iretd
+	}
+}
+
+__declspec(naked) void Kernel::FaultHandler() {
+	Platform::Print("FAULT");
 	_asm { hlt }
 }
+
 
 void Kernel::Main()
 {
@@ -45,101 +86,94 @@ void Kernel::Main()
 
 	memset(&idt_entries, 0, sizeof(idt_entry_struct) * 256);
 
-	for (int i = 0; i < 32; i++) {
-		idt_entries[i].base_lo = (unsigned int)&Kernel::InterruptHandler & 0xFFFF;
-		idt_entries[i].base_hi = ((unsigned int)&Kernel::InterruptHandler >> 16) & 0xFFFF;
+	for (int i = 0; i < 256; i++) {
+		if (i < 32) {
+			idt_entries[i].base_lo = (unsigned int)&Kernel::FaultHandler & 0xFFFF;
+			idt_entries[i].base_hi = ((unsigned int)&Kernel::FaultHandler >> 16) & 0xFFFF;
+		}
+		else {
+			idt_entries[i].base_lo = (unsigned int)&Kernel::InterruptHandler & 0xFFFF;
+			idt_entries[i].base_hi = ((unsigned int)&Kernel::InterruptHandler >> 16) & 0xFFFF;
+		}
+
 
 		idt_entries[i].sel = 0x08;
 		idt_entries[i].always0 = 0;
-		// We must uncomment the OR below when we get to using user-mode.
-		// It sets the interrupt gate's privilege level to 3.
-		idt_entries[i].flags = 0x8E /* | 0x60 */;
+
+		idt_entries[i].flags = 0x8E;
+	}
+
+
+	_asm {
+		cli
 	}
 
 	_asm {
 		lidt idt_ptr;
 	}
 
+	outportb(0x20, 0x11);
+	outportb(0xA0, 0x11);
+	outportb(0x21, 0x20);
+	outportb(0xA1, 0x28);
+	outportb(0x21, 0x04);
+	outportb(0xA1, 0x02);
+	outportb(0x21, 0x01);
+	outportb(0xA1, 0x01);
+	outportb(0x21, 0x0);
+	outportb(0xA1, 0x0);
+
+	outportb(0x43, 0x36);
+	outportb(0x40, 0x9b);
+	outportb(0x40, 0x2e);
+
+	_asm {
+
+			 sti
+
+	}
+
+	//while (true) {}
+	//log("testing testing\0");
+
 
 	ClearScreen();
-	ConsoleWrite("Welcome to EcmaOS!\n\n");
+	ConsoleWrite("Initializing\n\n");
 
 
 
 	//Isolate *isolate = new Isolate();
 
 	const char * code =
-		"class Console {													\
-		declare static log(value: number) : void;					\
-	}																\
-																	\
-	class C {														\
-		static main() : void {										\
-			let list = new LinkedList();							\
-																	\
-			let worker1 = new Worker();								\
-			worker1.id = 1;											\
-			list.push(worker1);										\
-																	\
-			let worker2 = new Worker();								\
-			worker2.id = 2;											\
-			list.push(worker2);										\
-																	\
-			let worker3 = new Worker();								\
-			worker3.id = 3;											\
-			list.push(worker3);										\
-																	\
-																	\
-																	\
-			Console.log(list.shift().id);							\
-			Console.log(list.shift().id);							\
-			Console.log(list.shift().id);							\
-																	\
-		}															\
-	}																\
-																	\
-	class Worker {													\
-	id: number;														\
-	}																\
-																	\
-	class LinkNode {												\
-	value: Worker;													\
-	previous: LinkNode;												\
-	next: LinkNode;													\
-	}																\
-																	\
-	class LinkedList {												\
-	first: LinkNode;												\
-	last: LinkNode;													\
-																	\
-		push(item: Worker) : void {									\
-			if (this.first == null) {								\
-				this.first = new LinkNode();						\
-				this.first.value = item;							\
-				this.last = this.first;								\
-			}														\
-			else {													\
-				let next = new LinkNode();							\
-				next.value = item;									\
-				this.last.next = next;								\
-				next.previous = this.last;							\
-																	\
-				this.last = next;									\
-			}														\
-		}															\
-																	\
-		shift() : Worker{											\
-			let last = this.last;									\
-		if (last == null) {											\
-			return null;											\
-		}															\
-		this.last = last.previous									\
-			if (last != null) {										\
-				last.next = null;									\
-			}														\
-		return last.value;											\
-		}															\
-	}";
+"	class Console {															"
+"		declare static log(value: number): void;							"
+"		declare static log(value: string): void;							"
+"	}																		"
+"	class C {																"
+"		static main(): void {							          			"	
+"			Console.log(""Happy Birthday!\n"");								"	
+"			Console.log(""            ,:/+/-                      \n"");	"
+"			Console.log(""            /M/              .,-=;//;-  \n"");	"
+"			Console.log(""       .:/= ;MH/,    ,=/+%$XH@MM#@:     \n"");	"
+"			Console.log(""      -$##@+$###@H@MMM#######H:.    -/H#\n"");	"
+"			Console.log("" .,H@H@ X######@ -H#####@+-     -+H###@X\n"");	"
+"			Console.log(""  .,@##H;      +XM##M/,     =%@###@X;-  \n"");	"
+"			Console.log(""X%-  :M##########$.    .:%M###@%:       \n"");	"
+"			Console.log(""M##H,   +H@@@$/-.  ,;$M###@%,          -\n"");	"
+"			Console.log(""M####M=,,---,.-%%H####M$:          ,+@##\n"");	"
+"			Console.log(""@##################@/.         :%H##@$- \n"");	"
+"			Console.log(""M###############H,         ;HM##M$=     \n"");	"
+"			Console.log(""#################.    .=$M##M$=         \n"");	"
+"			Console.log(""################H..;XM##M$=          .:+\n"");	"
+"			Console.log(""M###################@%=           =+@MH%\n"");	"
+"			Console.log(""@################M/.          =+H#X%=   \n"");	"
+"			Console.log(""=+M##############M,       -/X#X+;.      \n"");	"
+"			Console.log(""  .;XM##########H=    ,/X#H+:,          \n"");	"
+"			Console.log(""     .=+HM######M+/+HM@+=.              \n"");	"
+"			Console.log(""         ,:/%XM####H/.                  \n"");	"
+"			Console.log(""              ,.:=-.                    \n"");	"
+"		}																	"
+"	}";
 		
 
 	//const char * code =
@@ -166,4 +200,6 @@ void Kernel::Main()
 	__asm {
 		xchg bx, bx
 	}
+
+	while (true) { }
 }

@@ -20,14 +20,15 @@ namespace Microsoft
 }
 
 #define USING_EXPRESSION(expression) \
-	PARSE_TREE("class C { main(): void { ".expression." } } ") \
-	N(ClassDeclaration) \
+	USING_SOURCE("class C { main(): void { "##expression"; } } ") \
+	N(SourceCode); \
+	N(ClassDeclaration); \
 	N(Identifier); N(IdentifierName); \
 	N(MethodDeclaration); \
 	N(Identifier); N(IdentifierName); \
 	N(ParameterList); \
-	N(TypeAnnotation); \
-	N(Block);
+	N(TypeAnnotation); N(Identifier); N(IdentifierName); \
+	N(Block); N(ExpressionStatement);
 
 
 #define USING_SOURCE(expression) \
@@ -39,6 +40,7 @@ namespace Microsoft
 	SyntaxKind* current = list->begin(); 
 
 #define N(syntaxKind) \
-	 Assert::AreEqual(syntaxKind, *current); \
-	 current++ 
+	 if (current == list->end()) { Assert::Fail(L"No more nodes"); } \
+	 Assert::AreEqual(SyntaxKind::syntaxKind, *current); \
+	 current++; 
 

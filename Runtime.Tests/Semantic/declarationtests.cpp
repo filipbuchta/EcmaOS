@@ -20,7 +20,7 @@ namespace RuntimeTests
 
 		TEST_METHOD(SemanticMethodCall)
 		{
-			PARSE_TREE("class C { a(): void { } b(): void { a() } }");
+			PARSE_TREE("class C { a(): void { } b(): void { a(); } }");
 
 			TYPE("C");
 			METHOD("a");
@@ -29,22 +29,22 @@ namespace RuntimeTests
 
 		TEST_METHOD(SemanticLocalVariableDeclarationTest)
 		{
-			PARSE_TREE("class C { f(): void { let y: number; } }");
+			PARSE_TREE("class C { f(): void { let y: int32; } }");
 
 			TYPE("C");
 			METHOD("f");
 			LOCALS(1);
-			LOCAL("y", "number");
+			LOCAL("y", "int32");
 		}
 
 		TEST_METHOD(MethodParameterDeclaration)
 		{
-			PARSE_TREE("class C { f(x: number): void {  } }");
+			PARSE_TREE("class C { f(x: int32): void {  } }");
 
 			TYPE("C");
 			METHOD("f");
 			PARAMS(1);
-			PARAM("x", "number");
+			PARAM("x", "int32");
 			RETURN_TYPE("void");
 		}
 
@@ -56,7 +56,7 @@ namespace RuntimeTests
 			TYPE("C");
 			METHOD("f");
 			LOCALS(1);
-			LOCAL("y", "number");
+			LOCAL("y", "int32");
 		}
 
 

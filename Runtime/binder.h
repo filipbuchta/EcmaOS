@@ -18,7 +18,8 @@ namespace r {
 		AST_NODE_LIST(DEF_VISIT)
 #undef DEF_VISI
 
-		
+
+			MethodSymbol * ResolveMethod(TypeSymbol & type, const char * methodName, ArgumentListSyntax & arguments);
 
 		Scope * GetCurrentScope() { return _currentScope; }
 

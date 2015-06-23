@@ -217,6 +217,15 @@ namespace r {
 		_indent--;
 	}
 
+	void AstPrinter::VisitIndexedAccessExpression(IndexedAccessExpressionSyntax &node)
+	{
+		PrintIndented("IndexedAccessExpression\n");
+		_indent++;
+		node.GetExpresion()->Accept(*this);
+		_indent--;
+	}
+
+
 	void AstPrinter::VisitMemberAccessExpression(MemberAccessExpressionSyntax &node) {
 		PrintIndented("MemberAccessExpression\n");
 		_indent++;
@@ -225,12 +234,11 @@ namespace r {
 		_indent--;
 	}
 
-	void AstPrinter::VisitArrayLiteralExpression(ArrayLiteralExpressionSyntax &node) {
-		PrintIndented("ArrayLiteralExpression\n");
+	void AstPrinter::VisitArrayCreationExpression(ArrayCreationExpressionSyntax &node) {
+		PrintIndented("ArrayCreationExpression\n");
 		_indent++;
-		for (ExpressionSyntax* child : *node.GetElements()) {
-			child->Accept(*this);
-		}
+		node.GetIdentifier()->Accept(*this);
+		node.GetRankSpecifier()->Accept(*this);
 		_indent--;
 	}
 

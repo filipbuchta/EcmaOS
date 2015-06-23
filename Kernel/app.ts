@@ -1,63 +1,62 @@
 ﻿/// <reference no-default-lib="true"/>
+/// <reference path="pic.ts" />
 
 declare class Runtime {
-    static yieldTo(stackId: number): void;
+    static yieldTo(stackId: int32): void;
+    static vgaWrite(position: int32, data: int32);
+    static garbageCollect();
+
     static registerTimer(listener: Kernel): void; //TODO: either change this to delegate or some interface
 }
 
 declare class Console {
-    static log(value: number): void;
+    static log(value: int32): void;
  //   static log(value: string): void;
 }
 
-//class Array<T> {
-//    push(item: T): number { return null; }
-//    shift(): T { return null; }
-//    //[index: number]: T { return null; }
-//}
-
-class LinkNode {
-    value: Worker;
-    previous: LinkNode;
-    next: LinkNode;
+class Node {
+    value: Thread;
+    next: Node;
 }
 
-class LinkedList {
-    first: LinkNode;
-    last: LinkNode;
-    push(item: Worker): void {
-        if (this.first == null) {
-            this.first = new LinkNode();
-            this.first.value = item;
-            this.last = this.first;
-        } else {
-            var next = new LinkNode();
-            next.value = item;
-            this.last.next = next;
-            next.previous = this.last;
+class ThreadQueue {
+    first: Node;
+    last: Node;
 
-            this.last = next;
+    enqueue(item: Thread): void {
+        var last = new Node();
+        last.value = item;
+
+        if (this.first == null && this.last == null) {
+            this.first = last;
+            this.last = last;
+        } else {
+            this.last.next = last;
+            this.last = last;
         }
+
     }
 
-    shift(): Worker {
-        var last = this.last;
-        if (last == null) {
+    dequeue(): Thread {
+        let first = this.first;
+        if (first == null) {
             return null;
         }
-        if (last.previous != null) {
-            last.previous.next = null;
+        else if (first == this.last) {
+            this.first = null;
+            this.last = null;
+        } else {
+            this.first = first.next;
         }
-        return last.value;
+        return first.value;
     }
 }
 
-//type int8 = number;
-//type int16 = number;
-//type int32 = number;
+class TestThread1 extends Thread {
 
-
-class Worker1 extends Worker {
+    constructor() {
+        this.id = 1;
+    }
     entry(): void {
         while (true) {
             Console.log(1);
@@ -66,7 +65,11 @@ class Worker1 extends Worker {
 }
 
 
-class Worker2 extends Worker {
+class TestThread2 extends Thread {
+
+    constructor() {
+        this.id = 2;
+    }
     entry(): void {
         while (true) {
             Console.log(2);
@@ -74,57 +77,71 @@ class Worker2 extends Worker {
     }
 }
 
-
-class Worker {
-    id: number;
+class Thread {
+    id: int32;
     entry(): void {
     }
 }
 
-class Kernel extends Worker {
+class Kernel extends Thread {
 
-    //static current: Kernel;
+    static currentThread: Thread;
 
-    //workers: Worker[];
-    //readyWorkers: Worker[];
-    workers: LinkedList;
-    readyWorkers: LinkedList;
-    currentWorker: Worker;
+    workers: ThreadQueue;
+    readyWorkers: ThreadQueue;
 
     constructor() {
-        this.workers = new LinkedList();
-        this.readyWorkers = new LinkedList();
+        this.id = 0;
+        this.workers = new ThreadQueue();
+        this.readyWorkers = new ThreadQueue();
         this.currentWorker = null;
     }
 
     static main(): void {
-        var kernel = new Kernel();
-        Runtime.registerTimer(kernel);
-        //Kernel.current = kernel;
-        kernel.entry();
+
+        if (Kernel.currentThread == null) {
+            var kernel = new Kernel();
+            kernel.entry();
+
+        } else {
+            Kernel.currentThread.entry();
+            
+            // not reachable
+            while (true) { }
+        }
     }
 
     timerInterrupt(): void {
-        //var kernel = Kernel.current;
-        this.readyWorkers.push(this.currentWorker);
-        this.currentWorker = null;
 
-       
+        this.readyWorkers.enqueue(this.workers.dequeue());
+        
+        Runtime.yieldTo(0);
     }
 
     entry() {
 
-        this.readyWorkers.push(new Worker1());
-        this.readyWorkers.push(new Worker2());
-        this.readyWorkers.push(this);
+        let pic = new Pic();
+        pic.initialize();
+
+        let pit = new Pit();
+        pit.initialize();
+
+        Runtime.registerTimer(this);
+
+
+        this.workers.enqueue(this);
+        this.workers.enqueue(new TestThread1());
+        this.workers.enqueue(new TestThread2());
+
 
         while (true) {
-            var worker = this.readyWorkers.shift();
+            let worker = this.readyWorkers.dequeue();
 
             if (worker != null) {
-
-                this.currentWorker = worker;
+                
                 Runtime.yieldTo(worker.id);
+
+                this.workers.enqueue(worker);
             }
         }
 

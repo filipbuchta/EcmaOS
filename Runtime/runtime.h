@@ -12,8 +12,10 @@ namespace r {
 	class Runtime
 	{
 	public:		
+		void Runtime_YieldTo(HeapObject * stackId);
+
 		//static * Runtime::Allocate(Heap * heap, TypeSymbol * type);
-		static void Runtime::Console_log(HeapObject * value);
+		static void Console_log(HeapString * value);
 	};
 
 

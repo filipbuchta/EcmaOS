@@ -34,6 +34,7 @@ namespace r {
 		bool IsIdentifierPart(char ch);
 
 		void Advance();
+
 	};
 
 }

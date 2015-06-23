@@ -11,7 +11,7 @@ namespace r {
 	void Operand::SetModRM(unsigned char mod, Register rm)
 	{
 		//ASSERT(_length == 1);
-		_buffer[0] = mod << 6 | rm;
+		_buffer[0] = mod << 6 | (int8_t)rm;
 		_length = 1;
 	}
 
@@ -63,28 +63,28 @@ namespace r {
 
 	void Assembler::Mov(Register dst, Register src) {
 		Emit(0x89);
-		Emit(0xC0 | src << 3 | dst);
+		Emit(0xC0 | (int8_t)src << 3 | (int8_t)dst);
 	}
 
 	void Assembler::Mov(Register dst, unsigned int immediate) {
-		Emit(0xB8 + dst);
+		Emit(0xB8 | (int8_t)dst);
 		Emit4(immediate);
 	}
 
 	void Assembler::Mov(Operand & dst, unsigned int immediate) {
 		Emit(0xC7);
-		EmitOperand(EAX, dst);
+		EmitOperand((int8_t)Register::EAX, dst);
 		Emit4(immediate);
 	}
 
 	void Assembler::Mov(Operand & dst, Register src) {
 		Emit(0x89);
-		EmitOperand(src, dst);
+		EmitOperand((int8_t)src, dst);
 	}
 
 	void Assembler::Mov(Register dst, Operand & src) {
 		Emit(0x8B);
-		EmitOperand(dst, src);
+		EmitOperand((int8_t)dst, src);
 	}
 
 	void Assembler::Addsd(XMMRegister dst, XMMRegister src) {
@@ -113,14 +113,14 @@ namespace r {
 		Emit(0x66);
 		Emit(0x0F);
 		Emit(0x6E);
-		EmitOperand(dst, src);
+		EmitOperand((int8_t)dst, src);
 	}
 
 	void Assembler::Movd(Operand& dst, XMMRegister src) {
 		Emit(0x66);
 		Emit(0x0F);
 		Emit(0x7E);
-		EmitOperand(src, dst);
+		EmitOperand((int8_t)src, dst);
 	}
 
 
@@ -137,7 +137,7 @@ namespace r {
 		Emit(0xF2);
 		Emit(0x0F);
 		Emit(0x11);
-		EmitOperand(src, dst);
+		EmitOperand((int8_t)src, dst);
 	}
 
 
@@ -147,17 +147,17 @@ namespace r {
 		Emit(0x0F);
 		Emit(0x10);
 
-		EmitOperand(dst, src);
+		EmitOperand((int8_t)dst, src);
 	}
 
 	void Assembler::EmitSSEOperand(XMMRegister dst, XMMRegister src) {
-		Emit(0xC0 | dst << 3 | src);
+		Emit(0xC0 | (int8_t)dst << 3 | (int8_t)src);
 	}
 
 	void Assembler::Test(Register dst, Register src)
 	{
 		Emit(0x85);
-		Emit(0xC0 | src << 3 | dst);
+		Emit(0xC0 | (int8_t)src << 3 | (int8_t)dst);
 	}
 
 	void Assembler::Nop()
@@ -172,33 +172,22 @@ namespace r {
 		for (int value : *label.GetUnresolvedPositions()) {
 			int offset = (int)_pc - value;
 			
-			*((int *)value) = (unsigned char)(offset - sizeof(int32_t));
-		}
-	}
-
-	void Assembler::Jne(Label & label)
-	{
-		Emit(0x0F);
-		Emit(0x85);
-		if (label.IsBound()) {
-			int offset = label.GetPosition() - (int)_pc;
-			Emit4(offset - 1);
-		}
-		else {
-			label.GetUnresolvedPositions()->Push((int)_pc);
-			_pc += sizeof(int);
+			*((int *)value) = (int)(offset - sizeof(int32_t));
 		}
 	}
 
 
-	void Assembler::Je(Label & label)
+	void Assembler::J(Condition condition, Label & label)
 	{
 		Emit(0x0F);
-		Emit(0x84);
-		if (label.IsBound()) {
+		Emit(0x80 | (unsigned char)condition);
+		if (label.IsBound()) 
+		{
 			int offset = label.GetPosition() - (int)_pc;
-			Emit4(offset - 1);
-		} else {
+			Emit4(offset - 6 + 2);
+		}
+		else 
+		{
 			label.GetUnresolvedPositions()->Push((int)_pc);
 			_pc += sizeof(int);
 		}
@@ -210,19 +199,49 @@ namespace r {
 		if (label.IsBound()) {
 			int offset = label.GetPosition() - (int)_pc;
 			//ASSERT(offset < 0);
-			Emit4(offset - 1);
-		} else {
+			Emit4(offset - 5 + 1);
+		}
+		else {
 			label.GetUnresolvedPositions()->Push((int)_pc);
 			_pc += sizeof(int);
 		}
 	}
 
+	void Assembler::Jl(Label & label)
+	{
+		J(Condition::Less, label);
+	}
+	void Assembler::Jg(Label & label)
+	{
+		J(Condition::Greater, label);
+	}
+	void Assembler::Jle(Label & label)
+	{
+		J(Condition::LessEqual, label);
+	}
+	void Assembler::Jge(Label & label)
+	{
+		J(Condition::GreaterEqual, label);
+	}
+
+	void Assembler::Jne(Label & label)
+	{
+		J(Condition::NotEqual, label);
+	}
+
+	void Assembler::Je(Label & label)
+	{
+
+		J(Condition::Equal, label);
+	}
+
+
 	void Assembler::Dec(Register dst) {
-		Emit(0x48 | dst);
+		Emit(0x48 | (int8_t)dst);
 	}
 
 	void Assembler::Inc(Register dst) {
-		Emit(0x40 | dst);
+		Emit(0x40 | (int8_t)dst);
 	}
 
 	void Assembler::Ret() {
@@ -241,7 +260,7 @@ namespace r {
 
 	void Assembler::Cmp(Register dst, Register src) {
 		Emit(0x39);
-		Emit(0xC0 | src << 3 | dst);
+		Emit(0xC0 | (int8_t)src << 3 | (int8_t)dst);
 	}
 	
 	void Assembler::Cmp(Operand & operand, unsigned int immediate) {
@@ -250,19 +269,19 @@ namespace r {
 
 	void Assembler::Setcc(Condition cc, Register dst) {
 		Emit(0x0F);
-		Emit(0x90 | (unsigned char)cc);
-		Emit(0xC0 | dst);
+		Emit(0x90 | (int8_t)cc);
+		Emit(0xC0 | (int8_t)dst);
 	}
 
 	void Assembler::Shr(Register dst, unsigned char immediate) {
 		
 		if (immediate == 1) {
 			Emit(0xD1);
-			Emit(0xE8 | dst);
+			Emit(0xE8 | (int8_t)dst);
 		}
 		else {
 			Emit(0xC1);
-			Emit(0xE8 | dst);
+			Emit(0xE8 | (int8_t)dst);
 			Emit(immediate);
 		}
 	}
@@ -272,30 +291,37 @@ namespace r {
 		Emit(0x0F);
 		Emit(0x3A);
 		Emit(0x22);
-		EmitOperand(dst, src);
+		EmitOperand((int8_t)dst, src);
 		Emit(offset);
 	}
 
 	void Assembler::Sub(Register dst, Register src) {
 		Emit(0x29);
-		Emit(0xC0 | src << 3 | dst);
+		Emit(0xC0 | (uint8_t)src << 3 | (uint8_t)dst);
 	}
 
 	void Assembler::Sub(Register dst, unsigned int immediate) {
-		Emit(0x81);
-		Emit(0xEC | dst);
-		*((int *)_pc) = immediate;
-		_pc += sizeof(int);
+		EmitArithmetic(5, dst, immediate);
 	}
 
 	void Assembler::Mul(Register src) {
 		Emit(0xF7);
-		Emit(0xE0 | src);
+		Emit(0xE0 | (uint8_t)src);
+	}
+
+	void Assembler::Div(Register src) {
+		Emit(0xF7);
+		Emit(0xF0 | (uint8_t)src);
 	}
 
 	void Assembler::Add(Register dst, Register src) {
 		Emit(0x01);
-		Emit(0xC0 | src << 3 | dst);
+		Emit(0xC0 | (uint8_t)src << 3 | (uint8_t)dst);
+	}
+
+	void Assembler::Add(Operand dst, Register src) {
+		Emit(0x01);
+		EmitOperand((int8_t)src, dst);
 	}
 
 
@@ -306,7 +332,7 @@ namespace r {
 
 	void Assembler::EmitArithmetic(int operation, Operand dst, unsigned int immediate) {
 
-		if (dst.IsRegister(EAX)) {
+		if (dst.IsRegister(Register::EAX)) {
 
 			Emit((operation << 3) | 0x05);
 
@@ -321,7 +347,7 @@ namespace r {
 	}
 
 	void Assembler::Pop(Register reg) {
-		Emit(0x58 + reg);
+		Emit(0x58 | (int8_t)reg);
 	}
 
 	void Assembler::Push(int value) {
@@ -332,17 +358,17 @@ namespace r {
 	}
 
 	void Assembler::Push(Register reg) {
-		Emit(0x50 + reg);
+		Emit(0x50 | (int8_t)reg);
 	}
 
 	void Assembler::Push(Operand src) {
 		Emit(0xFF);
-		EmitOperand(ESI, src);
+		EmitOperand((int8_t)Register::ESI, src);
 	}
 
 	void Assembler::Call(Operand & address) {
 		Emit(0xFF);
-		EmitOperand(EDX, address);
+		EmitOperand((int8_t)Register::EDX, address);
 	}
 
 	void Assembler::Call(unsigned char* address) {

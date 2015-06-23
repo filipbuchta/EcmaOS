@@ -7,6 +7,8 @@ namespace r {
 		DO(PlusPlusToken)\
 		DO(OpenBracketToken)\
 		DO(CloseBracketToken)\
+		DO(PercentToken)\
+		DO(SlashEqualsToken)\
 		DO(ExclamationEqualsToken)\
 		DO(ExclamationToken)\
 		DO(MinusMinusToken)\
@@ -63,10 +65,11 @@ namespace r {
 		DO(UnaryExpression) \
 		DO(LeftHandSideExpression) \
 		DO(MemberAccessExpression) \
+		DO(IndexedAccessExpression) \
 		DO(PrimaryExpression) \
 		DO(ThisExpression)\
 		DO(PostfixUnaryExpression)\
-		DO(ArrayLiteralExpression)\
+		DO(ArrayCreationExpression)\
 		DO(PrefixUnaryExpression)\
 		DO(ExpressionStatement)\
 		DO(LocalVariableStatement)\
@@ -87,7 +90,9 @@ namespace r {
 		DO(Identifier)\
 	    DO(IdentifierName)\
 	    DO(TypeAnnotation)\
-		DO(NumericLiteral)\
+		DO(RealLiteral)\
+		DO(IntegerLiteral)\
+		DO(CharacterLiteral)\
 		DO(SourceCode)
 
 

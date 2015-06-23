@@ -21,7 +21,7 @@ namespace RuntimeTests
 		{
 			//addsd xmm0, xmm1
 			{
-				A(Addsd(XMM0, XMM1));
+				A(Addsd(XMMRegister::XMM0, XMMRegister::XMM1));
 				B(0xF2, 0x0F, 0x58, 0xC1);
 			}
 		}
@@ -31,7 +31,7 @@ namespace RuntimeTests
 		{
 			//movsd [eax], xmm0
 			{
-				A(Movsd(Operand(EAX, 0), XMM0));
+				A(Movsd(Operand(Register::EAX, 0), XMMRegister::XMM0));
 				B(0xF2, 0x0F, 0x11, 0x40, 0x00);
 			}
 		}

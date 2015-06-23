@@ -66,7 +66,7 @@ namespace r {
 		if (!ParseOptional(SemicolonToken)) 
 		{
 			node->SetExpression(ParseExpression());
-			ParseOptional(SemicolonToken);
+			ParseExpected(SemicolonToken);
 		}
 
 		return node;
@@ -217,6 +217,13 @@ namespace r {
 
 		TypeAnnotationSyntax * node = new TypeAnnotationSyntax();
 		node->SetType(ParseIdentifier());
+		if (ParseOptional(OpenBracketToken)) {
+			node->SetRank(1);
+			ParseExpected(CloseBracketToken);
+		}
+		else {
+			node->SetRank(0);
+		}
 
 		return node;
 	}
@@ -399,8 +406,16 @@ namespace r {
 
 		while (true) 
 		{
-
-			if (ParseOptional(DotToken)) 
+			if (ParseOptional(OpenBracketToken)) 
+			{
+				IndexedAccessExpressionSyntax *node = new IndexedAccessExpressionSyntax();
+				node->SetExpression(lhs);
+				node->SetIndex(ParseExpression());
+				ParseExpected(CloseBracketToken);
+				lhs = node;
+				continue;
+			}
+			else if (ParseOptional(DotToken)) 
 			{
 				MemberAccessExpressionSyntax *node = new MemberAccessExpressionSyntax();
 				node->SetExpression(lhs);
@@ -413,11 +428,10 @@ namespace r {
 		}
 	}
 
-	NewExpressionSyntax *Parser::ParseNewExpression() 
+	NewExpressionSyntax *Parser::ParseNewExpression(IdentifierSyntax & identifier)
 	{
-		ParseExpected(NewKeyword);
 		NewExpressionSyntax * node = new NewExpressionSyntax();
-		node->SetIdentifier(ParseIdentifier()); //TODO: ParseType()
+		node->SetIdentifier(&identifier); //TODO: ParseType()
 		if (_currentToken.Kind == OpenParenthesisToken) 
 		{
 			node->SetArguments(ParseArgumentList());
@@ -432,24 +446,17 @@ namespace r {
 		return node;
 	}
 
-	ArrayLiteralExpressionSyntax *Parser::ParseArrayLiteralExpression() 
+	ArrayCreationExpressionSyntax *Parser::ParseArrayCreationExpression(IdentifierSyntax & identifier) 
 	{
 		ParseExpected(OpenBracketToken);
-		ArrayLiteralExpressionSyntax * node = new ArrayLiteralExpressionSyntax();
+		ArrayCreationExpressionSyntax * node = new ArrayCreationExpressionSyntax();
 
-		while (true)
-		{
-			if (ParseOptional(CloseBracketToken))
-			{
-				break;
-			}
-			node->GetElements()->Push(ParseExpression());
-			if (!ParseOptional(CommaToken))
-			{
-				ParseExpected(CloseBracketToken);
-				break;
-			}
-		}
+		node->SetIdentifier(&identifier);
+	
+		node->SetRankSpecifier(ParseExpression());
+
+		ParseExpected(CloseBracketToken);
+
 		return node;
 	}
 
@@ -457,21 +464,26 @@ namespace r {
 	{
 		switch (_currentToken.Kind)
 		{
-			case OpenBracketToken:
-			{
-				return ParseArrayLiteralExpression();
-			}
 			case ThisKeyword:
 			{
 				return ParseThisExpression();
 			}
 			case NewKeyword:
 			{
-				return ParseNewExpression();
+				ParseExpected(NewKeyword);
+				IdentifierSyntax * identifier = ParseIdentifier();
+				if (_currentToken.Kind == OpenBracketToken) {
+					return ParseArrayCreationExpression(*identifier);
+				}
+				else {
+					return ParseNewExpression(*identifier);
+				}
 			}
 			case NullLiteral:
 			case StringLiteral:
-			case NumericLiteral:
+			case RealLiteral:
+			case IntegerLiteral:
+			case CharacterLiteral:
 			case BooleanLiteral:
 			{
 				return ParseLiteral();
@@ -487,7 +499,7 @@ namespace r {
 			}
 			default:
 			{
-				NOT_IMPLEMENTED();
+				FATAL("Unexpected token %s", SyntaxKindNames[_currentToken.Kind]);
 			}
 			break;
 		}
@@ -551,6 +563,15 @@ namespace r {
 
 	LiteralSyntax *Parser::ParseLiteral() 
 	{
+		if (/*_currentToken.Kind != Literal &&*/
+			_currentToken.Kind != IntegerLiteral &&
+			_currentToken.Kind != RealLiteral &&
+			_currentToken.Kind != StringLiteral &&
+			_currentToken.Kind != NullLiteral &&
+			_currentToken.Kind != CharacterLiteral &&
+			_currentToken.Kind != BooleanLiteral) {
+			FATAL("Expected litral but found %s", SyntaxKindNames[_currentToken.Kind]);
+		}
 		LiteralSyntax *node = new LiteralSyntax();
 		node->SetText(_currentToken);
 		NextToken();
@@ -570,7 +591,7 @@ namespace r {
 		node->SetLocation(_scanner->GetLocation());
 		node->SetExpression(ParseExpression());
 
-		ParseOptional(SemicolonToken);
+		ParseExpected(SemicolonToken);
 
 		return node;
 	}
@@ -594,7 +615,7 @@ namespace r {
 
 		if (_currentToken.Kind != kind)
 		{
-			FATAL("Incorrect token %s, expected %s", SyntaxKindNames[_currentToken.Kind], SyntaxKindNames[kind]);
+			FATAL("Incorrect token %s, expected %s at line: %d column: %d", SyntaxKindNames[_currentToken.Kind], SyntaxKindNames[kind], _scanner->GetLocation().Line, _scanner->GetLocation().Column);
 		}
 		else
 		{
@@ -625,13 +646,16 @@ namespace r {
 		case EqualsEqualsToken:
 			return 1;
 		case LessThanToken:
+		case LessThanEqualsToken:
 		case GreaterThanToken:
+		case GreaterThanEqualsToken:
 			return 2;
 		case MinusToken:
 		case PlusToken:
 			return 3;
 		case AsteriskToken:
 		case SlashToken:
+		case PercentToken:
 			return 4;
 		default:
 			return -1;
@@ -642,17 +666,21 @@ namespace r {
 	{
 		switch (kind)
 		{
-		case SyntaxKind::ArrayLiteralExpression:
+		case SyntaxKind::IndexedAccessExpression:
 		case SyntaxKind::MemberAccessExpression:
-		case SyntaxKind::NewExpression:
 		case SyntaxKind::ThisExpression:
 		case SyntaxKind::CallExpression:
 		case SyntaxKind::Identifier:
-		case SyntaxKind::NumericLiteral:
+		case SyntaxKind::CharacterLiteral:
+		case SyntaxKind::IntegerLiteral:
+		case SyntaxKind::RealLiteral:
 		case SyntaxKind::StringLiteral:
+		case SyntaxKind::NullLiteral:
 		case SyntaxKind::Literal:
 		case SyntaxKind::BooleanLiteral:
 		case SyntaxKind::ParenthesizedExpression:
+		//case SyntaxKind::SuperExpression:
+		//case SyntaxKind::FunctionExpression:
 			return true;
 		default:
 			return false;

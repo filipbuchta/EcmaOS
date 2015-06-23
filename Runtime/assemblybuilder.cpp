@@ -19,11 +19,15 @@ namespace r {
 		if (declaration.GetKind() == ConstructorDeclaration) {
 			method->SetConstructor(true);
 			method->SetName(".ctor");
+			method->SetReturnType(&declaringType);
 		} else if (declaration.GetKind() == MethodDeclaration) {
 
 			MethodDeclarationSyntax * methodDeclaration = (MethodDeclarationSyntax *)&declaration;
 			method->SetName(declaration.GetIdentifier()->GetName().Value);
-			TypeSymbol * returnType = _assembly->LookupType(methodDeclaration->GetReturnType()->GetType()->GetName().Value);
+			TypeSymbol * returnType = _assembly->LookupType(methodDeclaration->GetReturnType()->GetType()->GetName().Value, methodDeclaration->GetReturnType()->GetRank());
+			if (returnType == nullptr) {
+				NOT_IMPLEMENTED();
+			}
 			method->SetReturnType(returnType);
 
 			for (SyntaxToken child : *methodDeclaration->GetModifiers()) {
@@ -58,7 +62,9 @@ namespace r {
 			parameter->SetName(child->GetIdentifier()->GetName().Value);
 			parameter->SetDeclaration(child);
 			parameter->SetSlot(method->GetParameters()->GetSize());
-			parameter->SetParameterType(_assembly->LookupType(child->GetParameterType()->GetType()->GetName().Value));
+			TypeSymbol * parameterType = _assembly->LookupType(child->GetParameterType()->GetType()->GetName().Value, child->GetParameterType()->GetRank());
+			
+			parameter->SetParameterType(parameterType);
 
 			method->GetParameters()->Push(parameter);
 		}
@@ -154,53 +160,38 @@ namespace r {
 		}
 	}
 
+
 	AssemblySymbol * AssemblyBuilder::Build(SourceCodeSyntax & sourceCode)
 	{
 
 		AssemblySymbol * assembly = _assembly = new AssemblySymbol();
 
-		{
-			TypeSymbol * stringType = new TypeSymbol();
-			stringType->SetName("string");
-			assembly->GetTypes()->Push(stringType);
+		//{
+		//	RegisterCallback("Console_log", Runtime::Console_log);
+		//	RegisterCallback("Number_formatInt32", Runtime::Console_log);
+		//}
 
-			TypeSymbol * voidType = new TypeSymbol();
-			voidType->SetName("void");
-			assembly->GetTypes()->Push(voidType);
-
-			TypeSymbol * numberType = new TypeSymbol();
-			numberType->SetName("number");
-			PropertySymbol * internalNumberProperty = new PropertySymbol();
-			internalNumberProperty->SetName("_value");
-			internalNumberProperty->SetSlot(0);
-			internalNumberProperty->SetPropertyType(numberType);
-			numberType->GetProperties()->Push(internalNumberProperty);
-			assembly->GetTypes()->Push(numberType);
-
-
-			TypeSymbol * booleanType = new TypeSymbol();
-			booleanType->SetName("boolean");
-			assembly->GetTypes()->Push(booleanType);
-		}
 
 
 		//TODO: move this somewhere else, perhaps to some kind of TypeBuilder, MethodBuilder
 
 		// This is here because there is no bound tree so we have to modify syntax tree
 		for (ClassDeclarationSyntax * classDeclarationSyntax : *sourceCode.GetClassDeclarations()) {
+			bool hasInstanceConstructor = false;
 			for (ClassElementSyntax * classElementSyntax : *classDeclarationSyntax->GetMembers()) {
-				bool hasInstanceConstructor = false;
+				
 				if (classElementSyntax->GetKind() == SyntaxKind::ConstructorDeclaration) {
 					hasInstanceConstructor = true;
 				}
-				if (!hasInstanceConstructor) {
-					ConstructorDeclarationSyntax * constructor = new ConstructorDeclarationSyntax();
-					BlockSyntax * block = new BlockSyntax();
-					//TODO: add super call into block
-					constructor->SetBody(block);
-					constructor->SetParameterList(new ParameterListSyntax());
-					classDeclarationSyntax->GetMembers()->Push(constructor);
-				}
+			}
+
+			if (!hasInstanceConstructor) {
+				ConstructorDeclarationSyntax * constructor = new ConstructorDeclarationSyntax();
+				BlockSyntax * block = new BlockSyntax();
+				//TODO: add super call into block
+				constructor->SetBody(block);
+				constructor->SetParameterList(new ParameterListSyntax());
+				classDeclarationSyntax->GetMembers()->Push(constructor);
 			}
 		}
 
@@ -213,7 +204,12 @@ namespace r {
 
 			assembly->GetTypes()->Push(type);
 
-			for (ClassElementSyntax * classElementSyntax : *classDeclarationSyntax->GetMembers()) {
+
+		}
+
+		for (TypeSymbol * type : *assembly->GetTypes()) {
+
+			for (ClassElementSyntax * classElementSyntax : *((ClassDeclarationSyntax*)type->GetDeclaration())->GetMembers()) {
 
 				if (classElementSyntax->GetKind() == SyntaxKind::MethodDeclaration) {
 					MethodDeclarationSyntax * declaration = (MethodDeclarationSyntax *)classElementSyntax;
@@ -241,8 +237,8 @@ namespace r {
 					PropertyDeclarationSyntax * declaration = (PropertyDeclarationSyntax  *)classElementSyntax;
 					PropertySymbol * property = new PropertySymbol();
 					property->SetName(declaration->GetIdentifier()->GetName().Value);
-					property->SetPropertyType(assembly->LookupType(declaration->GetPropertyType()->GetType()->GetName().Value));
-
+					property->SetPropertyType(assembly->LookupType(declaration->GetPropertyType()->GetType()->GetName().Value, declaration->GetPropertyType()->GetRank()));
+					property->SetDeclaringType(type);
 
 					type->GetProperties()->Push(property);
 				}
@@ -251,7 +247,10 @@ namespace r {
 				}
 
 			}
+		}
 
+		if (assembly->GetEntryPoint() == nullptr) {
+			NOT_IMPLEMENTED()
 		}
 		
 		// Bind base types
@@ -259,7 +258,7 @@ namespace r {
 			if (type->GetDeclaration() != nullptr) {
 				ClassDeclarationSyntax * classDeclaration = (ClassDeclarationSyntax *)type->GetDeclaration();
 				if (classDeclaration->GetBaseType() != nullptr) {
-					TypeSymbol * baseType = assembly->LookupType(classDeclaration->GetBaseType()->GetName().Value);
+					TypeSymbol * baseType = assembly->LookupType(classDeclaration->GetBaseType()->GetName().Value, 0);
 					type->SetBaseType(baseType);
 				}
 			}
@@ -277,9 +276,6 @@ namespace r {
 		// Create method table and set method slots
 
 		for (TypeSymbol * type : *assembly->GetTypes()) {
-			if (strcmp(type->GetName(), "number") == 0) { //TODO: number has internal 8 byte slot this method would rewrite it to 4 bytes
-				continue;
-			}
 			GenerateMethodTable(*type);
 		}
 		
@@ -307,7 +303,11 @@ namespace r {
 			for (MethodSymbol * method : *type->GetMethods()) {
 				if (method->IsAmbient()) {
 					//TODO: other runtime functions
-					method->SetCode((unsigned char*)(&Runtime::Console_log));
+					if (strcmp(method->GetName(), "log") == 0) {
+						method->SetCode((unsigned char*)(&Runtime::Console_log));
+					} else {
+						NOT_IMPLEMENTED();
+					}
 				}
 				else {
 					CodeGenerator* codeGenerator = new CodeGenerator(assembly, heap, assembler, method);

@@ -1,6 +1,8 @@
 #include "scanner.h"
 #include "list.h"
 #include "global.h"
+#include "checks.h"
+
 
 namespace r {
 
@@ -51,11 +53,33 @@ namespace r {
 			}
 			case '<': {
 				Advance();
-				return SyntaxToken(LessThanToken, "<");
+				switch (GetChar()) {
+					case '=': {
+						Advance();
+						return SyntaxToken(LessThanEqualsToken, "<=");
+					}
+					default: {
+						return SyntaxToken(LessThanToken, "<");
+					}
+				}
+				
 			}
 			case '>': {
 				Advance();
-				return SyntaxToken(GreaterThanToken, "<");
+				switch (GetChar()) {
+				case '=': {
+					Advance();
+					return SyntaxToken(GreaterThanEqualsToken, ">=");
+				}
+				default: {
+					return SyntaxToken(GreaterThanToken, "<");
+				}
+				}
+				
+			}
+			case '%': {
+				Advance();
+				return SyntaxToken(PercentToken, "%");
 			}
 			case '+': {
 				Advance();
@@ -88,7 +112,12 @@ namespace r {
 				return SyntaxToken(AsteriskToken, "*");
 			}
 			case '/': {
+				Advance();
 				switch (GetChar()) {
+					case '=': {
+						Advance();
+						return SyntaxToken(SlashEqualsToken, "/=");
+					}
 					case '/': {
 						while (!IsEndOfStream() && '\n' != GetChar()) {
 							Advance();
@@ -96,7 +125,6 @@ namespace r {
 						continue;
 					}
 					default: {
-						Advance();
 						return SyntaxToken(SlashToken, "/");
 					}
 				}
@@ -133,14 +161,41 @@ namespace r {
 				Advance();
 				return SyntaxToken(DotToken, ".");
 			}
-			case '\'':
+			case '\'': {
+				Advance();
+
+				List<char> *cb = new List<char>();
+				if (GetChar() == '\\') {
+					Advance();
+					if (GetChar() == '0') {
+						Advance();
+						cb->Push('\0');
+					}
+					else {
+						NOT_IMPLEMENTED();
+					}
+				}
+				else {
+					cb->Push(GetChar());
+					Advance();
+
+				}
+				cb->Push('\0');
+
+				char * value = new char[cb->GetSize()];
+				memcpy(value, cb->GetBuffer(), cb->GetSize());
+
+				//delete cb;
+
+				Advance(); // '
+				return SyntaxToken(CharacterLiteral, value);
+			}
 			case '"': {
 				Advance();
 
-				char quote = ch;
 				List<char> *cb = new List<char>();
 
-				while (!IsEndOfStream() && quote != GetChar()) {
+				while (!IsEndOfStream() && '"' != GetChar()) {
 					cb->Push(GetChar());
 					Advance();
 				}
@@ -182,18 +237,30 @@ namespace r {
 						cb->Push(GetChar());
 						Advance();
 					}
+
+
+					//TODO: if GetChar() == 'e' || 'E'
+
+					cb->Push('\0');
+
+					char * value = new char[cb->GetSize()];
+					memcpy(value, cb->GetBuffer(), cb->GetSize());
+
+					//delete cb;
+
+					return SyntaxToken(RealLiteral, value);
+				}
+				else {
+					
+					cb->Push('\0');
+
+					char * value = new char[cb->GetSize()];
+					memcpy(value, cb->GetBuffer(), cb->GetSize());
+
+					//delete cb;
+					return SyntaxToken(IntegerLiteral, value);
 				}
 
-				//TODO: if GetChar() == 'e' || 'E'
-
-				cb->Push('\0');
-
-				char * value = new char[cb->GetSize()];
-				memcpy(value, cb->GetBuffer(), cb->GetSize());
-				
-				//delete cb;
-
-				return SyntaxToken(NumericLiteral, value);
 			}
 
 			default:

@@ -183,7 +183,8 @@ namespace r {
 		ExpressionSyntax *_right;
 	};
 
-	class BlockSyntax : public StatementSyntax {
+	class BlockSyntax : public StatementSyntax 
+	{
 	public:
 		DECLARE_NODE_TYPE(Block);
 		void SetScope(Scope * value) { _scope = value; }
@@ -194,7 +195,21 @@ namespace r {
 		List<StatementSyntax*>* _statements = new List<StatementSyntax*>();
 	};
 
-	class MemberAccessExpressionSyntax : public MemberExpressionSyntax {
+	class IndexedAccessExpressionSyntax : public MemberExpressionSyntax
+	{
+	public:
+		DECLARE_NODE_TYPE(IndexedAccessExpression);
+		void SetExpression(ExpressionSyntax *value) { _expression = value; }
+		ExpressionSyntax *GetExpresion() { return _expression; }
+		void SetIndex(ExpressionSyntax *value) { _index = value; }
+		ExpressionSyntax *GetIndex() { return _index; }
+	private:
+		ExpressionSyntax *_expression;
+		ExpressionSyntax *_index;
+	};
+
+	class MemberAccessExpressionSyntax : public MemberExpressionSyntax 
+	{
 	public:
 		DECLARE_NODE_TYPE(MemberAccessExpression);
 
@@ -247,9 +262,12 @@ namespace r {
 		void SetType(IdentifierSyntax* value) { _type = value; }
 		void SetTypeSymbol(TypeSymbol * value) { _typeSymbol = value; }
 		TypeSymbol * GetTypeSymbol() { return _typeSymbol; }
+		int GetRank() { return _rank; }
+		void SetRank(int value) { _rank = value; }
 	private:
 		IdentifierSyntax* _type;
 		TypeSymbol * _typeSymbol;
+		int _rank;
 	};
 
 	class ParameterDeclarationSyntax : public DeclarationSyntax {
@@ -423,12 +441,17 @@ namespace r {
 		SyntaxToken _operator = SyntaxToken(IllegalToken, "\0");
 	};
 	
-	class ArrayLiteralExpressionSyntax : public PrimaryExpressionSyntax {
+	class ArrayCreationExpressionSyntax : public PrimaryExpressionSyntax {
 	public:
-		DECLARE_NODE_TYPE(ArrayLiteralExpression);
-		List<ExpressionSyntax *> * GetElements() { return _elements; }
+		DECLARE_NODE_TYPE(ArrayCreationExpression);
+
+		IdentifierSyntax * GetIdentifier() const { return _identifier; }
+		void SetIdentifier(IdentifierSyntax *value) { _identifier = value; };
+		ExpressionSyntax * GetRankSpecifier() const { return _initializer; }
+		void SetRankSpecifier(ExpressionSyntax *value) { _initializer = value; };
 	private:
-		List<ExpressionSyntax *> * _elements = new List<ExpressionSyntax *>();
+		IdentifierSyntax *_identifier;
+		ExpressionSyntax *_initializer;
 	};
 
 	class PrefixUnaryExpressionSyntax : public UnaryExpressionSyntax {

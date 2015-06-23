@@ -36,13 +36,18 @@ namespace r {
 		void VisitForEffect(SyntaxNode & node);
 
 		int GetSymbolOffset(Symbol & symbol);
-		int GetPropertyOffset(PropertySymbol & property);
+
+		void EmitStore(ExpressionSyntax & node);
+
+		void VisitMethodLikeDeclaration(MethodLikeDeclarationSyntax & node);
+
 
 		void EmitPropertyInitialization(Register object, TypeSymbol & type);
 
 		void PushContext(ExpressionContext * context);
 		void PopContext();
 
+		void DynamicAllocateArray(ArrayTypeSymbol & type);
 		void DynamicAllocate(Register result, TypeSymbol & type);
 
 		Assembler *_assembler;
@@ -60,6 +65,7 @@ namespace r {
 	public:
 		ExpressionContext(CodeGenerator * codeGenerator) : _codeGenerator(codeGenerator), _old(codeGenerator->GetContext()) { }
 		virtual void Plug(Register reg) = 0;
+		virtual void Plug(int32_t value) = 0;
 		ExpressionContext * GetOld() { return _old; }
 	protected:
 		CodeGenerator * _codeGenerator;
@@ -75,6 +81,9 @@ namespace r {
 				_codeGenerator->GetAssembler()->Mov(_register, reg);
 			}
 		}
+		void Plug(int32_t value) {
+			_codeGenerator->GetAssembler()->Mov(_register, value);
+		}
 	private:
 		Register _register;
 	};
@@ -83,12 +92,14 @@ namespace r {
 	public:
 		EffectContext(CodeGenerator * codeGenerator) : ExpressionContext(codeGenerator) { }
 		void Plug(Register reg) { }
+		void Plug(int32_t immediate) { }
 	};
 
 	class StackValueContext : public ExpressionContext {
 	public:
 		StackValueContext(CodeGenerator * codeGenerator) : ExpressionContext(codeGenerator) { }
 		void Plug(Register reg) { _codeGenerator->GetAssembler()->Push(reg); }
+		void Plug(int32_t value) { _codeGenerator->GetAssembler()->Push(value); }
 	};
 
 }

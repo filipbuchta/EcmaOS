@@ -83,11 +83,11 @@ namespace r {
 
 		TypeAnnotationSyntax * Parser::ParseTypeAnnotation();
 
-		NewExpressionSyntax * Parser::ParseNewExpression();
+		NewExpressionSyntax * Parser::ParseNewExpression(IdentifierSyntax & identifier);
 
 		ThisExpressionSyntax * ParseThisExpression();
 
-		ArrayLiteralExpressionSyntax * ParseArrayLiteralExpression();
+		ArrayCreationExpressionSyntax * ParseArrayCreationExpression(IdentifierSyntax & identifier);
 
 		ReturnStatementSyntax * ParseReturnStatement();
 

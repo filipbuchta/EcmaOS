@@ -2,7 +2,10 @@
 #include "../../Runtime/platform.h"
 #include "../../Runtime/compiler.h"
 #include <windows.h>
-
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <sstream>
 
 using namespace r;
 
@@ -22,12 +25,17 @@ namespace r {
 
 void CompileAndVerify(const char * source, const char *expectedOutput)
 {
-	std::string generatedCode = "class Console { declare static log(value: string): void; } \n";
-	generatedCode.append(source);
+	std::stringstream buffer;
+	buffer << std::ifstream("c:\\home\\projects\\ecmaos\\CorLib\\types.ts").seekg(3).rdbuf();
+	buffer << std::endl;
+	buffer << source;
+	buffer << std::endl;
 
+	std::string str = buffer.str();
+	const char * generatedCode = str.c_str();
 
 	Compiler * compiler = new Compiler();
-	AssemblySymbol * code = compiler->Compile(generatedCode.c_str());
+	AssemblySymbol * code = compiler->Compile(generatedCode);
 
 
 	output.clear();

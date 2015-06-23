@@ -1136,7 +1136,7 @@ speaker: enabled=1, mode=sound
 # Example:
 #   port_e9_hack: enabled=1
 #=======================================================================
-#port_e9_hack: enabled=1
+port_e9_hack: enabled=1
 
 #=======================================================================
 # other stuff

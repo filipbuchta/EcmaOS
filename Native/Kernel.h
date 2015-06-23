@@ -6,5 +6,6 @@ public:
 	static void Main();
 private:
 	static void InterruptHandler();
+	static void FaultHandler();
 };
 

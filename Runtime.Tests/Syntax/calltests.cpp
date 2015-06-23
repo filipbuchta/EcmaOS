@@ -22,44 +22,12 @@ namespace RuntimeTests
 		
 		TEST_METHOD(MethodCallTest)
 		{
-			USING_SOURCE("class A { bar(): void { } foo(): void { bar() } }");
+			USING_EXPRESSION("m()");
 
-			N(SourceCode);
+			N(CallExpression);
 			{
-				N(ClassDeclaration);
-				{
-					N(Identifier); N(IdentifierName);
-					N(MethodDeclaration);
-					{
-						N(Identifier); N(IdentifierName);
-						N(ParameterList);
-						N(TypeAnnotation);
-						{
-							N(Identifier); N(IdentifierName);
-						}
-						N(Block);
-					}
-					N(MethodDeclaration);
-					{
-						N(Identifier); N(IdentifierName);
-						N(ParameterList);
-						N(TypeAnnotation);
-						{
-							N(Identifier); N(IdentifierName);
-						}
-						N(Block);
-						{
-							N(ExpressionStatement);
-							{
-								N(CallExpression);
-								{
-									N(Identifier); N(IdentifierName);
-									N(ArgumentList);
-								}
-							};
-						}
-					}
-				}
+				N(Identifier); N(IdentifierName);
+				N(ArgumentList);
 			}
 		}
 

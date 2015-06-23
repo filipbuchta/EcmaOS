@@ -64,45 +64,15 @@ int main(int argc, char* argv[])
 	}
 
 	
-	std::ifstream t("C:\\dbg\\test.ts");
 	std::stringstream buffer;
-	buffer << t.rdbuf();
+	buffer << std::ifstream("..\\..\\CorLib\\types.ts").seekg(3).rdbuf();
+	buffer << '\n';
+	buffer << std::ifstream("..\\..\\CorLib\\test.ts").seekg(3).rdbuf();
 
 	std::string str = buffer.str();
 	const char * code = str.c_str();
 
-
-
-
-	//	
-	/*const char * code =
-		"class Console {\n"
-		"    declare static log(value: string): void;\n"
-		"}\n\n"
-		"class Calculator {\n"
-		"   plus(x: number, y: number): void {\n"
-		"      return x + y;\n"
-		"   }\n"
-		"}\n\n"
-		"class C { \n"
-		"    static main() : void { \n"
-		"        let calculator = new Calculator();\n"
-		"        let result = calculator.plus(123, 654); \n"
-		"        Console.log(result);\n"
-		"    }\n"
-		"}\n";*/
-
-	/*code = "class Console { declare static log(value: string): void; }"
-		"class C {  static main(): void { new C().test(123); } test(x: number): void { Console.log(x); } }";
-	code = "class Console { declare static log(value: string): void; }"
-		"class C { static main(): void { Console.log(123 + 654); } }";*/
-	//Test * test = new Test();
-
-	//test->test(1);
-
-
-	code = "class Console { declare static log(value: string): void; }"
-		   "class P extends C { field2: number; } class C { field1: number; static main(): void { let o = new P(); o.field1 = 123; o.field2 = 456; Console.log(o.field1); Console.log(o.field2); } }";
+//	Platform::Print(code);
 
 	Compiler * compiler = new Compiler();
 	AssemblySymbol * assembly = compiler->Compile(code);

@@ -6,5 +6,5 @@
 
 
 double atod(const char * ch);
-
+const char * itoa(int value);
 const char * dtoa(double value);

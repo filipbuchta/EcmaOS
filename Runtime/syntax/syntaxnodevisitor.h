@@ -18,13 +18,14 @@ namespace r {
     V(CallExpression) \
 	V(NewExpression) \
     V(MemberAccessExpression) \
+	V(IndexedAccessExpression) \
     V(ArgumentList) \
     V(IterationStatement) \
     V(ParameterList) \
 	V(ThisExpression) \
 	V(IfStatement)\
 	V(PostfixUnaryExpression)\
-	V(ArrayLiteralExpression)\
+	V(ArrayCreationExpression)\
 	V(PrefixUnaryExpression)\
 	V(TypeAnnotation)\
 	V(ConstructorDeclaration)\

@@ -48,7 +48,7 @@ namespace r {
 		Greater = 6
 	};
 
-	enum Register {
+	enum class Register {
 		EAX = 0,
 		ECX = 1,
 		EDX = 2,
@@ -59,7 +59,7 @@ namespace r {
 		EDI = 7,
 	};
 
-	enum XMMRegister {
+	enum class XMMRegister {
 		XMM0 = 0,
 		XMM1 = 1,
 	};
@@ -72,7 +72,7 @@ namespace r {
 		Operand(Register base, char displacement);
 		void SetModRM(unsigned char mod, Register rm);
 		void SetDisplacement(char displacement);
-		bool IsRegister(Register reg) { return ((_buffer[0] & 0xF8) == 0xC0) && ((_buffer[0] & 0x07) == reg);  }
+		bool IsRegister(Register reg) { return ((_buffer[0] & 0xF8) == 0xC0) && ((_buffer[0] & 0x07) == (int8_t)reg);  }
 	private:
 		unsigned char * _buffer = new unsigned char[6];
 		int _length = 0;
@@ -122,12 +122,15 @@ namespace r {
 		void Sub(Register dst, Register src);
 		void Sub(Register dst, unsigned int immediate);
 
+		void Div(Register src);
+
 		void Mul(Register src);
 
 		void Pinsrd(XMMRegister dst, Operand& src, int8_t offset);
 
 		void Add(Register dst, Register src);
 		void Add(Operand dst, unsigned int immediate);
+		void Add(Operand dst, Register src);
 
 		void Mov(Register dst, Register src);
 		void Mov(Operand & dst, unsigned int immediate);
@@ -151,8 +154,12 @@ namespace r {
 
 		void Nop();
 
+		void J(Condition condition, Label & label);
 		void Jne(Label & label);
-
+		void Jl(Label & label);
+		void Jg(Label & label);
+		void Jle(Label & label);
+		void Jge(Label & label);
 		void Je(Label & label);
 
 		void Jmp(Label & label);

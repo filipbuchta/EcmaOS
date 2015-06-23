@@ -16,13 +16,22 @@ namespace r {
 	//	return nullptr;
 	//}
 
-	void Runtime::Console_log(HeapObject * number)
+
+	void Runtime::Console_log(HeapString * value)
 	{
+		//const char * str = itoa((int)value);
+//		double value = *reinterpret_cast<double*>(reinterpret_cast<char*>(number) + HeapObject::PropertyTableOffset + 0); //TODO: use proper offset from propertysymbol
+		//const char * str = itoa(value);
+		
 
-		double value = *reinterpret_cast<double*>(reinterpret_cast<char*>(number) + HeapObject::PropertyTableOffset + 0); //TODO: use proper offset from propertysymbol
-		const char * str = dtoa(value);
+		int * string = value->Chars->Values;
+		char * text = new char[value->Chars->Length + 1];
+		for (int i = 0; i < value->Chars->Length; i++) {
+			text[i] = (char)string[i];
+		}
+		text[value->Chars->Length] = '\0';
 
-		Platform::Print(str);
+		Platform::Print(text);
 
 		return;
 	}

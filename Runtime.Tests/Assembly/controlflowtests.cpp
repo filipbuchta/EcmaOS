@@ -18,7 +18,7 @@ namespace RuntimeTests
 		TEST_METHOD(CallTest)
 		{
 			{
-				A(Call(Operand(EAX, 4)));
+				A(Call(Operand(Register::EAX, 4)));
 				B(0xFF, 0x50, 0x04);
 			}
 		}
@@ -26,11 +26,11 @@ namespace RuntimeTests
 		TEST_METHOD(TestTests)
 		{
 			{
-				A(Test(EAX, EBX));
+				A(Test(Register::EAX, Register::EBX));
 				B(0x85, 0xD8)
 			}
 			{
-				A(Test(EAX, ECX));
+				A(Test(Register::EAX, Register::ECX));
 				B(0x85, 0xC8)
 			}
 		}
@@ -58,7 +58,7 @@ namespace RuntimeTests
 				A(Nop());
 				A(Jmp(label));
 				B(0x90, 0x90, 0x90);
-				B(0xE9, 0xFB, 0xFF, 0xFF, 0xFF);
+				B(0xE9, 0xF8, 0xFF, 0xFF, 0xFF);
 			}
 		}
 

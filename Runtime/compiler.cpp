@@ -19,7 +19,7 @@ namespace r {
 
 		SourceCodeSyntax *sourceCode = parser->ParseSourceCode();
 
-		//AstPrinter *treePrinter = new AstPrinter();
+		//AstPrinter * treePrinter = new AstPrinter();
 		//treePrinter->PrintTree(*sourceCode);
 
 		AssemblyBuilder * assemblyBuilder = new AssemblyBuilder();

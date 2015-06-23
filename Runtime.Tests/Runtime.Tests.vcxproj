@@ -102,6 +102,7 @@
     <ClCompile Include="Assembly\shiftandrotatetests.cpp" />
     <ClCompile Include="Assembly\sse2tests.cpp" />
     <ClCompile Include="CodeGen\arithmetictests.cpp" />
+    <ClCompile Include="CodeGen\arraytests.cpp" />
     <ClCompile Include="CodeGen\codegentests.cpp" />
     <ClCompile Include="CodeGen\functiontests.cpp" />
     <ClCompile Include="CodeGen\localtests.cpp" />
