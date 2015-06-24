@@ -131,54 +131,45 @@ namespace r {
 			case LessThanEqualsToken:
 			{
 
+				
 				_assembler->Cmp(Register::EAX, Register::ECX);
-
-				Label truth;
-				Label end;
-				//TODO: rewrite to sete/setge
 				switch (node.GetOperator().Kind)
 				{
 					case EqualsEqualsToken:
 					{
-						_assembler->Je(truth);
+						_assembler->Setcc(Condition::Equal, Register::EAX);
 					}
 					break;
 					case ExclamationEqualsToken:
 					{
-						_assembler->Jne(truth);
+						_assembler->Setcc(Condition::NotEqual, Register::EAX);
 					}
 					break;
 					case LessThanToken:
 					{
-						_assembler->Jl(truth);
+						_assembler->Setcc(Condition::Less, Register::EAX);
 					}
 					break;
 					case GreaterThanToken:
 					{
-						_assembler->Jg(truth);
+						_assembler->Setcc(Condition::Greater, Register::EAX);
 					}
 					break;
 					case GreaterThanEqualsToken:
 					{
-						_assembler->Jge(truth);
+						_assembler->Setcc(Condition::GreaterEqual, Register::EAX);
 					}
 					break;
 					case LessThanEqualsToken:
 					{
-						_assembler->Jle(truth);
+						_assembler->Setcc(Condition::LessEqual, Register::EAX);
 					}
 					break;
 					default:
 						NOT_IMPLEMENTED();
 						break;
 				}
-
-				_assembler->Mov(Register::EAX, 0);
-				_assembler->Jmp(end);
-				_assembler->Bind(truth);
-				_assembler->Mov(Register::EAX, 1);
-				_assembler->Bind(end);
-
+				_assembler->Movzx(Register::EAX, Operand(Register::EAX));
 			}
 			break;
 
@@ -405,17 +396,15 @@ namespace r {
 	void CodeGenerator::VisitLiteral(LiteralSyntax &node) 
 	{
 
-		if (node.GetText().Kind == IntegerLiteral) 
+		if (node.GetText().Kind == IntegerLiteral)
 		{
-			const char *stringValue = node.GetText().Value;
+			int32_t value = (int32_t)node.GetText().Value;
 
-			int32_t value = atoi(stringValue);
 			_context->Plug(value);
-
-		} 
+		}
 		else if (node.GetText().Kind == StringLiteral) 
 		{
-			const char *stringValue = node.GetText().Value;
+			const char * value = node.GetText().Value;
 
 			TypeSymbol * type = (TypeSymbol*)node.GetExpressionType();
 
@@ -425,7 +414,7 @@ namespace r {
 		
 			_assembler->Push(Register::EAX);
 
-			int length = strlen(stringValue);
+			int length = StringLength(value);
 			_assembler->Mov(Register::EAX, length);
 
 			PropertySymbol * charsProperty = type->LookupProperty("_chars");
@@ -438,7 +427,7 @@ namespace r {
 			_assembler->Mov(Operand(Register::EAX, HeapObject::PropertyTableOffset + charsProperty->GetSlotOffset()), Register::EDX);
 
 			for (int i = 0; i < length; i++) {
-				_assembler->Mov(Operand(Register::EDX, 8 + i * charsProperty->GetPropertyType()->GetStackSize()), (int)(stringValue[i]));
+				_assembler->Mov(Operand(Register::EDX, 8 + i * charsProperty->GetPropertyType()->GetStackSize()), (int)(value[i]));
 			}
 
 			_assembler->Pop(Register::EAX);

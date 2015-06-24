@@ -31,7 +31,7 @@ namespace RuntimeTests
 
 		TEST_METHOD(Char)
 		{
-			CompileAndVerify("class C { static main(): void { let x: char = 'c'; Console.log(x); } }", "123");
+			CompileAndVerify("class C { static main(): void { let x: char = 'c'; Console.log(x); } }", "c");
 		}
 
 		TEST_METHOD(String)

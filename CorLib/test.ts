@@ -1,1 +1,0 @@
-﻿class C { static main(): void { let x: string = "test"; Console.log(x); } }

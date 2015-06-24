@@ -62,6 +62,12 @@ class boolean {
 
 class char {
     _value: char;
+
+    static toString(value: char): string {
+        let charArray = new char[1];
+        charArray[0] = value;
+        return new string(charArray);
+    }
 }
 
 
@@ -85,5 +91,8 @@ class Console {
 
     static log(value: int32): void {
         Console.log(int32.toString(value));
+    }
+    static log(value: char): void {
+        Console.log(char.toString(value));
     }
 }

@@ -70,5 +70,13 @@ namespace RuntimeTests
 			}
 		}
 
+		/*TEST_METHOD(SetCC)
+		{
+			{
+				A(SetCC(Condition::Less, Register::EAX));
+				B(0x81, 0xFB, 0x40, 0xE2, 0x01, 0x00);
+			}
+		}*/
+
 	};
 }

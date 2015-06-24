@@ -164,54 +164,55 @@ namespace r {
 			case '\'': {
 				Advance();
 
-				List<char> *cb = new List<char>();
 				if (GetChar() == '\\') {
 					Advance();
-					if (GetChar() == '0') {
-						Advance();
-						cb->Push('\0');
-					}
-					else {
-						NOT_IMPLEMENTED();
-					}
+					Advance(); // escaped character
 				}
 				else {
-					cb->Push(GetChar());
 					Advance();
-
 				}
-				cb->Push('\0');
-
-				char * value = new char[cb->GetSize()];
-				memcpy(value, cb->GetBuffer(), cb->GetSize());
-
-				//delete cb;
 
 				Advance(); // '
+
+
+				const char * value = ScanString(_startLocation.Position + 1, _location.Position - 1);
+				
+				
 				return SyntaxToken(CharacterLiteral, value);
 			}
 			case '"': {
 				Advance();
 
-				List<char> *cb = new List<char>();
-
 				while (!IsEndOfStream() && '"' != GetChar()) {
-					cb->Push(GetChar());
 					Advance();
 				}
-				cb->Push('\0');
 				Advance();
 
-
-				char * value = new char[cb->GetSize()];
-				memcpy(value, cb->GetBuffer(), cb->GetSize());
-
-				//delete cb;
-
+				
+				
+				const char * value = ScanString(_startLocation.Position + 1, _location.Position - 1);
 
 				return SyntaxToken(StringLiteral, value);
 			}
 			case '0':
+			{
+				Advance();
+
+				if (GetChar() == 'x') 
+				{
+					Advance();
+					
+
+					while (!IsEndOfStream() && IsHexDigit(GetChar()))
+					{
+						Advance();
+					}
+
+					int value = ScanHexadecimalNumber(_startLocation.Position + 2, _location.Position);
+
+					return SyntaxToken(IntegerLiteral, (const char*)value);
+				}
+			} // Fallthrough
 			case '1':
 			case '2':
 			case '3':
@@ -221,44 +222,32 @@ namespace r {
 			case '7':
 			case '8':
 			case '9': {
-				List<char> *cb = new List<char>();
 				
 				while (!IsEndOfStream() && IsDigit(GetChar()))
 				{
-					cb->Push(GetChar());
 					Advance();
 				}
+
 				if (GetChar() == '.') {
-					cb->Push('.');
 					Advance();
 
 					while (!IsEndOfStream() && IsDigit(GetChar()))
 					{
-						cb->Push(GetChar());
 						Advance();
 					}
 
-
-					//TODO: if GetChar() == 'e' || 'E'
-
-					cb->Push('\0');
-
-					char * value = new char[cb->GetSize()];
-					memcpy(value, cb->GetBuffer(), cb->GetSize());
-
-					//delete cb;
-
-					return SyntaxToken(RealLiteral, value);
+					NOT_IMPLEMENTED()
+					
+					return SyntaxToken(RealLiteral, nullptr);
 				}
 				else {
 					
-					cb->Push('\0');
+					
+					int value = ScanDecimalNumber(_startLocation.Position, _location.Position);
 
-					char * value = new char[cb->GetSize()];
-					memcpy(value, cb->GetBuffer(), cb->GetSize());
-
-					//delete cb;
-					return SyntaxToken(IntegerLiteral, value);
+					
+					return SyntaxToken(IntegerLiteral, (const char*)value);
+		
 				}
 
 			}
@@ -267,20 +256,15 @@ namespace r {
 			{
 				if (IsIdentifierStart(GetChar()))
 				{
-					List<char> *cb = new List<char>();
-					cb->Push(GetChar());
+					
 					Advance();
 
 					while (!IsEndOfStream() && IsIdentifierPart(GetChar())) {
-						cb->Push(GetChar());
 						Advance();
 					}
-					cb->Push('\0');
 
-					char * identifier = new char[cb->GetSize()];;
-					memcpy(identifier, cb->GetBuffer(), cb->GetSize());
-
-					//delete cb;
+					
+					const char * identifier = ScanString(_startLocation.Position, _location.Position);
 
 
 					//TODO: use some sort of map
@@ -351,19 +335,46 @@ namespace r {
 				{
 					Advance();
 
-					List<char> *cb = new List<char>();
-					cb->Push(GetChar());
-					cb->Push('\0');
+					const char * invalid = ScanString(_startLocation.Position, _location.Position);
 
-					char * invalid = new char[cb->GetSize()];;
-					memcpy(invalid, cb->GetBuffer(), cb->GetSize());
-
-					//delete cb;
 					return SyntaxToken(IllegalToken, invalid);
 				}
 			}
 			}
 		}
+	}
+
+	const char * Scanner::ScanString(int start, int end) {
+		int length = end - start;
+		char * value = new char[length + 1];
+		memcpy(value, &_source[start], length);
+
+		value[length] = '\0';
+
+		return value;
+	}
+
+	int Scanner::ScanDecimalNumber(int start, int end) {
+		int length = end - start;
+		int result = 0;
+		for (int i = 0; i < length; i++) {
+			const char * ch = &_source[start + i];
+			result = result * 10 + (*ch - '0') ;
+		}
+		
+		return result;
+	}
+
+	int Scanner::ScanHexadecimalNumber(int start, int end) {
+		int length = end - start;
+		int result = 0;
+		for (int i = 0; i < length; i++) {
+			const char * ch = &_source[start + i];
+			result = result * 16 + (*ch - '0');
+		}
+
+
+		return result;
 	}
 
 	void Scanner::Advance() {
@@ -379,6 +390,9 @@ namespace r {
 		return _source[_location.Position];
 	}
 
+	bool Scanner::IsHexDigit(char ch) {
+		return ch >= '0' && ch <= '9' || ch >= 'A' && ch <= 'F';
+	}
 	bool Scanner::IsDigit(char ch) {
 		return ch >= '0' && ch <= '9';
 	}

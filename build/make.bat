@@ -17,6 +17,12 @@ copy ..\Loader\Debug\Stage2.bin Debug\Stage2.bin
 if %errorlevel% neq 0 exit /b %errorlevel%
 
 
+
+cd ..
+copy /Y /b Kernel\*.ts + /b CorLib\*.ts build\Debug\kernel.iks
+cd build
+
+
 cd Debug
 
 imagefs c ecmaos.img 2880

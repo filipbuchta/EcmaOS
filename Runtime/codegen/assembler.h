@@ -132,6 +132,7 @@ namespace r {
 		void Add(Operand dst, unsigned int immediate);
 		void Add(Operand dst, Register src);
 
+		void Movzx(Register dst, Operand src);
 		void Mov(Register dst, Register src);
 		void Mov(Operand & dst, unsigned int immediate);
 		void Mov(Register dst, unsigned int immediate);

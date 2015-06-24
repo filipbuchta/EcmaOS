@@ -5,7 +5,7 @@
 namespace r {
 	struct SyntaxToken {
 
-		SyntaxToken(SyntaxKind kind, const char *string);
+		SyntaxToken(SyntaxKind kind, const char *value);
 
 		SyntaxKind Kind;
 		char const *Value;

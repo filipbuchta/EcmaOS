@@ -61,6 +61,11 @@ namespace r {
 		_pc += sizeof(int);
 	}
 
+	void Assembler::Movzx(Register dst, Operand src) {
+		Emit(0x0F);
+		Emit(0xB6);
+		EmitOperand((int8_t)dst, src);
+	}
 	void Assembler::Mov(Register dst, Register src) {
 		Emit(0x89);
 		Emit(0xC0 | (int8_t)src << 3 | (int8_t)dst);

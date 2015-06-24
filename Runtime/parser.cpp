@@ -563,8 +563,7 @@ namespace r {
 
 	LiteralSyntax *Parser::ParseLiteral() 
 	{
-		if (/*_currentToken.Kind != Literal &&*/
-			_currentToken.Kind != IntegerLiteral &&
+		if (_currentToken.Kind != IntegerLiteral &&
 			_currentToken.Kind != RealLiteral &&
 			_currentToken.Kind != StringLiteral &&
 			_currentToken.Kind != NullLiteral &&

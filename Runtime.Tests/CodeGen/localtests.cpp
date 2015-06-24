@@ -38,10 +38,10 @@ namespace RuntimeTests
 		//	CompileAndVerify("class C { static main(): void { let a = -9007199254740992; Console.log(a); } }", "-9007199254740992");
 		//}
 
-		TEST_METHOD(DecimalNumber)
+	/*	TEST_METHOD(DecimalNumber)
 		{
 			CompileAndVerify("class C { static main(): void { let a = 1.23; Console.log(a); } }", "1.23");
-		}
+		}*/
 
 		TEST_METHOD(NumericVariableTest)
 		{

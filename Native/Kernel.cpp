@@ -145,33 +145,13 @@ void Kernel::Main()
 	//Isolate *isolate = new Isolate();
 
 	const char * code =
+		" class char { _value: char; } class void { } class string { _chars: char[]; }"
 "	class Console {															"
-"		declare static log(value: number): void;							"
 "		declare static log(value: string): void;							"
 "	}																		"
 "	class C {																"
 "		static main(): void {							          			"	
-"			Console.log(""Happy Birthday!\n"");								"	
-"			Console.log(""            ,:/+/-                      \n"");	"
-"			Console.log(""            /M/              .,-=;//;-  \n"");	"
-"			Console.log(""       .:/= ;MH/,    ,=/+%$XH@MM#@:     \n"");	"
-"			Console.log(""      -$##@+$###@H@MMM#######H:.    -/H#\n"");	"
-"			Console.log("" .,H@H@ X######@ -H#####@+-     -+H###@X\n"");	"
-"			Console.log(""  .,@##H;      +XM##M/,     =%@###@X;-  \n"");	"
-"			Console.log(""X%-  :M##########$.    .:%M###@%:       \n"");	"
-"			Console.log(""M##H,   +H@@@$/-.  ,;$M###@%,          -\n"");	"
-"			Console.log(""M####M=,,---,.-%%H####M$:          ,+@##\n"");	"
-"			Console.log(""@##################@/.         :%H##@$- \n"");	"
-"			Console.log(""M###############H,         ;HM##M$=     \n"");	"
-"			Console.log(""#################.    .=$M##M$=         \n"");	"
-"			Console.log(""################H..;XM##M$=          .:+\n"");	"
-"			Console.log(""M###################@%=           =+@MH%\n"");	"
-"			Console.log(""@################M/.          =+H#X%=   \n"");	"
-"			Console.log(""=+M##############M,       -/X#X+;.      \n"");	"
-"			Console.log(""  .;XM##########H=    ,/X#H+:,          \n"");	"
-"			Console.log(""     .=+HM######M+/+HM@+=.              \n"");	"
-"			Console.log(""         ,:/%XM####H/.                  \n"");	"
-"			Console.log(""              ,.:=-.                    \n"");	"
+"			Console.log(\"Iks!\n\");								"	
 "		}																	"
 "	}";
 		
@@ -185,6 +165,8 @@ void Kernel::Main()
 
 	Compiler * compiler = new Compiler();
 	AssemblySymbol * assembly = compiler->Compile(code);
+	ConsoleWrite("Compiled!\n\n");
+
 
 
 

@@ -24,7 +24,7 @@ namespace r {
 		char GetChar();
 
 		const char* _source;
-
+		bool IsHexDigit(char value);
 		bool IsDigit(char value);
 
 		bool IsIdentifierStart(char ch);
@@ -34,6 +34,11 @@ namespace r {
 		bool IsIdentifierPart(char ch);
 
 		void Advance();
+
+
+		const char * ScanString(int start, int end);
+		int ScanDecimalNumber(int start, int end);
+		int ScanHexadecimalNumber(int start, int end);
 
 	};
 
