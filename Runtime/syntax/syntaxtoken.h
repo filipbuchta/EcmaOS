@@ -8,6 +8,6 @@ namespace r {
 		SyntaxToken(SyntaxKind kind, const char *value);
 
 		SyntaxKind Kind;
-		char const *Value;
+		char const *Value; //TODO: change to void *
 	};
 }

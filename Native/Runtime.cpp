@@ -3,7 +3,7 @@
 #include "..\Runtime\global.h"
 
 struct StackState {
-	uint32_t eax, ebx, ecx, edx, esi, edi, esp, ebp, eip, eflags, cr3;
+	uint32 eax, ebx, ecx, edx, esi, edi, esp, ebp, eip, eflags, cr3;
 
 };
 

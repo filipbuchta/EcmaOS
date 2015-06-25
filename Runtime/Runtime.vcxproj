@@ -144,6 +144,7 @@
     <ClCompile Include="binder.cpp" />
     <ClCompile Include="codegen\codegenerator.cpp" />
     <ClCompile Include="compiler.cpp" />
+    <ClCompile Include="diagnostic.cpp" />
     <ClCompile Include="heap.cpp" />
     <ClCompile Include="parser.cpp" />
     <ClCompile Include="runtime.cpp" />
@@ -164,6 +165,7 @@
     <ClInclude Include="checks.h" />
     <ClInclude Include="codegen\codegenerator.h" />
     <ClInclude Include="compiler.h" />
+    <ClInclude Include="diagnostic.h" />
     <ClInclude Include="global.h" />
     <ClInclude Include="heap.h" />
     <ClInclude Include="location.h" />
@@ -172,6 +174,7 @@
     <ClInclude Include="runtime.h" />
     <ClInclude Include="scanner.h" />
     <ClInclude Include="scope.h" />
+    <ClInclude Include="sourcefile.h" />
     <ClInclude Include="symbol.h" />
     <ClInclude Include="syntax\syntaxkind.h" />
     <ClInclude Include="syntax\syntaxnode.h" />

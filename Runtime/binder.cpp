@@ -8,8 +8,8 @@
 namespace r {
 
 	
-	Binder::Binder(AssemblySymbol * assembly, MethodSymbol * method)
-		: _assembly(assembly), _method(method)
+	Binder::Binder(AssemblySymbol * assembly, MethodSymbol * method, Diagnostics * diagnostics)
+		: _assembly(assembly), _method(method), _diagnostics(diagnostics)
 	{
 	}
 
@@ -45,8 +45,17 @@ namespace r {
 
 	}
 
-	void Binder::VisitIterationStatement(IterationStatementSyntax & node) {
-		node.GetExpression()->Accept(*this);
+	void Binder::VisitForStatement(ForStatementSyntax & node) {
+		BeginScope();
+		node.GetInitializer()->Accept(*this);
+		node.GetCondition()->Accept(*this);
+		node.GetIncrementor()->Accept(*this);
+		node.GetStatement()->Accept(*this);
+		EndScope();
+	}
+
+	void Binder::VisitWhileStatement(WhileStatementSyntax & node) {
+		node.GetCondition()->Accept(*this);
 		node.GetStatement()->Accept(*this);
 	}
 
@@ -99,7 +108,8 @@ namespace r {
 	}
 
 	void Binder::VisitParenthesizedExpression(ParenthesizedExpressionSyntax & node) {
-		NOT_IMPLEMENTED();
+		node.GetExpression()->Accept(*this);
+		node.SetExpressionType(node.GetExpression()->GetExpressionType());
 	}
 
 	void Binder::VisitArrayCreationExpression(ArrayCreationExpressionSyntax & node) {
@@ -122,7 +132,8 @@ namespace r {
 		//TODO: check if types are correct
 		TypeSymbol * leftType = node.GetLeft()->GetExpressionType();
 		TypeSymbol * rightType = node.GetRight()->GetExpressionType();
-		node.SetExpressionType(leftType);
+		node.SetExpressionType(leftType == nullptr ? rightType : leftType);
+		_ASSERT(node.GetExpressionType() != nullptr);
 	}
 
 	void Binder::VisitBinaryExpression(BinaryExpressionSyntax & node) {
@@ -148,6 +159,8 @@ namespace r {
 			case GreaterThanToken:
 			case EqualsEqualsToken:
 			case ExclamationEqualsToken:
+			case AmpersandAmpersandToken:
+			case BarBarToken:
 			{
 				TypeSymbol * booleanType = _assembly->LookupType("boolean", 0);
 				node.SetExpressionType(booleanType);
@@ -181,6 +194,9 @@ namespace r {
 
 	MethodSymbol * Binder::ResolveMethod(TypeSymbol & type, const char * methodName, ArgumentListSyntax & arguments) {
 		for (MethodSymbol * method : * type.GetMethods()) {
+			if (strcmp(method->GetName(), "__missing") == 0) {
+				continue;
+			}
 			if (strcmp(method->GetName(), methodName) != 0) {
 				continue;
 			}
@@ -196,7 +212,7 @@ namespace r {
 			for (int i = 0; i < arguments.GetArguments()->GetSize(); i++) {
 				ParameterSymbol * parameter = method->GetParameters()->Get(parametersStart + i);
 				TypeSymbol * argumentType = arguments.GetArguments()->Get(i)->GetExpressionType();
-				if (argumentType != parameter->GetParameterType()) {
+				if (!parameter->GetParameterType()->IsAssignableFrom(*argumentType)) {
 					argumentMatch = false;
 				}
 			}
@@ -218,16 +234,23 @@ namespace r {
 
 	void Binder::VisitNewExpression(NewExpressionSyntax & node) {
 		node.GetArguments()->Accept(*this);
-
+		
 		TypeSymbol * type = _assembly->LookupType(node.GetIdentifier()->GetName().Value, 0);
-		if (type == nullptr) {
-			NOT_IMPLEMENTED();
+		if (type == nullptr) 
+		{
+			_diagnostics->AddError("Unresolved type", node.GetIdentifier()->GetLocation());
+			type = new TypeSymbol();
+			type->SetName("__missing");
 		}
 
 		//TODO: use constructor parameters for method resolution
 		MethodSymbol * constructor = ResolveMethod(*type, ".ctor", *node.GetArguments());
-		if (constructor == nullptr) {
-			NOT_IMPLEMENTED();
+		if (constructor == nullptr) 
+		{
+			_diagnostics->AddError("Unresolved constructor", node.GetLocation());
+			constructor = new MethodSymbol();
+			constructor->SetName("__missing");
+			constructor->SetDeclaringType(type);
 		}
 		node.SetConstructor(constructor);
 		node.SetExpressionType(constructor->GetDeclaringType());
@@ -256,7 +279,11 @@ namespace r {
 			TypeSymbol * type = memberAccessExpression->GetExpresion()->GetExpressionType();
 			MethodSymbol * method = ResolveMethod(*type, memberAccessExpression->GetName()->GetName().Value, *node.GetArguments());
 			if (method == nullptr) {
-				NOT_IMPLEMENTED();
+				_diagnostics->AddError("Unresolved method", memberAccessExpression->GetName()->GetLocation());
+				method = new MethodSymbol();
+				method->SetName("__missing");
+				method->SetReturnType(new TypeSymbol());
+				method->GetReturnType()->SetName("__missing");
 			}
 			node.SetReceiver(memberAccessExpression->GetExpresion());
 			node.SetMethod(method);
@@ -264,6 +291,7 @@ namespace r {
 		//TODO: check if this is indeed method symbol
 		
 		node.SetExpressionType(node.GetMethod()->GetReturnType());
+		_ASSERT(node.GetExpressionType() != nullptr);
 	}
 
 
@@ -291,26 +319,31 @@ namespace r {
 		node.SetExpressionType(type->GetElementType());
 	}
 
-	void Binder::VisitMemberAccessExpression(MemberAccessExpressionSyntax & node) {
-
+	void Binder::VisitMemberAccessExpression(MemberAccessExpressionSyntax & node) 
+	{
 		node.GetExpresion()->Accept(*this);
-
+		_ASSERT(node.GetExpresion()->GetExpressionType() != nullptr);
+		
 		TypeSymbol * type = node.GetExpresion()->GetExpressionType();
-		if (type == nullptr) {
-			NOT_IMPLEMENTED()
-		}
+	
 
 		Symbol * member = type->LookupMember(node.GetName()->GetName().Value);
 
 		if (member == nullptr) {
-			NOT_IMPLEMENTED();
+			_diagnostics->AddError("Unresolved member", node.GetName()->GetLocation());
+			member = new PropertySymbol();
+			member->SetName("__missing");
+			((PropertySymbol*)member)->SetPropertyType(new TypeSymbol());
+			((PropertySymbol*)member)->GetPropertyType()->SetName("__missing");
 		}
 
 		if (member->GetKind() == SymbolKind::Property) {
 			node.SetExpressionType(((PropertySymbol *)member)->GetPropertyType());
+			_ASSERT(node.GetExpressionType() != nullptr);
 		} //TODO: else if method set methodgroup type
 
 		node.SetMember(member);
+
 	}
 
 
@@ -346,18 +379,24 @@ namespace r {
 			}
 		}
 
-		if (symbol == nullptr) {
+		if (symbol == nullptr) 
+		{
 			// Lookup type symbols
 			symbol = _assembly->LookupType(node.GetName().Value, 0);
 
 			node.SetExpressionType((TypeSymbol*)symbol);
 		}
 
-		if (symbol == nullptr) {
+		if (symbol == nullptr) 
+		{
 			NOT_IMPLEMENTED()
+			/*symbol = new ErrorSymbol(); ?
+			symbol->SetName("__missing");*/
 		}
 
 		node.SetSymbol(symbol);
+
+		//_ASSERT(node.GetExpressionType() != nullptr);
 	}
 
 	void Binder::VisitLocalVariableDeclaration(LocalVariableDeclarationSyntax & node) {

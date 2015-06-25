@@ -1,12 +1,11 @@
 #include "parser.h"
-#include "syntax/syntaxnode.h"
 #include "checks.h"
 
 namespace r {
 
 
-	Parser::Parser(Scanner *scanner)
-		: _scanner(scanner)
+	Parser::Parser(Scanner *scanner, Diagnostics * diagnostics)
+		: _scanner(scanner), _diagnostics(diagnostics)
 	{
 	}
 
@@ -41,14 +40,30 @@ namespace r {
 		return node;
 	}
 
-	IterationStatementSyntax * Parser::ParseWhileStatement() 
+	ForStatementSyntax * Parser::ParseForStatement()
 	{
-		IterationStatementSyntax * node = new IterationStatementSyntax();
+		ForStatementSyntax * node = new ForStatementSyntax();
+		node->SetLocation(_scanner->GetLocation());
+		ParseExpected(ForKeyword);
+
+		ParseExpected(OpenParenthesisToken);
+		node->SetInitializer(ParseLocalVariableDeclaration()); ParseExpected(SemicolonToken);
+		node->SetCondition(ParseExpression()); ParseExpected(SemicolonToken);
+		node->SetIncrementor(ParseExpression()); 
+		ParseExpected(CloseParenthesisToken);
+		node->SetStatement(ParseStatement());
+
+		return node;
+	}
+
+	WhileStatementSyntax * Parser::ParseWhileStatement()
+	{
+		WhileStatementSyntax * node = new WhileStatementSyntax();
 		node->SetLocation(_scanner->GetLocation());
 		ParseExpected(WhileKeyword);
 
 		ParseExpected(OpenParenthesisToken);
-		node->SetExpression(ParseExpression());
+		node->SetCondition(ParseExpression());
 		ParseExpected(CloseParenthesisToken);
 		node->SetStatement(ParseStatement());
 
@@ -84,9 +99,13 @@ namespace r {
 			{
 				return ParseIfStatement();
 			}
-			case WhileKeyword: 
+			case WhileKeyword:
 			{
 				return ParseWhileStatement();
+			}
+			case ForKeyword:
+			{
+				return ParseForStatement();
 			}
 			case ReturnKeyword: 
 			{
@@ -111,6 +130,10 @@ namespace r {
 
 		while (!ParseOptional(CloseBraceToken)) 
 		{
+			if (ParseOptional(EndOfCodeToken)) {
+				_diagnostics->AddError("Premature end of code", _scanner->GetLocation());
+				break;
+			}
 			node->GetStatements()->Push(ParseStatement());
 		}
 
@@ -193,15 +216,19 @@ namespace r {
 
 				if (_currentToken.Kind == OpenParenthesisToken) 
 				{
-					child = ParseMethodDeclaration(*identifier, modifiers);
+					child = ParseMethodDeclaration(*identifier, *modifiers);
 				}
 				else 
 				{
-					child = ParsePropertyDeclaration(*identifier, modifiers);
+					child = ParsePropertyDeclaration(*identifier, *modifiers);
 				}
 			}
 			node->GetMembers()->Push(child);
 
+			if (ParseOptional(EndOfCodeToken)) {
+				_diagnostics->AddError("Premature end of code", _scanner->GetLocation());
+				break;
+			}
 			if (ParseOptional(CloseBraceToken)) {
 				break;
 			}
@@ -241,7 +268,7 @@ namespace r {
 		return node;
 	}
 
-	PropertyDeclarationSyntax * Parser::ParsePropertyDeclaration(IdentifierSyntax & identifier, List<SyntaxToken> * modifiers) {
+	PropertyDeclarationSyntax * Parser::ParsePropertyDeclaration(IdentifierSyntax & identifier, List<SyntaxToken> & modifiers) {
 		PropertyDeclarationSyntax * node = new PropertyDeclarationSyntax();
 		node->SetIdentifier(&identifier);
 		node->SetPropertyType(ParseTypeAnnotation());
@@ -251,18 +278,28 @@ namespace r {
 		return node;
 	}
 
-	MethodDeclarationSyntax * Parser::ParseMethodDeclaration(IdentifierSyntax & identifier, List<SyntaxToken> * modifiers) 
+	MethodDeclarationSyntax * Parser::ParseMethodDeclaration(IdentifierSyntax & identifier, List<SyntaxToken> & modifiers) 
 	{
 		MethodDeclarationSyntax * node = new MethodDeclarationSyntax();
 		node->SetIdentifier(&identifier);
-
+		node->DeclarationSyntax::SetLocation(_scanner->GetLocation());
 
 		node->SetParameterList(ParseParameterList());
 		node->SetReturnType(ParseTypeAnnotation());
-		if (!ParseOptional(SemicolonToken)) {
+		bool isAmbient = false;
+		for (SyntaxToken modifier : modifiers) {
+			if (strcmp(modifier.Value, "declare") == 0) {
+				isAmbient = true;
+				break;
+			}
+		}
+		if (isAmbient) {
+			ParseExpected(SemicolonToken);
+		}
+		else {
 			node->SetBody(ParseBlock());
 		}
-		node->SetModifiers(modifiers);
+		node->SetModifiers(&modifiers);
 
 		return node;
 	}
@@ -305,6 +342,7 @@ namespace r {
 		if (IsLeftHandSideExpression(node->GetKind()) && _currentToken.Kind == SyntaxKind::EqualsToken) 
 		{
 			AssignmentExpressionSyntax *assignmentExpression = new AssignmentExpressionSyntax();
+			assignmentExpression->SetLocation(_scanner->GetLocation());
 			assignmentExpression->SetLeft(node);
 			ParseExpected(SyntaxKind::EqualsToken);
 			assignmentExpression->SetRight(ParseAssignmentExpression());
@@ -390,12 +428,14 @@ namespace r {
 	LeftHandSideExpressionSyntax *Parser::ParseLeftHandSideExpression() 
 	{
 		MemberExpressionSyntax *node = ParseMemberExpression();
+		node->SetLocation(_scanner->GetLocation());
 		return ParseCallExpression(*node);
 	}
 
 	MemberExpressionSyntax *Parser::ParseMemberExpression() 
 	{
 		PrimaryExpressionSyntax *node = ParsePrimaryExpression();
+		node->SetLocation(_scanner->GetLocation());
 		return ParseMemberExpressionRest(*node);
 
 	}
@@ -406,9 +446,11 @@ namespace r {
 
 		while (true) 
 		{
+			Location location = _scanner->GetLocation();
 			if (ParseOptional(OpenBracketToken)) 
 			{
 				IndexedAccessExpressionSyntax *node = new IndexedAccessExpressionSyntax();
+				node->SetLocation(location);
 				node->SetExpression(lhs);
 				node->SetIndex(ParseExpression());
 				ParseExpected(CloseBracketToken);
@@ -418,6 +460,7 @@ namespace r {
 			else if (ParseOptional(DotToken)) 
 			{
 				MemberAccessExpressionSyntax *node = new MemberAccessExpressionSyntax();
+				node->SetLocation(location);
 				node->SetExpression(lhs);
 				node->SetName(ParseIdentifier());
 				lhs = node;
@@ -428,9 +471,10 @@ namespace r {
 		}
 	}
 
-	NewExpressionSyntax *Parser::ParseNewExpression(IdentifierSyntax & identifier)
+	NewExpressionSyntax *Parser::ParseNewExpression(IdentifierSyntax & identifier, Location location)
 	{
 		NewExpressionSyntax * node = new NewExpressionSyntax();
+		node->SetLocation(location);
 		node->SetIdentifier(&identifier); //TODO: ParseType()
 		if (_currentToken.Kind == OpenParenthesisToken) 
 		{
@@ -446,11 +490,11 @@ namespace r {
 		return node;
 	}
 
-	ArrayCreationExpressionSyntax *Parser::ParseArrayCreationExpression(IdentifierSyntax & identifier) 
+	ArrayCreationExpressionSyntax *Parser::ParseArrayCreationExpression(IdentifierSyntax & identifier, Location location) 
 	{
 		ParseExpected(OpenBracketToken);
 		ArrayCreationExpressionSyntax * node = new ArrayCreationExpressionSyntax();
-
+		node->SetLocation(location);
 		node->SetIdentifier(&identifier);
 	
 		node->SetRankSpecifier(ParseExpression());
@@ -470,13 +514,14 @@ namespace r {
 			}
 			case NewKeyword:
 			{
+				Location location = _scanner->GetLocation();
 				ParseExpected(NewKeyword);
 				IdentifierSyntax * identifier = ParseIdentifier();
 				if (_currentToken.Kind == OpenBracketToken) {
-					return ParseArrayCreationExpression(*identifier);
+					return ParseArrayCreationExpression(*identifier, location);
 				}
 				else {
-					return ParseNewExpression(*identifier);
+					return ParseNewExpression(*identifier, location);
 				}
 			}
 			case NullLiteral:
@@ -493,13 +538,10 @@ namespace r {
 				return ParseParenthesizedExpression();
 			}
 			case IdentifierName:
+			default:
 			{
 				IdentifierSyntax * identifier = ParseIdentifier();
 				return identifier;
-			}
-			default:
-			{
-				FATAL("Unexpected token %s", SyntaxKindNames[_currentToken.Kind]);
 			}
 			break;
 		}
@@ -541,6 +583,7 @@ namespace r {
 			{
 
 				CallExpressionSyntax *node = new CallExpressionSyntax();
+				node->SetLocation(_scanner->GetLocation());
 				node->SetExpression(lhs);
 				node->SetArguments(ParseArgumentList());
 				lhs = node;
@@ -598,6 +641,7 @@ namespace r {
 	IdentifierSyntax *Parser::ParseIdentifier() 
 	{
 		IdentifierSyntax *node = new IdentifierSyntax();
+		node->SetLocation(_scanner->GetLocation());
 		node->SetName(ParseExpected(SyntaxKind::IdentifierName));
 		return node;
 	}
@@ -614,7 +658,10 @@ namespace r {
 
 		if (_currentToken.Kind != kind)
 		{
-			FATAL("Incorrect token %s, expected %s at line: %d column: %d", SyntaxKindNames[_currentToken.Kind], SyntaxKindNames[kind], _scanner->GetLocation().Line, _scanner->GetLocation().Column);
+			_diagnostics->AddError("Unexpected token", _scanner->GetLocation());
+			NextToken();
+			return SyntaxToken(SyntaxKind::IllegalToken, "");
+			//FATAL("Incorrect token %s [%s], expected %s at line: %d column: %d in file: %s", SyntaxKindNames[_currentToken.Kind], _currentToken.Value, SyntaxKindNames[kind], _scanner->GetLocation().Line, _scanner->GetLocation().Column, _scanner->GetLocation().Path);
 		}
 		else
 		{
@@ -641,21 +688,32 @@ namespace r {
 	int Parser::GetOperatorPrecedence(SyntaxKind kind)
 	{
 		switch (kind) {
+		case BarBarToken:
+			return 1;
+		case AmpersandAmpersandToken:
+			return 2;
+		case BarToken:
+			return 3;
+		case CaretToken:
+			return 4;
+		case AmpersandToken:
+			return 5;
 		case ExclamationEqualsToken:
 		case EqualsEqualsToken:
-			return 1;
+			return 6;
 		case LessThanToken:
 		case LessThanEqualsToken:
 		case GreaterThanToken:
 		case GreaterThanEqualsToken:
-			return 2;
+			return 7;
+		//TODO: bit shit operators return 8
 		case MinusToken:
 		case PlusToken:
-			return 3;
+			return 9;
 		case AsteriskToken:
 		case SlashToken:
 		case PercentToken:
-			return 4;
+			return 10;
 		default:
 			return -1;
 		}

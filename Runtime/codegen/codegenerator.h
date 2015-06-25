@@ -65,7 +65,7 @@ namespace r {
 	public:
 		ExpressionContext(CodeGenerator * codeGenerator) : _codeGenerator(codeGenerator), _old(codeGenerator->GetContext()) { }
 		virtual void Plug(Register reg) = 0;
-		virtual void Plug(int32_t value) = 0;
+		virtual void Plug(int32 value) = 0;
 		ExpressionContext * GetOld() { return _old; }
 	protected:
 		CodeGenerator * _codeGenerator;
@@ -81,7 +81,7 @@ namespace r {
 				_codeGenerator->GetAssembler()->Mov(_register, reg);
 			}
 		}
-		void Plug(int32_t value) {
+		void Plug(int32 value) {
 			_codeGenerator->GetAssembler()->Mov(_register, value);
 		}
 	private:
@@ -92,14 +92,14 @@ namespace r {
 	public:
 		EffectContext(CodeGenerator * codeGenerator) : ExpressionContext(codeGenerator) { }
 		void Plug(Register reg) { }
-		void Plug(int32_t immediate) { }
+		void Plug(int32 immediate) { }
 	};
 
 	class StackValueContext : public ExpressionContext {
 	public:
 		StackValueContext(CodeGenerator * codeGenerator) : ExpressionContext(codeGenerator) { }
 		void Plug(Register reg) { _codeGenerator->GetAssembler()->Push(reg); }
-		void Plug(int32_t value) { _codeGenerator->GetAssembler()->Push(value); }
+		void Plug(int32 value) { _codeGenerator->GetAssembler()->Push(value); }
 	};
 
 }

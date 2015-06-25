@@ -95,6 +95,21 @@ namespace r {
 		return nullptr;
 	}
 
+	bool TypeSymbol::IsAssignableFrom(TypeSymbol & type) {
+		_ASSERT(&type != nullptr);
+
+		if (this == &type) {
+			return true;
+		}
+		TypeSymbol * baseType = type.GetBaseType();
+		while (baseType != nullptr) {
+			if (baseType == this) {
+				return true;
+			}
+			baseType = baseType->GetBaseType();
+		}
+		return false;
+	}
 	int TypeSymbol::GetPropertiesSize() {
 		int size = 0;
 		if (GetBaseType() != nullptr) {

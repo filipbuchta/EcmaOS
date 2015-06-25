@@ -26,16 +26,29 @@ namespace r {
 void CompileAndVerify(const char * source, const char *expectedOutput)
 {
 	std::stringstream buffer;
-	buffer << std::ifstream("c:\\home\\projects\\ecmaos\\CorLib\\types.ts").seekg(3).rdbuf();
+	buffer << std::ifstream("c:\\home\\projects\\ecmaos\\CorLib\\types.iks").seekg(3).rdbuf();
 	buffer << std::endl;
 	buffer << source;
 	buffer << std::endl;
 
 	std::string str = buffer.str();
-	const char * generatedCode = str.c_str();
 
-	Compiler * compiler = new Compiler();
-	AssemblySymbol * code = compiler->Compile(generatedCode);
+	char *strBuffer = new char[str.size() + 1];
+	memcpy(strBuffer, str.c_str(), str.size() + 1);
+	strBuffer[str.size()] = '\0';
+
+	SourceFile * sourceFile = new SourceFile();
+	sourceFile->SetCode(strBuffer);
+	sourceFile->SetFileName("test.iks");
+	//	Platform::Print(code);
+
+	List<SourceFile*> * sourceFiles = new List<SourceFile*>();
+	sourceFiles->Push(sourceFile);
+	
+
+	Diagnostics * diagnostics = new Diagnostics();
+	Compiler * compiler = new Compiler(diagnostics);
+	AssemblySymbol * code = compiler->Compile(*sourceFiles);
 
 
 	output.clear();

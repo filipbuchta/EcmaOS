@@ -14,8 +14,11 @@ using namespace r;
 	LocalVariableSymbol * localVariable = nullptr; \
 	TypeSymbol * type = nullptr; \
 	MethodSymbol * method = nullptr; \
-	Compiler * compiler = new Compiler(); \
-	AssemblySymbol * code = compiler->Compile(expression); \
+	Diagnostics * diagnostics = new Diagnostics(); \
+	Compiler * compiler = new Compiler(diagnostics); \
+	SourceFile * sourceFile = new SourceFile(); sourceFile->SetCode(expression); sourceFile->SetFileName("snippet.iks"); \
+	List<SourceFile*> * sourceFiles = new List<SourceFile*>(); sourceFiles->Push(sourceFile); \
+	AssemblySymbol * code = compiler->Compile(*sourceFiles); \
 
 #define TYPE(name) \
 	type = nullptr; \

@@ -6,11 +6,11 @@
 
 
 unsigned int StringLength(const char * string) {
-	int length = 0;
-	while (string != 0) {
-		string++;
-		length++;
+	const char *s;
+
+	for (s = string; *s; ++s)
+	{
 	}
-	return length;
+	return (s - string);
 }
 

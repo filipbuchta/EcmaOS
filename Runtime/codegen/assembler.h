@@ -72,7 +72,7 @@ namespace r {
 		Operand(Register base, char displacement);
 		void SetModRM(unsigned char mod, Register rm);
 		void SetDisplacement(char displacement);
-		bool IsRegister(Register reg) { return ((_buffer[0] & 0xF8) == 0xC0) && ((_buffer[0] & 0x07) == (int8_t)reg);  }
+		bool IsRegister(Register reg) { return ((_buffer[0] & 0xF8) == 0xC0) && ((_buffer[0] & 0x07) == (int8)reg);  }
 	private:
 		unsigned char * _buffer = new unsigned char[6];
 		int _length = 0;
@@ -126,7 +126,7 @@ namespace r {
 
 		void Mul(Register src);
 
-		void Pinsrd(XMMRegister dst, Operand& src, int8_t offset);
+		void Pinsrd(XMMRegister dst, Operand& src, int8 offset);
 
 		void Add(Register dst, Register src);
 		void Add(Operand dst, unsigned int immediate);

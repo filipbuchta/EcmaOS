@@ -26,66 +26,66 @@ void PE::Write(Writer & w) {
 
 
 
-	w.Write<DWORD>(0); // zeros
-	w.Write<DWORD>(4); // offset
-	w.Write<DWORD>(0); // value
-	w.Write<WORD>(6); // scnum
-	w.Write<WORD>(0); // type
-	w.Write<WORD>(0x103); // scclass & numaux
+	//w.Write<DWORD>(0); // zeros
+	//w.Write<DWORD>(4); // offset
+	//w.Write<DWORD>(0); // value
+	//w.Write<WORD>(6); // scnum
+	//w.Write<WORD>(0); // type
+	//w.Write<WORD>(0x103); // scclass & numaux
 
-	w.Write<DWORD>(0);
-	w.Write<DWORD>(0);
-	w.Write<DWORD>(0);
-	w.Write<DWORD>(0);
-	w.Write<WORD>(0);
-	
+	//w.Write<DWORD>(0);
+	//w.Write<DWORD>(0);
+	//w.Write<DWORD>(0);
+	//w.Write<DWORD>(0);
+	//w.Write<WORD>(0);
+	//
 
 
-	w.Write<DWORD>(0);
-	w.Write<DWORD>(18);
-	w.Write<DWORD>(0);
-	w.Write<WORD>(8);
-	w.Write<WORD>(0);
-	w.Write<WORD>(0x0103);
+	//w.Write<DWORD>(0);
+	//w.Write<DWORD>(18);
+	//w.Write<DWORD>(0);
+	//w.Write<WORD>(8);
+	//w.Write<WORD>(0);
+	//w.Write<WORD>(0x0103);
 
-	w.Write<DWORD>(0);
-	w.Write<DWORD>(0);
-	w.Write<DWORD>(0);
-	w.Write<DWORD>(0);
-	w.Write<WORD>(0);
+	//w.Write<DWORD>(0);
+	//w.Write<DWORD>(0);
+	//w.Write<DWORD>(0);
+	//w.Write<DWORD>(0);
+	//w.Write<WORD>(0);
 
-	w.Write<DWORD>(0);
-	w.Write<DWORD>(30);
-	w.Write<DWORD>(0);
-	w.Write<WORD>(7);
-	w.Write<WORD>(0);
-	w.Write<WORD>(0x0103);
-	
-	w.Write<DWORD>(0);
-	w.Write<DWORD>(0);
-	w.Write<DWORD>(0);
-	w.Write<DWORD>(0);
-	w.Write<WORD>(0);
-	
+	//w.Write<DWORD>(0);
+	//w.Write<DWORD>(30);
+	//w.Write<DWORD>(0);
+	//w.Write<WORD>(7);
+	//w.Write<WORD>(0);
+	//w.Write<WORD>(0x0103);
+	//
+	//w.Write<DWORD>(0);
+	//w.Write<DWORD>(0);
+	//w.Write<DWORD>(0);
+	//w.Write<DWORD>(0);
+	//w.Write<WORD>(0);
+	//
 
-	w.Write<DWORD>(0);
-	w.Write<DWORD>(42);
-	w.Write<DWORD>(0);
-	w.Write<WORD>(6);
-	w.Write<WORD>(0);
-	w.Write<WORD>(0x0103);
+	//w.Write<DWORD>(0);
+	//w.Write<DWORD>(42);
+	//w.Write<DWORD>(0);
+	//w.Write<WORD>(6);
+	//w.Write<WORD>(0);
+	//w.Write<WORD>(0x0103);
 
-	w.Write<DWORD>(0);
-	w.Write<DWORD>(0);
-	w.Write<DWORD>(0);
-	w.Write<DWORD>(0);
-	w.Write<WORD>(0);
+	//w.Write<DWORD>(0);
+	//w.Write<DWORD>(0);
+	//w.Write<DWORD>(0);
+	//w.Write<DWORD>(0);
+	//w.Write<WORD>(0);
 
-	w.Write<DWORD>(55);
-	w.WriteString(".debug_abbrev");
-	w.WriteString(".debug_line");
-	w.WriteString(".debug_info");
-	w.WriteString(".debug_frame");
+	//w.Write<DWORD>(55);
+	//w.WriteString(".debug_abbrev");
+	//w.WriteString(".debug_line");
+	//w.WriteString(".debug_info");
+	//w.WriteString(".debug_frame");
 
 
 }

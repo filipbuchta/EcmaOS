@@ -3,6 +3,8 @@
 #include "syntax/syntaxtoken.h"
 #include "syntax/syntaxkind.h"
 #include "location.h"
+#include "sourcefile.h"
+#include "diagnostic.h"
 
 
 namespace r {
@@ -11,11 +13,14 @@ namespace r {
 
 	class Scanner {
 	public:
-		Scanner(char const *string);
+		Scanner(SourceFile * sourceFile, Diagnostics * diagnostics);
 
 		SyntaxToken Next();
 		Location GetLocation() { return _location; }
 	private:
+		SourceFile * _source;
+		Diagnostics * _diagnostics;
+
 		bool IsEndOfStream();
 
 		Location _startLocation = _location;
@@ -23,7 +28,6 @@ namespace r {
 
 		char GetChar();
 
-		const char* _source;
 		bool IsHexDigit(char value);
 		bool IsDigit(char value);
 

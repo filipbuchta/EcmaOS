@@ -13,6 +13,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{62F8E734-DDDB-4CAB-8BCC-B11EC5F90629}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
+    <ProjectName>Loader</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Ecma'" Label="Configuration">

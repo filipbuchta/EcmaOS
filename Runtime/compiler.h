@@ -5,14 +5,18 @@
 #include "parser.h"
 #include "syntax/syntaxnode.h"
 #include "codegen/codegenerator.h"
+#include "diagnostic.h"
 
 
 namespace r {
 
+
 	class Compiler {
 	public:
-		static AssemblySymbol* Compile(char const *string);
-		Compiler();
+		AssemblySymbol* Compile(List<SourceFile*> & sources);
+		Compiler(Diagnostics * diagnostics);
+	private:
+		Diagnostics * _diagnostics;
 	};
 
 }

@@ -22,6 +22,11 @@ namespace r {
 		DO(MinusToken)\
 		DO(EqualsToken)\
 		DO(EqualsEqualsToken)\
+		DO(BarToken)\
+		DO(BarBarToken)\
+		DO(AmpersandToken)\
+		DO(AmpersandAmpersandToken)\
+		DO(CaretToken)\
 		DO(DotToken)\
 		DO(OpenParenthesisToken)\
 		DO(CloseParenthesisToken)\
@@ -73,7 +78,8 @@ namespace r {
 		DO(PrefixUnaryExpression)\
 		DO(ExpressionStatement)\
 		DO(LocalVariableStatement)\
-		DO(IterationStatement)\
+		DO(ForStatement)\
+		DO(WhileStatement)\
 		DO(ReturnStatement)\
 		DO(IfStatement)\
 		DO(Block)\

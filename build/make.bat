@@ -19,7 +19,7 @@ if %errorlevel% neq 0 exit /b %errorlevel%
 
 
 cd ..
-copy /Y /b Kernel\*.ts + /b CorLib\*.ts build\Debug\kernel.iks
+copy /Y /b Kernel\*.ts + /b CorLib\*.ts build\Debug\Kernel.iks
 cd build
 
 
@@ -28,6 +28,7 @@ cd Debug
 imagefs c ecmaos.img 2880
 imagefs b ecmaos.img Fat12_BS.bin
 imagefs a ecmaos.img Stage2.bin
+imagefs a ecmaos.img Kernel.iks
 
 cd ..
 

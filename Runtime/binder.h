@@ -2,6 +2,7 @@
 
 #include "syntax/syntaxnode.h"
 #include "scope.h"
+#include "diagnostic.h"
 
 namespace r {
 
@@ -11,7 +12,7 @@ namespace r {
 	{
 	public:
 		
-		Binder(AssemblySymbol * assembly, MethodSymbol * method);
+		Binder(AssemblySymbol * assembly, MethodSymbol * method, Diagnostics * diagnostics);
 
 #define DEF_VISIT(type)                         \
           void Visit##type(type##Syntax & node);
@@ -31,6 +32,7 @@ namespace r {
 		Scope * _currentScope = nullptr;
 		AssemblySymbol * _assembly;
 		MethodSymbol * _method;
+		Diagnostics * _diagnostics;
 	};
 }
 

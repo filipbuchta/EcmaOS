@@ -8,6 +8,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 using namespace r;
 
+
 namespace Microsoft
 {
 	namespace VisualStudio
@@ -32,7 +33,9 @@ namespace Microsoft
 
 
 #define USING_SOURCE(expression) \
-	Parser* parser = new Parser(new r::Scanner(expression));   \
+	SourceFile * sourceFile = new SourceFile(); sourceFile->SetFileName("snippet.iks"); sourceFile->SetCode(expression); \
+	Diagnostics * diagnostics = new Diagnostics(); \
+	Parser* parser = new Parser(new r::Scanner(sourceFile, diagnostics), diagnostics);   \
 	SourceCodeSyntax *tree = parser->ParseSourceCode();   \
 	TreeFlattener *flattener = new TreeFlattener(); \
 	tree->Accept(*(SyntaxNodeVisitor*)flattener); \

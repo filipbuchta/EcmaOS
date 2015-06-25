@@ -9,6 +9,11 @@
 #include "runtime.h"
 
 namespace r {
+	AssemblyBuilder::AssemblyBuilder(Diagnostics * diagnostics)
+		: _diagnostics(diagnostics)
+	{
+
+	}
 
 	MethodSymbol * AssemblyBuilder::BuildMethod(TypeSymbol & declaringType, MethodLikeDeclarationSyntax & declaration) {
 		MethodSymbol * method = new MethodSymbol();
@@ -26,7 +31,8 @@ namespace r {
 			method->SetName(declaration.GetIdentifier()->GetName().Value);
 			TypeSymbol * returnType = _assembly->LookupType(methodDeclaration->GetReturnType()->GetType()->GetName().Value, methodDeclaration->GetReturnType()->GetRank());
 			if (returnType == nullptr) {
-				NOT_IMPLEMENTED();
+				//_diagnostics
+				_diagnostics->AddError("Method must have a return type", (methodDeclaration->DeclarationSyntax::GetLocation()));
 			}
 			method->SetReturnType(returnType);
 
@@ -127,17 +133,31 @@ namespace r {
 			}
 		}
 
+		if (type.GetBaseType() != nullptr) {
+			for (int i = 0; i < GetMethodCount(*type.GetBaseType()); i++) {
+				type.MethodTable[i].SetAddress(type.GetBaseType()->MethodTable[i].CodeStub);
+			}
+		}
+
 		{
 			// virtual methods
-			int slot = 0;
+		
 			{
 				for (MethodSymbol * method : *type.GetMethods()) {
 					if (method->IsVirtual() && method->GetBaseDefinition() != nullptr) {
 						method->SetSlot(method->GetBaseDefinition()->GetSlot());
 						type.MethodTable[method->GetSlot()].SetAddress(type.GetBaseType()->MethodTable[method->GetSlot()].CodeStub);
-						slot++;
+						
 					}
 				}
+			}
+
+			int slot;
+			if (type.GetBaseType() != nullptr) {
+				slot = GetMethodCount(*type.GetBaseType());
+			}
+			else {
+				slot = 0;
 			}
 			// newslot methods
 			{
@@ -161,7 +181,7 @@ namespace r {
 	}
 
 
-	AssemblySymbol * AssemblyBuilder::Build(SourceCodeSyntax & sourceCode)
+	AssemblySymbol * AssemblyBuilder::Build(List<SourceCodeSyntax *> & sourceCodes)
 	{
 
 		AssemblySymbol * assembly = _assembly = new AssemblySymbol();
@@ -171,40 +191,42 @@ namespace r {
 		//	RegisterCallback("Number_formatInt32", Runtime::Console_log);
 		//}
 
+		for (SourceCodeSyntax * sourceCode : sourceCodes)
+		{
+			//TODO: move this somewhere else, perhaps to some kind of TypeBuilder, MethodBuilder
 
+			// This is here because there is no bound tree so we have to modify syntax tree
+			for (ClassDeclarationSyntax * classDeclarationSyntax : *sourceCode->GetClassDeclarations()) {
+				bool hasInstanceConstructor = false;
+				for (ClassElementSyntax * classElementSyntax : *classDeclarationSyntax->GetMembers()) {
 
-		//TODO: move this somewhere else, perhaps to some kind of TypeBuilder, MethodBuilder
+					if (classElementSyntax->GetKind() == SyntaxKind::ConstructorDeclaration) {
+						hasInstanceConstructor = true;
+					}
+				}
 
-		// This is here because there is no bound tree so we have to modify syntax tree
-		for (ClassDeclarationSyntax * classDeclarationSyntax : *sourceCode.GetClassDeclarations()) {
-			bool hasInstanceConstructor = false;
-			for (ClassElementSyntax * classElementSyntax : *classDeclarationSyntax->GetMembers()) {
-				
-				if (classElementSyntax->GetKind() == SyntaxKind::ConstructorDeclaration) {
-					hasInstanceConstructor = true;
+				if (!hasInstanceConstructor) {
+					ConstructorDeclarationSyntax * constructor = new ConstructorDeclarationSyntax();
+					BlockSyntax * block = new BlockSyntax();
+					//TODO: add super call into block
+					constructor->SetBody(block);
+					constructor->SetParameterList(new ParameterListSyntax());
+					classDeclarationSyntax->GetMembers()->Push(constructor);
 				}
 			}
-
-			if (!hasInstanceConstructor) {
-				ConstructorDeclarationSyntax * constructor = new ConstructorDeclarationSyntax();
-				BlockSyntax * block = new BlockSyntax();
-				//TODO: add super call into block
-				constructor->SetBody(block);
-				constructor->SetParameterList(new ParameterListSyntax());
-				classDeclarationSyntax->GetMembers()->Push(constructor);
-			}
 		}
+		for (SourceCodeSyntax* sourceCode : sourceCodes)
+		{
+			for (ClassDeclarationSyntax * classDeclarationSyntax : *sourceCode->GetClassDeclarations()) {
 
-		
-		for (ClassDeclarationSyntax * classDeclarationSyntax : *sourceCode.GetClassDeclarations()) {
+				TypeSymbol * type = new TypeSymbol();
+				type->SetName(classDeclarationSyntax->GetIdentifier()->GetName().Value);
+				type->SetDeclaration(classDeclarationSyntax);
 
-			TypeSymbol * type = new TypeSymbol();
-			type->SetName(classDeclarationSyntax->GetIdentifier()->GetName().Value);
-			type->SetDeclaration(classDeclarationSyntax);
-
-			assembly->GetTypes()->Push(type);
+				assembly->GetTypes()->Push(type);
 
 
+			}
 		}
 
 		for (TypeSymbol * type : *assembly->GetTypes()) {
@@ -249,10 +271,11 @@ namespace r {
 			}
 		}
 
+
 		if (assembly->GetEntryPoint() == nullptr) {
-			NOT_IMPLEMENTED()
+			_diagnostics->AddError("No entry point", Location());
 		}
-		
+
 		// Bind base types
 		for (TypeSymbol * type : *assembly->GetTypes()) {
 			if (type->GetDeclaration() != nullptr) {
@@ -285,11 +308,17 @@ namespace r {
 
 			for (MethodSymbol * method : *type->GetMethods()) {
 				if (!method->IsAmbient()) {
-					Binder *binder = new Binder(assembly, method);
+					Binder *binder = new Binder(assembly, method, _diagnostics);
 					method->GetDeclaration()->Accept(*binder);
 				}
 			}
 		}
+
+
+		if (_diagnostics->GetInfos()->GetSize() > 0) {
+			return nullptr;
+		}
+
 
 		Heap * heap = new Heap();
 
@@ -306,7 +335,7 @@ namespace r {
 					if (strcmp(method->GetName(), "log") == 0) {
 						method->SetCode((unsigned char*)(&Runtime::Console_log));
 					} else {
-						NOT_IMPLEMENTED();
+						//NOT_IMPLEMENTED();
 					}
 				}
 				else {

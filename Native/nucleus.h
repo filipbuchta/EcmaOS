@@ -1,6 +1,6 @@
 #pragma once
 
-class Kernel
+class Nucleus
 {
 public:
 	static void Main();

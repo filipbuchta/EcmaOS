@@ -79,7 +79,33 @@ namespace r {
 
 
 
-	void CodeGenerator::VisitIterationStatement(IterationStatementSyntax & node) 
+	void CodeGenerator::VisitForStatement(ForStatementSyntax & node)
+	{
+		CodeForStatementPosition(node);
+
+		Visit(*node.GetInitializer());
+
+		Label start, end;
+
+		_assembler->Bind(start);
+		VisitForAccumulatorValue(*node.GetCondition());
+
+
+		_assembler->Mov(Register::EDX, 1);
+		_assembler->Cmp(Register::EAX, Register::EDX); //TODO: compare to value directly
+
+		_assembler->Jne(end);
+
+		Visit(*node.GetStatement());
+
+		Visit(*node.GetIncrementor());
+
+		_assembler->Jmp(start);
+
+		_assembler->Bind(end);
+	}
+
+	void CodeGenerator::VisitWhileStatement(WhileStatementSyntax & node) 
 	{
 		CodeForStatementPosition(node);
 
@@ -87,10 +113,10 @@ namespace r {
 
 		_assembler->Bind(start);
 
-		VisitForAccumulatorValue(*node.GetExpression());
+		VisitForAccumulatorValue(*node.GetCondition());
 
 		_assembler->Mov(Register::EDX, 1);
-		_assembler->Cmp(Register::EAX, Register::EDX);
+		_assembler->Cmp(Register::EAX, Register::EDX); //TODO: compare to value directly
 
 		_assembler->Jne(end);
 
@@ -228,7 +254,7 @@ namespace r {
 	
 		int size = HeapObject::HeaderSize + type.GetSize();
 
-		unsigned int * top = _heap->GetAllocationTop();
+		unsigned int * top = _heap->GetAllocationTopPointer();
 		
 		_assembler->Push(Register::EAX);
 
@@ -256,7 +282,7 @@ namespace r {
 */
 		int size = HeapObject::HeaderSize + type.GetSize();
 
-		unsigned int * top = _heap->GetAllocationTop();
+		unsigned int * top = _heap->GetAllocationTopPointer();
 		_assembler->Mov(result, (unsigned int)top);      // mov eax, &allocationTop
 		_assembler->Push(Operand(Register::EAX, 0));				 // push [eax]
 		_assembler->Add(Operand(result, 0), size);       // add [eax], size            ; reserve heap space
@@ -398,7 +424,7 @@ namespace r {
 
 		if (node.GetText().Kind == IntegerLiteral)
 		{
-			int32_t value = (int32_t)node.GetText().Value;
+			int32 value = (int32)node.GetText().Value;
 
 			_context->Plug(value);
 		}
@@ -701,7 +727,7 @@ namespace r {
 
 			_assembler->Pop(Register::ECX);
 			//TODO: there is an instruction that can do stuff like eax + ecx * 4 + 8
-			_assembler->Mov(Operand(Register::EAX, HeapObject::PropertyTableOffset + sizeof(uint32_t)), Register::ECX); //TODO: get size of field property from array type
+			_assembler->Mov(Operand(Register::EAX, HeapObject::PropertyTableOffset + sizeof(uint32)), Register::ECX); //TODO: get size of field property from array type
 		}
 		else {
 			NOT_REACHABLE()

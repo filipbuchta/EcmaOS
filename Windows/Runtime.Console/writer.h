@@ -77,7 +77,7 @@ public:
 	void WriteSLEB128(unsigned int value) {
 		bool more = true;
 		while (more) {
-			int8_t byte = value & 0x7F;
+			int8 byte = value & 0x7F;
 			bool byte_sign = byte & 0x40;
 			value >>= 7;
 
@@ -88,16 +88,16 @@ public:
 				byte |= 0x80;
 			}
 
-			Write<int8_t>(byte);
+			Write<int8>(byte);
 		}
 	}
 
 	void WriteULEB128(unsigned int value) {
 		do {
-			uint8_t byte = value & 0x7F;
+			uint8 byte = value & 0x7F;
 			value >>= 7;
 			if (value != 0) byte |= 0x80;
-			Write<uint8_t>(byte);
+			Write<uint8>(byte);
 		} while (value != 0);
 	}
 

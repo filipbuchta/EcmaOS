@@ -1,5 +1,4 @@
-﻿
-class int32 {
+﻿class int32 {
     _value: int32;
 
 

@@ -37,7 +37,7 @@ namespace r {
 		IdentifierSyntax* GetIdentifier() { return _identifier; }
 		void SetIdentifier(IdentifierSyntax* value) { _identifier = value; }
 	private:
-		IdentifierSyntax* _identifier;
+		IdentifierSyntax* _identifier = nullptr;
 	};
 
 
@@ -60,7 +60,7 @@ namespace r {
 		TypeSymbol * GetExpressionType() { return _expressionType; }
 		void SetExpressionType(TypeSymbol * value) { _expressionType = value; }
 	private:
-		TypeSymbol * _expressionType;
+		TypeSymbol * _expressionType = nullptr;
 	};
 
 
@@ -112,7 +112,7 @@ namespace r {
 		IdentifierSyntax* GetBaseType() { return _baseType; }
 		void SetBaseType(IdentifierSyntax*value) { _baseType = value; }
 	private:
-		IdentifierSyntax * _baseType;
+		IdentifierSyntax * _baseType = nullptr;
 		List<ClassElementSyntax*> *_members = new List<ClassElementSyntax*>();
 	};
 
@@ -124,7 +124,7 @@ namespace r {
 		ExpressionSyntax *GetExpression() { return _expression; }
 		void SetExpression(ExpressionSyntax *value) { _expression = value; }
 	private:
-		ExpressionSyntax *_expression;
+		ExpressionSyntax *_expression = nullptr;
 	};
 
 	class ThisExpressionSyntax : public PrimaryExpressionSyntax {
@@ -143,7 +143,7 @@ namespace r {
 		void SetSymbol(Symbol* value) { _symbol = value; }
 	private:
 		SyntaxToken _name = SyntaxToken(IllegalToken, "\0");
-		Symbol *_symbol;
+		Symbol *_symbol = nullptr;
 	};
 
 	class LocalVariableDeclarationSyntax : public DeclarationSyntax {
@@ -155,8 +155,8 @@ namespace r {
 		void SetVariableType(TypeAnnotationSyntax* value) { _variableType = value; }
 		TypeAnnotationSyntax* GetVariableType() { return _variableType; }
 	private:
-		TypeAnnotationSyntax * _variableType;
-		ExpressionSyntax *_initializer;
+		TypeAnnotationSyntax * _variableType = nullptr;
+		ExpressionSyntax *_initializer = nullptr;
 	};
 
 	class LocalVariableStatementSyntax : public StatementSyntax {
@@ -167,7 +167,7 @@ namespace r {
 		LocalVariableDeclarationSyntax* GetDeclaration() { return _declaration; };
 
 	private:
-		LocalVariableDeclarationSyntax *_declaration;
+		LocalVariableDeclarationSyntax * _declaration = nullptr;
 	};
 
 	class AssignmentExpressionSyntax : public ExpressionSyntax {
@@ -179,8 +179,8 @@ namespace r {
 		ExpressionSyntax* GetLeft() { return _left; };
 		ExpressionSyntax* GetRight() { return _right; };
 	private:
-		ExpressionSyntax *_left;
-		ExpressionSyntax *_right;
+		ExpressionSyntax *_left = nullptr;
+		ExpressionSyntax *_right = nullptr;
 	};
 
 	class BlockSyntax : public StatementSyntax 
@@ -204,8 +204,8 @@ namespace r {
 		void SetIndex(ExpressionSyntax *value) { _index = value; }
 		ExpressionSyntax *GetIndex() { return _index; }
 	private:
-		ExpressionSyntax *_expression;
-		ExpressionSyntax *_index;
+		ExpressionSyntax *_expression = nullptr;
+		ExpressionSyntax *_index = nullptr;
 	};
 
 	class MemberAccessExpressionSyntax : public MemberExpressionSyntax 
@@ -222,9 +222,9 @@ namespace r {
 		void SetMember(Symbol *value) { _member = value; }
 		Symbol *GetMember() { return _member; }
 	private:
-		ExpressionSyntax *_expression;
-		IdentifierSyntax *_name;
-		Symbol *_member;
+		ExpressionSyntax *_expression = nullptr;
+		IdentifierSyntax *_name = nullptr;
+		Symbol *_member = nullptr;
 	};
 
 	class ParameterListSyntax : public SyntaxNode {
@@ -251,7 +251,7 @@ namespace r {
 		ExpressionSyntax*  GetExpression() { return _expression; }
 
 	private:
-		ExpressionSyntax* _expression;
+		ExpressionSyntax* _expression = nullptr;
 	};
 
 
@@ -277,7 +277,7 @@ namespace r {
 		void SetParameterType(TypeAnnotationSyntax * value) { _parameterType = value; }
 		TypeAnnotationSyntax * GetParameterType() { return _parameterType; }
 	private:
-		TypeAnnotationSyntax * _parameterType;
+		TypeAnnotationSyntax * _parameterType = nullptr;
 	};
 
 
@@ -301,8 +301,8 @@ namespace r {
 		ParameterListSyntax * GetParameterList() { return _parameterList; }
 		void SetParameterList(ParameterListSyntax * value) { _parameterList = value; }
 	private:
-		BlockSyntax * _body;
-		ParameterListSyntax * _parameterList;
+		BlockSyntax * _body = nullptr;
+		ParameterListSyntax * _parameterList = nullptr;
 	};
 
 	class ConstructorDeclarationSyntax : public ClassElementSyntax, public MethodLikeDeclarationSyntax {
@@ -320,8 +320,8 @@ namespace r {
 		List<SyntaxToken> * GetModifiers() { return _modifiers; }
 		void SetModifiers(List<SyntaxToken> * value) { _modifiers = value; }
 	private:
-		TypeAnnotationSyntax * _returnType;
-		List<SyntaxToken> * _modifiers;
+		TypeAnnotationSyntax * _returnType = nullptr;
+		List<SyntaxToken> * _modifiers = nullptr;
 	};
 
 
@@ -335,7 +335,7 @@ namespace r {
 		SyntaxToken GetOperator() { return _operator; }
 		void SetOperator(SyntaxToken value) { _operator = value; }
 	private:
-		LeftHandSideExpressionSyntax * _operand;
+		LeftHandSideExpressionSyntax * _operand = nullptr;
 		SyntaxToken _operator = SyntaxToken(IllegalToken, '\0');
 	};
 
@@ -356,9 +356,9 @@ namespace r {
 		ExpressionSyntax *GetReceiver() { return _receiver; }
 	private:
 		ArgumentListSyntax *_arguments;
-		ExpressionSyntax *_expression;
-		MethodSymbol * _method;
-		ExpressionSyntax * _receiver;
+		ExpressionSyntax *_expression = nullptr;
+		MethodSymbol * _method = nullptr;
+		ExpressionSyntax * _receiver = nullptr;
 	};
 
 	class NewExpressionSyntax : public PrimaryExpressionSyntax {
@@ -375,9 +375,9 @@ namespace r {
 		void SetConstructor(MethodSymbol *value) { _constructor = value; }
 		MethodSymbol *GetConstructor() { return _constructor; }
 	private:
-		ArgumentListSyntax *_arguments;
-		IdentifierSyntax *_identifier;
-		MethodSymbol * _constructor;
+		ArgumentListSyntax * _arguments = nullptr;
+		IdentifierSyntax *_identifier = nullptr;
+		MethodSymbol * _constructor = nullptr;
 	};
 
 	class IfStatementSyntax : public StatementSyntax {
@@ -395,23 +395,50 @@ namespace r {
 		StatementSyntax *GetElseStatement() { return _elseStatement; }
 
 	private:
-		ExpressionSyntax *_expression;
-		StatementSyntax *_thenStatement;
-		StatementSyntax *_elseStatement;
+		ExpressionSyntax * _expression = nullptr;
+		StatementSyntax * _thenStatement = nullptr;
+		StatementSyntax * _elseStatement = nullptr;
 	};
 
 	class IterationStatementSyntax : public StatementSyntax {
 	public:
-		DECLARE_NODE_TYPE(IterationStatement);
-
-		void SetExpression(ExpressionSyntax *value) { _expression = value; }
-		ExpressionSyntax *GetExpression() { return _expression; }
+		virtual SyntaxKind GetKind() = 0;
+		virtual void Accept(SyntaxNodeVisitor &visitor) = 0;
 
 		void SetStatement(StatementSyntax *value) { _statement = value; }
 		StatementSyntax *GetStatement() { return _statement; }
 	private:
-		ExpressionSyntax *_expression;
-		StatementSyntax *_statement;
+		StatementSyntax *_statement = nullptr;
+	};
+
+	class ForStatementSyntax : public IterationStatementSyntax {
+	public:
+		DECLARE_NODE_TYPE(ForStatement);
+
+		void SetCondition(ExpressionSyntax *value) { _condition = value; }
+		ExpressionSyntax *GetCondition() { return _condition; }
+
+		void SetInitializer(LocalVariableDeclarationSyntax *value) { _initializer = value; }
+		LocalVariableDeclarationSyntax *GetInitializer() { return _initializer; }
+
+		void SetIncrementor(ExpressionSyntax *value) { _incrementor = value; }
+		ExpressionSyntax *GetIncrementor() { return _incrementor; }
+
+	private:
+		ExpressionSyntax * _condition = nullptr;
+		LocalVariableDeclarationSyntax * _initializer = nullptr;
+		ExpressionSyntax * _incrementor = nullptr;
+	};
+
+	class WhileStatementSyntax : public IterationStatementSyntax {
+	public:
+		DECLARE_NODE_TYPE(WhileStatement);
+
+		void SetCondition(ExpressionSyntax *value) { _condition = value; }
+		ExpressionSyntax *GetCondition() { return _condition; }
+
+	private:
+		ExpressionSyntax *_condition = nullptr;
 	};
 
 	class LiteralSyntax : public PrimaryExpressionSyntax {
@@ -436,8 +463,8 @@ namespace r {
 		void SetOperator(SyntaxToken value) { _operator = value; };
 
 	private:
-		ExpressionSyntax *_left;
-		ExpressionSyntax *_right;
+		ExpressionSyntax *_left = nullptr;
+		ExpressionSyntax *_right = nullptr;
 		SyntaxToken _operator = SyntaxToken(IllegalToken, "\0");
 	};
 	
@@ -450,8 +477,8 @@ namespace r {
 		ExpressionSyntax * GetRankSpecifier() const { return _initializer; }
 		void SetRankSpecifier(ExpressionSyntax *value) { _initializer = value; };
 	private:
-		IdentifierSyntax *_identifier;
-		ExpressionSyntax *_initializer;
+		IdentifierSyntax *_identifier = nullptr;
+		ExpressionSyntax *_initializer = nullptr;
 	};
 
 	class PrefixUnaryExpressionSyntax : public UnaryExpressionSyntax {
@@ -463,7 +490,7 @@ namespace r {
 		void SetOperator(SyntaxToken value) { _operator = value; };
 	private:
 		SyntaxToken _operator = SyntaxToken(IllegalToken, "\0");
-		UnaryExpressionSyntax * _operand;
+		UnaryExpressionSyntax * _operand = nullptr;
 	};
 
 
@@ -473,7 +500,7 @@ namespace r {
 		ExpressionSyntax * GetExpression() const { return _expression; }
 		void SetExpression(ExpressionSyntax *value) { _expression = value; };
 	private:
-		ExpressionSyntax * _expression;
+		ExpressionSyntax * _expression = nullptr;
 	};
 
 

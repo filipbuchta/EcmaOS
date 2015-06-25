@@ -40,8 +40,8 @@ namespace r {
 		void SetDeclaration(DeclarationSyntax * value) { _declaration = value; }
 
 	private:
-		const char *_name;
-		DeclarationSyntax * _declaration;
+		const char *_name = nullptr;
+		DeclarationSyntax * _declaration = nullptr;
 	};
 
 
@@ -53,8 +53,8 @@ namespace r {
 		TypeSymbol * GetParameterType() { return _parameterType; }
 		void SetParameterType(TypeSymbol * value) { _parameterType = value; }
 	private:
-		int _slot;
-		TypeSymbol * _parameterType;
+		int _slot = 0;
+		TypeSymbol * _parameterType = nullptr;
 	};
 
 
@@ -90,19 +90,19 @@ namespace r {
 		void SetBaseDefinition(MethodSymbol * value) { _baseDefinition = value; }
 		int GetParametersSize();
 	private:
-		unsigned char *_code;
-		int _codeSize;
-		LineInfo * _lineInfo;
+		unsigned char *_code = nullptr;
+		int _codeSize = 0;
+		LineInfo * _lineInfo = nullptr;
 		bool _isAmbient = false;
 		bool _isStatic = false;
 		bool _isConstructor = false;
 		bool _isVirtual = false;
 		List<ParameterSymbol*>* _parameters = new List<ParameterSymbol*>();
 		List<LocalVariableSymbol*>* _localVaribles = new List<LocalVariableSymbol*>();
-		TypeSymbol * _returnType;
-		TypeSymbol * _declaringType;
-		int _slot;
-		MethodSymbol * _baseDefinition;
+		TypeSymbol * _returnType = nullptr;
+		TypeSymbol * _declaringType = nullptr;
+		int _slot = 0;
+		MethodSymbol * _baseDefinition = nullptr;
 	};
 
 	//TODO: rename to MethodSlot
@@ -133,6 +133,7 @@ namespace r {
 		MethodSymbol * LookupMethod(const char * methodName);
 		PropertySymbol * LookupProperty(const char * propertyName);
 		Symbol * LookupMember(const char * memberName);
+		bool IsAssignableFrom(TypeSymbol & type);
 
 		int GetPropertiesSize();
 		void SetBaseType(TypeSymbol *value) { _baseType = value; }
@@ -142,7 +143,7 @@ namespace r {
 	private:
 		List<MethodSymbol*> * _methods = new List<MethodSymbol*>();
 		List<PropertySymbol*> * _properties = new List<PropertySymbol*>();
-		TypeSymbol * _baseType;
+		TypeSymbol * _baseType = nullptr;
 	};
 
 	class ArrayTypeSymbol : public TypeSymbol {
@@ -153,7 +154,7 @@ namespace r {
 		int GetRank() { return _rank; }
 		void SetRank(int value) { _rank = value; }
 	private:
-		TypeSymbol * _elementType;
+		TypeSymbol * _elementType = nullptr;
 		int _rank;
 	};
 
@@ -169,8 +170,8 @@ namespace r {
 		void SetDeclaringType(TypeSymbol * value) { _declaringType = value; };
 	private:
 		int _slot;
-		TypeSymbol * _propertyType;
-		TypeSymbol * _declaringType;
+		TypeSymbol * _propertyType = nullptr;
+		TypeSymbol * _declaringType = nullptr;
 	};
 
 	class LocalVariableSymbol : public Symbol {
@@ -181,8 +182,8 @@ namespace r {
 		TypeSymbol * GetVariableType() { return _variableType; }
 		void SetVariableType(TypeSymbol * value) { _variableType = value; }
 	private:
-		int _slot;
-		TypeSymbol * _variableType;
+		int _slot = 0;
+		TypeSymbol * _variableType = nullptr;
 	};
 
 
@@ -206,9 +207,9 @@ namespace r {
 		List<const char *>* GetStrings() { return _strings; }
 		ArrayTypeSymbol * MakeArrayType(TypeSymbol * type, int rank);
 	private:
-		const char * _filename;
-		const char * _source;
-		MethodSymbol* _entryPoint;
+		const char * _filename = nullptr;
+		const char * _source = nullptr;
+		MethodSymbol* _entryPoint = nullptr;
 		List<TypeSymbol*> * _types = new List<TypeSymbol*>();
 		List<const char *> * _strings = new List<const char *>();
 	};

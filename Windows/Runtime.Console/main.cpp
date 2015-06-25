@@ -31,7 +31,7 @@ void CreatePE(AssemblySymbol * code) {
 	PE * pe = new PE();
 
 	ofstream file;
-	file.open("C:\\Users\\buchta\\.clion10\\system\\cmake\\generated\\d1c374a2\\d1c374a2\\Debug\\untitled1.exe", ios::out | ios::binary | ios::trunc);
+	file.open("debug.exe", ios::out | ios::binary | ios::trunc);
 	file.imbue(std::locale::classic());
 
 	Writer * writer = new Writer();
@@ -40,11 +40,11 @@ void CreatePE(AssemblySymbol * code) {
 
 
 	pe->GetSections()->Push(new TextSection(code));
-	pe->GetSections()->Push(new DebugInfoSection(code));
+	/*pe->GetSections()->Push(new DebugInfoSection(code));
 	pe->GetSections()->Push(new DebugAbbrevSection());
 	pe->GetSections()->Push(new DebugLineSection(code));
 	pe->GetSections()->Push(new DebugFrameSection(code));
-
+*/
 	pe->Write(*writer);
 
 
@@ -54,7 +54,36 @@ void CreatePE(AssemblySymbol * code) {
 
 
 }
+SourceFile * LoadSourceFile(const char * fileName) {
 
+	SourceFile * source = new SourceFile();
+	source->SetFileName(fileName);
+
+	std::stringstream buffer;
+	std::ifstream fs = std::ifstream(fileName);
+
+	char a, b, c;
+	a = fs.get();
+	b = fs.get();
+	c = fs.get();
+	if (a != (char)0xEF || b != (char)0xBB || c != (char)0xBF) {
+		fs.seekg(0);
+	}
+	else {
+		fs.seekg(3);
+	}
+	buffer << fs.rdbuf();
+
+	std::string str = buffer.str();
+	
+
+	char *strBuffer = new char[str.size() + 1];   
+	memcpy(strBuffer, str.c_str(), str.size() + 1);
+	strBuffer[str.size()] = '\0';
+	source->SetCode(strBuffer);
+	//std::cout << std::endl << source->GetCode()[0] << std::endl;
+	return source;
+}
 
 void test(unsigned char a, unsigned char b, unsigned char c) {
 	int z = a;
@@ -112,25 +141,36 @@ int main(int argc, char* argv[])
 	}
 
 	
-	std::stringstream buffer;
-	buffer << std::ifstream("..\\..\\CorLib\\types.ts").seekg(3).rdbuf();
-	buffer << '\n';
-	buffer << std::ifstream("test.ts").seekg(3).rdbuf();
-
-	std::string str = buffer.str();
-	const char * code = str.c_str();
-
-//	Platform::Print(code);
-
-	Compiler * compiler = new Compiler();
-	AssemblySymbol * assembly = compiler->Compile(code);
 
 
-	//CreatePE(code);
+	List<SourceFile*> * sourceFiles = new List<SourceFile*>();
+	sourceFiles->Push(LoadSourceFile("C:\\Home\\Projects\\IksTest\\app.iks"));
+	sourceFiles->Push(LoadSourceFile("C:\\Home\\Projects\\EcmaOS\\CorLib\\types.iks"));
 
-	void(*entry) ();
-	entry = (void(*) ())assembly->GetEntryPoint()->GetCode();
-	entry();
+	Diagnostics * diagnostics = new Diagnostics();
+	Compiler * compiler = new Compiler(diagnostics);
+	AssemblySymbol * assembly = compiler->Compile(*sourceFiles);
+
+
+	for (DiagnosticInfo * info : *diagnostics->GetInfos()) {
+		// HelloWorld.iks(2,10): error IKS2339: Property 'logg' does not exist on type 'Console'.
+		std::cout << info->GetLocation().Path
+			<< "(" << info->GetLocation().Line << "," << info->GetLocation().Column << ")" << ": "
+			<< ((info->GetSeverity() == DiagnosticSeverity::Error) ? "error" : (info->GetSeverity() == DiagnosticSeverity::Warrning ? "warrning" : "info")) << " "
+			<< "IKS0000" << ": "
+			<< info->GetMessage() << std::endl;
+	}
+
+
+	if (assembly != nullptr)
+	{
+
+		//CreatePE(assembly);
+
+		void(*entry) ();
+		entry = (void(*) ())assembly->GetEntryPoint()->GetCode();
+		entry();
+	}
 
 
 	return 0;

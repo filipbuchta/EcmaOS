@@ -1,1 +1,0 @@
-﻿class C { static main(): void { let x = 0x777; Console.log(x); } }

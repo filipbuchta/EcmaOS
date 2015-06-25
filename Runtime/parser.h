@@ -4,18 +4,20 @@
 #include "scanner.h"
 #include "binder.h"
 #include "syntax/syntaxnode.h"
+#include "diagnostic.h"
 
 namespace r {
 
 
 	class Parser {
 	public:
-		Parser(Scanner *scanner);
+		Parser(Scanner *scanner, Diagnostics * diagnostics);
 
 		SourceCodeSyntax *ParseSourceCode();
 
 	private:
 		Scanner* _scanner;
+		Diagnostics * _diagnostics;
 
 		SyntaxToken NextToken();
 
@@ -29,7 +31,9 @@ namespace r {
 
 		SyntaxToken ParseExpected(SyntaxKind kind);
 
-		IterationStatementSyntax * ParseWhileStatement();
+		ForStatementSyntax * ParseForStatement();
+
+		WhileStatementSyntax * ParseWhileStatement();
 
 		StatementSyntax *ParseStatement();
 
@@ -37,11 +41,11 @@ namespace r {
 
 		ParameterListSyntax * ParseParameterList();
 
-		MethodDeclarationSyntax * ParseMethodDeclaration(IdentifierSyntax & identifier, List<SyntaxToken> * modifiers);
+		MethodDeclarationSyntax * ParseMethodDeclaration(IdentifierSyntax & identifier, List<SyntaxToken> & modifiers);
 
 		ConstructorDeclarationSyntax * ParseConstructorDeclaration();
 
-		PropertyDeclarationSyntax * ParsePropertyDeclaration(IdentifierSyntax & identifier, List<SyntaxToken> * modifiers);
+		PropertyDeclarationSyntax * ParsePropertyDeclaration(IdentifierSyntax & identifier, List<SyntaxToken> & modifiers);
 
 		IfStatementSyntax * ParseIfStatement();
 
@@ -83,11 +87,11 @@ namespace r {
 
 		TypeAnnotationSyntax * Parser::ParseTypeAnnotation();
 
-		NewExpressionSyntax * Parser::ParseNewExpression(IdentifierSyntax & identifier);
+		NewExpressionSyntax * Parser::ParseNewExpression(IdentifierSyntax & identifier, Location location);
 
 		ThisExpressionSyntax * ParseThisExpression();
 
-		ArrayCreationExpressionSyntax * ParseArrayCreationExpression(IdentifierSyntax & identifier);
+		ArrayCreationExpressionSyntax * ParseArrayCreationExpression(IdentifierSyntax & identifier, Location location);
 
 		ReturnStatementSyntax * ParseReturnStatement();
 

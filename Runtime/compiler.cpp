@@ -9,21 +9,30 @@
 
 namespace r {
 
-	Compiler::Compiler() {
+	Compiler::Compiler(Diagnostics * diagnostics)
+		: _diagnostics(diagnostics)
+	{
 	}
 
-	AssemblySymbol* Compiler::Compile(char const *source) {
+	AssemblySymbol* Compiler::Compile(List<SourceFile*> & sourceFiles) {
 
-		Scanner* scanner = new Scanner(source);
-		Parser* parser = new Parser(scanner);
+		List<SourceCodeSyntax *> * sourceCodes = new List<SourceCodeSyntax*>();
 
-		SourceCodeSyntax *sourceCode = parser->ParseSourceCode();
+		for (SourceFile * sourceFile : sourceFiles) {
+			Scanner* scanner = new Scanner(sourceFile, _diagnostics);
+			Parser* parser = new Parser(scanner, _diagnostics);
 
-		//AstPrinter * treePrinter = new AstPrinter();
-		//treePrinter->PrintTree(*sourceCode);
+			SourceCodeSyntax *sourceCode = parser->ParseSourceCode();
+			sourceCodes->Push(sourceCode);
+		}
 
-		AssemblyBuilder * assemblyBuilder = new AssemblyBuilder();
-		AssemblySymbol * assembly = assemblyBuilder->Build(*sourceCode);
+
+		if (_diagnostics->GetInfos()->GetSize() > 0) {
+			return nullptr;
+		}
+
+		AssemblyBuilder * assemblyBuilder = new AssemblyBuilder(_diagnostics);
+		AssemblySymbol * assembly = assemblyBuilder->Build(*sourceCodes);
 
 		return assembly;
 	}

@@ -6,18 +6,11 @@
 namespace r {
 
 	Heap::Heap() {
-		_space = Platform::AllocateMemory(0x2000, false);
-		_allocationTop = reinterpret_cast<unsigned int>(&_space[0]);
+		int size = 0x2000;
+		_space = Platform::AllocateMemory(size, false);
+		_allocationTop = reinterpret_cast<unsigned int>(&_space);
+		_allocationLimit = _allocationTop + size;
 	}
 	
-
-	HeapObject * Heap::Allocate(int size) {
-
-		unsigned int top = _allocationTop;
-		_allocationTop += size;
-
-		return (HeapObject *)top;
-	}
-
 
 }

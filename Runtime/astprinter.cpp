@@ -184,10 +184,20 @@ namespace r {
 		_indent--;
 	}
 
-	void AstPrinter::VisitIterationStatement(IterationStatementSyntax &node) {
-		PrintIndented("IterationStatement\n");
+	void AstPrinter::VisitForStatement(ForStatementSyntax &node) {
+		PrintIndented("ForStatement\n");
 		_indent++;
-		node.GetExpression()->Accept(*this);
+		node.GetInitializer()->Accept(*this);
+		node.GetCondition()->Accept(*this);
+		node.GetIncrementor()->Accept(*this);
+		node.GetStatement()->Accept(*this);
+		_indent--;
+	}
+
+	void AstPrinter::VisitWhileStatement(WhileStatementSyntax &node) {
+		PrintIndented("WhileStatement\n");
+		_indent++;
+		node.GetCondition()->Accept(*this);
 		node.GetStatement()->Accept(*this);
 		_indent--;
 	}

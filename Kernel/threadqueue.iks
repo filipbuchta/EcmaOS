@@ -9,7 +9,7 @@ class ThreadQueue {
     last: Node;
 
     enqueue(item: Thread): void {
-        var last = new Node();
+        let last = new Node();
         last.value = item;
 
         if (this.first == null && this.last == null) {

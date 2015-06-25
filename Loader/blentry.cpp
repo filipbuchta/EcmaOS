@@ -1,5 +1,5 @@
 
-#include "..\Native\Kernel.h"
+#include "..\Native\nucleus.h"
 
 
 extern "C" {
@@ -8,6 +8,6 @@ extern "C" {
 
 extern "C" void blentry32() {
 	
-	Kernel::Main();
+	Nucleus::Main();
 
 }

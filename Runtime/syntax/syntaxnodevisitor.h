@@ -20,7 +20,8 @@ namespace r {
     V(MemberAccessExpression) \
 	V(IndexedAccessExpression) \
     V(ArgumentList) \
-    V(IterationStatement) \
+    V(ForStatement) \
+	V(WhileStatement) \
     V(ParameterList) \
 	V(ThisExpression) \
 	V(IfStatement)\

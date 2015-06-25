@@ -1,11 +1,11 @@
 ﻿/// <reference no-default-lib="true"/>
 
-declare class Runtime {
-    static yieldTo(stackId: int32): void;
-    static vgaWrite(position: int32, data: int32);
-    static garbageCollect();
+class Runtime {
+    declare static yieldTo(stackId: int32): void;
+    declare static vgaWrite(position: int32, data: int32): void;
+    declare static garbageCollect(): void;
 
-    static registerTimer(listener: Kernel): void; //TODO: either change this to delegate or some interface
+    declare static registerTimer(listener: Kernel): void; //TODO: either change this to delegate or some interface
 }
 
 
@@ -58,7 +58,7 @@ class Kernel extends Thread {
     static main(): void {
 
         if (Kernel.currentThread == null) {
-            var kernel = new Kernel();
+            let kernel = new Kernel();
             kernel.entry();
 
         } else {
@@ -76,7 +76,7 @@ class Kernel extends Thread {
         Runtime.yieldTo(0);
     }
 
-    entry() {
+    entry(): void {
 
         let pic = new Pic();
         pic.initialize();

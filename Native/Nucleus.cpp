@@ -1,8 +1,13 @@
-#include "Kernel.h"
+#include "nucleus.h"
+
+
+#include "global.h"
+#include "debug.h"
 
 
 #include "memory.h"
 #include "video.h"
+#include "fat12.h"
 
 #include "..\Runtime\compiler.h"
 #include "..\Runtime\checks.h"
@@ -14,39 +19,25 @@ using namespace r;
 __pragma(pack(push, 1))
 struct idt_entry_struct
 {
-	uint16_t base_lo;             // The lower 16 bits of the address to jump to when this interrupt fires.
-	uint16_t sel;                 // Kernel segment selector.
-	uint8_t  always0;             // This must always be zero.
-	uint8_t  flags;               // More flags. See documentation.
-	uint16_t base_hi;             // The upper 16 bits of the address to jump to.
+	uint16 base_lo;             // The lower 16 bits of the address to jump to when this interrupt fires.
+	uint16 sel;                 // Kernel segment selector.
+	uint8  always0;             // This must always be zero.
+	uint8  flags;               // More flags. See documentation.
+	uint16 base_hi;             // The upper 16 bits of the address to jump to.
 };
 
 struct idt_ptr_struct
 {
-	uint16_t limit;
-	uint32_t base;                // The address of the first element in our idt_entry_t array.
+	uint16 limit;
+	uint32 base;                // The address of the first element in our idt_entry_t array.
 };
 __pragma(pack(pop))
 
 
-void log(const char * text) {
-	for (int i = 0; (text)[i] != '\0'; i++) {
-
-		char c = text[i];
-		_asm {
-			mov al, c
-				out 0xe9, al
-		}
-
-	}
-}
-
-
-#define outportb(port, value) _asm { mov al, value } _asm { out port, al }
 
 
 //TODO: should this be naked function?
-__declspec(naked) void Kernel::InterruptHandler() {
+__declspec(naked) void Nucleus::InterruptHandler() {
 	__asm {
 
 
@@ -68,13 +59,13 @@ __declspec(naked) void Kernel::InterruptHandler() {
 	}
 }
 
-__declspec(naked) void Kernel::FaultHandler() {
+__declspec(naked) void Nucleus::FaultHandler() {
 	Platform::Print("FAULT");
 	_asm { hlt }
 }
 
 
-void Kernel::Main()
+void Nucleus::Main()
 {
 
 	idt_entry_struct idt_entries[256];
@@ -88,12 +79,12 @@ void Kernel::Main()
 
 	for (int i = 0; i < 256; i++) {
 		if (i < 32) {
-			idt_entries[i].base_lo = (unsigned int)&Kernel::FaultHandler & 0xFFFF;
-			idt_entries[i].base_hi = ((unsigned int)&Kernel::FaultHandler >> 16) & 0xFFFF;
+			idt_entries[i].base_lo = (unsigned int)&Nucleus::FaultHandler & 0xFFFF;
+			idt_entries[i].base_hi = ((unsigned int)&Nucleus::FaultHandler >> 16) & 0xFFFF;
 		}
 		else {
-			idt_entries[i].base_lo = (unsigned int)&Kernel::InterruptHandler & 0xFFFF;
-			idt_entries[i].base_hi = ((unsigned int)&Kernel::InterruptHandler >> 16) & 0xFFFF;
+			idt_entries[i].base_lo = (unsigned int)&Nucleus::InterruptHandler & 0xFFFF;
+			idt_entries[i].base_hi = ((unsigned int)&Nucleus::InterruptHandler >> 16) & 0xFFFF;
 		}
 
 
@@ -138,8 +129,12 @@ void Kernel::Main()
 
 
 	ClearScreen();
-	ConsoleWrite("Initializing\n\n");
+	Log("Initializing\n\n");
 
+	Fat12BootSector bootSector;
+	BlReadDrive(0, 0, 1, &bootSector);
+
+	_asm { hlt }
 
 
 	//Isolate *isolate = new Isolate();
@@ -165,7 +160,7 @@ void Kernel::Main()
 
 	Compiler * compiler = new Compiler();
 	AssemblySymbol * assembly = compiler->Compile(code);
-	ConsoleWrite("Compiled!\n\n");
+	Log("Compiled!\n\n");
 
 
 

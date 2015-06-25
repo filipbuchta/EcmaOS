@@ -281,7 +281,6 @@ BlLoadImage:
 
 %include "Debug.asm"
   
-%include "Fat12.asm"
 
  
 msg_32_init db "PMode entered", 0   

@@ -49,14 +49,15 @@ namespace r {
 	public:
 		Heap::Heap();
 
-		HeapObject * Heap::Allocate(int size);
-
-		unsigned int * GetAllocationTop() { return &_allocationTop; }
+		unsigned int * GetAllocationTopPointer() { return &_allocationTop; }
+		unsigned int GetAllocationLimit() { return _allocationLimit; }
+		unsigned int GetAllocatedBytes() { return _allocationLimit - _allocationTop; }
 
 	private:
-		
+
 		unsigned int _allocationTop;
-		unsigned char * _space;
+		unsigned int _allocationLimit;
+		void * _space;
 	};
 }
 

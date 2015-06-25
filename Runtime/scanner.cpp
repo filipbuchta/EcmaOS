@@ -6,6 +6,13 @@
 
 namespace r {
 
+
+	Scanner::Scanner(SourceFile * sourceFile, Diagnostics * diagnostics)
+		: _source(sourceFile), _diagnostics(diagnostics)
+	{
+		_location.Path = sourceFile->GetFileName();
+	}
+
 	SyntaxToken Scanner::Next()
 	{
 		while (true)
@@ -138,6 +145,30 @@ namespace r {
 					}
 					default: {
 						return SyntaxToken(ExclamationToken, "!");
+					}
+				}
+			}
+			case '&': {
+				Advance();
+				switch (GetChar()) {
+					case '&': {
+						Advance();
+						return SyntaxToken(AmpersandAmpersandToken, "&&");
+					}
+					default: {
+						return SyntaxToken(AmpersandToken, "&");
+					}
+				}
+			}
+			case '|': {
+				Advance();
+				switch (GetChar()) {
+					case '|': {
+						Advance();
+						return SyntaxToken(BarBarToken, "||");
+					}
+					default: {
+						return SyntaxToken(BarToken, "|");
 					}
 				}
 			}
@@ -326,8 +357,13 @@ namespace r {
 					if (GetChar() == '\n') {
 						_location.Line++;
 						_location.Position++;
-						_location.Column = 0;
-					} else {
+						_location.Column = 1;
+					}
+					else if(GetChar() == '\t') {
+						_location.Position++;
+						_location.Column += 4;
+					}
+					else {
 						Advance();
 					}
 				}
@@ -347,7 +383,7 @@ namespace r {
 	const char * Scanner::ScanString(int start, int end) {
 		int length = end - start;
 		char * value = new char[length + 1];
-		memcpy(value, &_source[start], length);
+		memcpy(value, &_source->GetCode()[start], length);
 
 		value[length] = '\0';
 
@@ -358,7 +394,7 @@ namespace r {
 		int length = end - start;
 		int result = 0;
 		for (int i = 0; i < length; i++) {
-			const char * ch = &_source[start + i];
+			const char * ch = &_source->GetCode()[start + i];
 			result = result * 10 + (*ch - '0') ;
 		}
 		
@@ -369,7 +405,7 @@ namespace r {
 		int length = end - start;
 		int result = 0;
 		for (int i = 0; i < length; i++) {
-			const char * ch = &_source[start + i];
+			const char * ch = &_source->GetCode()[start + i];
 			result = result * 16 + (*ch - '0');
 		}
 
@@ -387,7 +423,7 @@ namespace r {
 	}
 
 	char Scanner::GetChar() {
-		return _source[_location.Position];
+		return _source->GetCode()[_location.Position];
 	}
 
 	bool Scanner::IsHexDigit(char ch) {
@@ -402,14 +438,11 @@ namespace r {
 	}
 
 	bool Scanner::IsWhiteSpace(char ch) {
-		return ch == ' ' || ch == '\n' || ch == '\t';
+		return ch == ' ' || ch == '\n' || ch == '\r' || ch == '\t';
 	}
 
 	bool Scanner::IsIdentifierPart(char ch) {
 		return IsIdentifierStart(ch) || (ch >= '0' && ch <= '9');
 	}
 
-	Scanner::Scanner(char const *source) {
-		_source = source;
-	}
 }

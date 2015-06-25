@@ -78,14 +78,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Kernel.cpp" />
+    <ClCompile Include="debug.cpp" />
+    <ClCompile Include="fat12.cpp" />
+    <ClCompile Include="Nucleus.cpp" />
     <ClCompile Include="memory.cpp" />
     <ClCompile Include="platform-ecma.cpp" />
     <ClCompile Include="Runtime.cpp" />
     <ClCompile Include="video.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Kernel.h" />
+    <ClInclude Include="debug.h" />
+    <ClInclude Include="fat12.h" />
+    <ClInclude Include="global.h" />
+    <ClInclude Include="nucleus.h" />
     <ClInclude Include="memory.h" />
     <ClInclude Include="video.h" />
   </ItemGroup>

@@ -2,10 +2,10 @@
 
 
 
-void DebugLineSection::WriteExtendedOpcode(Writer & w, DWARF2ExtendedOpcode op, size_t operands_size) {
-	w.Write<uint8_t>(0);
+void DebugLineSection::WriteExtendedOpcode(Writer & w, DWARF2ExtendedOpcode op, uint32 operands_size) {
+	w.Write<uint8>(0);
 	w.WriteULEB128(operands_size + 1);
-	w.Write<uint8_t>(op);
+	w.Write<uint8>(op);
 }
 
 void DebugLineSection::WriteBody(Writer & w) {
@@ -14,41 +14,41 @@ void DebugLineSection::WriteBody(Writer & w) {
 
 
 	// Used for special opcodes                                                                    
-	const int8_t line_base = 1;
-	const uint8_t line_range = 7;
-	const int8_t max_line_incr = (line_base + line_range - 1);
-	const uint8_t opcode_base = DW_LNS_NEGATE_STMT + 1;
+	const int8 line_base = 1;
+	const uint8 line_range = 7;
+	const int8 max_line_incr = (line_base + line_range - 1);
+	const uint8 opcode_base = DW_LNS_NEGATE_STMT + 1;
 
-	w.Write<uint16_t>(2);  // Field version.                                                      
-	Writer::Slot<uint32_t> prologueLength = w.CreateSlot<uint32_t>();
-	uintptr_t prologue_start = w.GetPosition();
-	w.Write<uint8_t>(1);  // Field minimum_instruction_length.                                    
-	w.Write<uint8_t>(1);  // Field default_is_stmt.                                               
-	w.Write<int8_t>(line_base);  // Field line_base.                                              
-	w.Write<uint8_t>(line_range);  // Field line_range.                                           
-	w.Write<uint8_t>(opcode_base);  // Field opcode_base.                                         
-	w.Write<uint8_t>(0);  // DW_LNS_COPY operands count.                                          
-	w.Write<uint8_t>(1);  // DW_LNS_ADVANCE_PC operands count.                                    
-	w.Write<uint8_t>(1);  // DW_LNS_ADVANCE_LINE operands count.                                  
-	w.Write<uint8_t>(1);  // DW_LNS_SET_FILE operands count.                                      
-	w.Write<uint8_t>(1);  // DW_LNS_SET_COLUMN operands count.                                    
-	w.Write<uint8_t>(0);  // DW_LNS_NEGATE_STMT operands count.                                   
-	w.Write<uint8_t>(0);  // Empty include_directories sequence.                                  
+	w.Write<uint16>(2);  // Field version.                                                      
+	Writer::Slot<uint32> prologueLength = w.CreateSlot<uint32>();
+	uintptr prologue_start = w.GetPosition();
+	w.Write<uint8>(1);  // Field minimum_instruction_length.                                    
+	w.Write<uint8>(1);  // Field default_is_stmt.                                               
+	w.Write<int8>(line_base);  // Field line_base.                                              
+	w.Write<uint8>(line_range);  // Field line_range.                                           
+	w.Write<uint8>(opcode_base);  // Field opcode_base.                                         
+	w.Write<uint8>(0);  // DW_LNS_COPY operands count.                                          
+	w.Write<uint8>(1);  // DW_LNS_ADVANCE_PC operands count.                                    
+	w.Write<uint8>(1);  // DW_LNS_ADVANCE_LINE operands count.                                  
+	w.Write<uint8>(1);  // DW_LNS_SET_FILE operands count.                                      
+	w.Write<uint8>(1);  // DW_LNS_SET_COLUMN operands count.                                    
+	w.Write<uint8>(0);  // DW_LNS_NEGATE_STMT operands count.                                   
+	w.Write<uint8>(0);  // Empty include_directories sequence.                                  
 	w.WriteString(_description->GetFilename());  // File name.                                          
 	w.WriteULEB128(0);  // Current directory.                                                     
 	w.WriteULEB128(0);  // Unknown modification time.                                             
 	w.WriteULEB128(0);  // Unknown file size.                                                     
-	w.Write<uint8_t>(0);
-	prologueLength.Set(static_cast<uint32_t>(w.GetPosition() - prologue_start));
+	w.Write<uint8>(0);
+	prologueLength.Set(static_cast<uint32>(w.GetPosition() - prologue_start));
 
-	WriteExtendedOpcode(w, DW_LNE_SET_ADDRESS, sizeof(intptr_t));
-	//w.Write<intptr_t>(_description->GetCodeStart());
-	w.Write<intptr_t>(0x401000);
+	WriteExtendedOpcode(w, DW_LNE_SET_ADDRESS, sizeof(intptr));
+	//w.Write<intptr>(_description->GetCodeStart());
+	w.Write<intptr>(0x401000);
 
-	w.Write<uint8_t>(DW_LNS_COPY);
+	w.Write<uint8>(DW_LNS_COPY);
 
-	intptr_t pc = 0;
-	intptr_t line = 1;
+	intptr pc = 0;
+	intptr line = 1;
 
 
 	//bool is_statement = true;
@@ -63,7 +63,7 @@ void DebugLineSection::WriteBody(Writer & w) {
 
 		// Reduce bloating in the debug line table by removing duplicate line                        
 		// entries (per DWARF2 standard).                                                            
-		intptr_t  new_line = info->Location.Line;
+		intptr  new_line = info->Location.Line;
 		/*if (new_line == line) {
 			continue;
 		}*/
@@ -74,22 +74,22 @@ void DebugLineSection::WriteBody(Writer & w) {
 	//	// should control reach the end.                                                             
 	//	if ((i + 1) == pc_info_length) {
 	//		if (!is_statement) {
-	//			w.Write<uint8_t>(DW_LNS_NEGATE_STMT);
+	//			w.Write<uint8>(DW_LNS_NEGATE_STMT);
 	//		}
 	//	}
 	//	else if (is_statement != info->is_statement_) {
-	//		w.Write<uint8_t>(DW_LNS_NEGATE_STMT);
+	//		w.Write<uint8>(DW_LNS_NEGATE_STMT);
 	//		is_statement = !is_statement;
 	//	}
 
 		// Generate special opcodes, if possible.  This results in more compact                      
 		// debug line tables.  See the DWARF 2.0 standard to learn more about                        
 		// special opcodes.                                                                          
-		uintptr_t pc_diff = info->PC - pc;
-		intptr_t line_diff = new_line - line;
+		uintptr pc_diff = info->PC - pc;
+		intptr line_diff = new_line - line;
 
 		// Compute special opcode (see DWARF 2.0 standard)                                           
-		intptr_t special_opcode = (line_diff - line_base) + (line_range * pc_diff) + opcode_base;
+		intptr special_opcode = (line_diff - line_base) + (line_range * pc_diff) + opcode_base;
 
 		// If special_opcode is less than or equal to 255, it can be used as a                       
 		// special opcode.  If line_diff is larger than the max line increment                       
@@ -98,14 +98,14 @@ void DebugLineSection::WriteBody(Writer & w) {
 		// special_opcode can't be used.                                                             
 		if ((special_opcode >= opcode_base) && (special_opcode <= 255) &&
 			(line_diff <= max_line_incr) && (line_diff >= line_base)) {
-			w.Write<uint8_t>(special_opcode);
+			w.Write<uint8>(special_opcode);
 		}
 		else {
-			w.Write<uint8_t>(DW_LNS_ADVANCE_PC);
+			w.Write<uint8>(DW_LNS_ADVANCE_PC);
 			w.WriteSLEB128(pc_diff);
-			w.Write<uint8_t>(DW_LNS_ADVANCE_LINE);
+			w.Write<uint8>(DW_LNS_ADVANCE_LINE);
 			w.WriteSLEB128(line_diff);
-			w.Write<uint8_t>(DW_LNS_COPY);
+			w.Write<uint8>(DW_LNS_COPY);
 		}
 
 		// Increment the pc and line operands.                                                       
@@ -114,7 +114,7 @@ void DebugLineSection::WriteBody(Writer & w) {
 	}
 	// Advance the pc to the end of the routine, since the end sequence opcode                     
 	// requires this.                                                                              
-	w.Write<uint8_t>(DW_LNS_ADVANCE_PC);
+	w.Write<uint8>(DW_LNS_ADVANCE_PC);
 	//w.WriteSLEB128(_description->GetCodeSize() - pc);
 	w.WriteSLEB128(11);
 	WriteExtendedOpcode(w, DW_LNE_END_SEQUENCE, 0);
@@ -129,7 +129,7 @@ void DebugAbbrevSection::WriteBody(Writer & w) {
 	
 	w.WriteULEB128(1);
 	w.WriteULEB128(DW_TAG_COMPILE_UNIT);
-	w.Write<uint8_t>(DW_CHILDREN_YES);
+	w.Write<uint8>(DW_CHILDREN_YES);
 
 	w.WriteULEB128(DW_AT_NAME);
 	w.WriteULEB128(DW_FORM_STRING);
@@ -151,7 +151,7 @@ void DebugAbbrevSection::WriteBody(Writer & w) {
 
 	w.WriteULEB128(2);
 	w.WriteULEB128(DW_TAG_SUBPROGRAM);
-	w.Write<uint8_t>(DW_CHILDREN_YES);
+	w.Write<uint8>(DW_CHILDREN_YES);
 
 	w.WriteULEB128(DW_AT_NAME);
 	w.WriteULEB128(DW_FORM_STRING);
@@ -176,7 +176,7 @@ void DebugAbbrevSection::WriteBody(Writer & w) {
 
 	w.WriteULEB128(3);
 	w.WriteULEB128(DW_TAG_LEXICAL_BLOCK);
-	w.Write<uint8_t>(DW_CHILDREN_YES);
+	w.Write<uint8>(DW_CHILDREN_YES);
 
 	w.WriteULEB128(DW_AT_LOW_PC);
 	w.WriteULEB128(DW_FORM_ADDR);
@@ -191,7 +191,7 @@ void DebugAbbrevSection::WriteBody(Writer & w) {
 
 	w.WriteULEB128(4);
 	w.WriteULEB128(DW_TAG_VARIABLE);
-	w.Write<uint8_t>(DW_CHILDREN_NO);
+	w.Write<uint8>(DW_CHILDREN_NO);
 
 	w.WriteULEB128(DW_AT_NAME);
 	w.WriteULEB128(DW_FORM_STRING);
@@ -210,7 +210,7 @@ void DebugAbbrevSection::WriteBody(Writer & w) {
 
 	w.WriteULEB128(5);
 	w.WriteULEB128(DW_TAG_BASE_TYPE);
-	w.Write<uint8_t>(DW_CHILDREN_NO);
+	w.Write<uint8>(DW_CHILDREN_NO);
 
 	w.WriteULEB128(DW_AT_BYTE_SIZE);
 	w.WriteULEB128(DW_FORM_DATA1);
@@ -240,15 +240,15 @@ void DebugInfoSection::WriteBody(Writer & w) {
 
 	w.Write<WORD>(2); // Dwarf version
 	w.Write((DWORD)0); // offset into the .debug_abbrev section
-	w.Write<BYTE>(sizeof(intptr_t)); // Size of pointer
+	w.Write<BYTE>(sizeof(intptr)); // Size of pointer
 
 	w.WriteULEB128(1); // compilation unit
 	w.WriteString(_description->GetFilename());
 
-	/*w.Write((intptr_t)_description->GetCodeStart());
-	w.Write((intptr_t)_description->GetCodeStart() + _description->GetCodeSize());*/
-	w.Write((intptr_t)0x401000);
-	w.Write((intptr_t)_description->GetCodeSize());
+	/*w.Write((intptr)_description->GetCodeStart());
+	w.Write((intptr)_description->GetCodeStart() + _description->GetCodeSize());*/
+	w.Write((intptr)0x401000);
+	w.Write((intptr)_description->GetCodeSize());
 
 	w.Write((DWORD)0); // statement list
 
@@ -258,15 +258,15 @@ void DebugInfoSection::WriteBody(Writer & w) {
 	w.WriteULEB128(2); 
 	w.WriteString("entry");
 
-	w.Write((intptr_t)0x401000);
-	w.Write((intptr_t)0x401000 + _description->GetCodeSize());
+	w.Write((intptr)0x401000);
+	w.Write((intptr)0x401000 + _description->GetCodeSize());
 	w.Write((DWORD)0x0);
 	w.Write((DWORD)0x4c); // sibling
 
 	{
 		w.WriteULEB128(3); // lexical block
-		w.Write((intptr_t)0x401000);
-		w.Write((intptr_t)0x401000 + _description->GetCodeSize());
+		w.Write((intptr)0x401000);
+		w.Write((intptr)0x401000 + _description->GetCodeSize());
 
 		{
 			w.WriteULEB128(4); // variable

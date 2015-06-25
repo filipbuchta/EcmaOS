@@ -58,10 +58,17 @@ void TreeFlattener::VisitLocalVariableStatement(LocalVariableStatementSyntax &no
 	node.GetDeclaration()->Accept(*this);
 }
 
-
-void TreeFlattener::VisitIterationStatement(IterationStatementSyntax &node) {
+void TreeFlattener::VisitForStatement(ForStatementSyntax &node) {
 	_list->Push(node.GetKind());
-	node.GetExpression()->Accept(*this);
+	node.GetInitializer()->Accept(*this);
+	node.GetCondition()->Accept(*this);
+	node.GetIncrementor()->Accept(*this);
+	node.GetStatement()->Accept(*this);
+}
+
+void TreeFlattener::VisitWhileStatement(WhileStatementSyntax &node) {
+	_list->Push(node.GetKind());
+	node.GetCondition()->Accept(*this);
 	node.GetStatement()->Accept(*this);
 }
 

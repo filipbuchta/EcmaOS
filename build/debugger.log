@@ -1,4 +1,15 @@
 Next at t=0
 (0) [0x0000fffffff0] f000:fff0 (unk. ctxt): jmpf 0xf000:e05b          ; ea5be000f0
 c
-(0).[494850000] [0x00000004db7b] 0008:000000000004db7b (unk. ctxt): cmp dword ptr ss:[ebp+8], 0x00000000 ; 837d0800
+(0) Magic breakpoint
+Next at t=151871736
+(0) [0x000000041749] 0008:0000000000041749 (unk. ctxt): movzx edx, word ptr ss:[ebp-2] ; 0fb755fe
+Next at t=151871737
+(0) [0x00000004174d] 0008:000000000004174d (unk. ctxt): mov dword ptr ss:[ebp-12], edx ; 8955f4
+Next at t=151871738
+(0) [0x000000041750] 0008:0000000000041750 (unk. ctxt): mov dl, byte ptr ss:[ebp+8] ; 8a5508
+Next at t=151871739
+(0) [0x000000041753] 0008:0000000000041753 (unk. ctxt): mov eax, 0x00000042       ; b842000000
+Next at t=151871740
+(0) [0x000000041758] 0008:0000000000041758 (unk. ctxt): mov ds, word ptr ss:[ebp-4] ; 668e5dfc
+(0).[151871740] [0x000000041758] 0008:0000000000041758 (unk. ctxt): mov ds, word ptr ss:[ebp-4] ; 668e5dfc
